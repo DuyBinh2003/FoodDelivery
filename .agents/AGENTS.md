@@ -8,3 +8,7 @@ Mọi thao tác thay đổi code trên dự án này đều phải tuân thủ n
 3. Chỉ bắt đầu implement code *sau khi* `README.md` đã được cập nhật thành công (hoặc nếu yêu cầu đã nằm sẵn trong scope).
 
 *Chi tiết hơn có thể xem tại skill `project-readme-policy`.*
+
+**Quy chuẩn Database (Data Modeling)**
+Mọi thao tác thay đổi, thêm mới bảng hoặc trường trong Database đều phải tuân thủ chuẩn Microservices và cấu trúc Master (`m_`) / Transaction (`t_`). Khóa chính phải luôn dùng UUID.
+*Chi tiết bắt buộc phải xem tại skill `database-schema-policy`.*
