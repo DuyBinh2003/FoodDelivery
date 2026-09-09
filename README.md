@@ -1,8 +1,12 @@
-# 🍔 Food Delivery System - Serverless Microservices
+# 🍔 Food Delivery System - Microservices
 
-Dự án cá nhân xây dựng hệ thống đặt đồ ăn (Food Delivery) theo kiến trúc **Serverless Microservices**. Dự án bám sát các tiêu chuẩn thực tế trên môi trường Cloud.
+Dự án cá nhân xây dựng hệ thống đặt đồ ăn (Food Delivery) theo kiến trúc **Microservices**. Dự án bám sát các tiêu chuẩn thực tế trên môi trường Cloud.
 
-**Tech Stack:** Node.js, PostgreSQL, API Gateway, AWS Lambda, Docker.
+**Tech Stack:**
+- **Frontend:** Next.js + TypeScript + Tailwind CSS
+- **Backend:** Node.js + NestJS + TypeScript
+- **Database & Cache:** PostgreSQL + Redis
+- **Infrastructure:** Docker
 
 ---
 
@@ -18,18 +22,17 @@ Xác định ranh giới Microservices. Trước khi viết code, cần xác đ�
 *   **Database Schema:** Thiết kế các bảng trên PostgreSQL. Phân chia tách schema (VD: `schema_user`, `schema_order`) để đảm bảo tính độc lập dữ liệu giữa các service trên cùng 1 instance.
 
 ### 2. Hạ tầng Local & Môi trường Dev
-Dockerize và cấu hình Serverless.
+Dockerize hệ thống.
 
-*   **Docker:** Sử dụng file `docker-compose.yml` để khởi chạy PostgreSQL cục bộ.
-*   **Giả lập Cloud:** Sử dụng Serverless Framework hoặc AWS SAM để giả lập API Gateway và chạy thử các hàm Lambda Node.js trên máy cá nhân.
-*   **Cấu trúc thư mục:** Thiết lập dạng **Monorepo** (dùng thư mục con đơn giản hoặc công cụ như Nx). Điều này giúp chia tách nhiều Lambda functions nhưng vẫn dùng chung các thư viện cốt lõi (Shared libraries) như logic kết nối DB hay middleware xử lý lỗi.
+*   **Docker:** Sử dụng file `docker-compose.yml` để khởi chạy đồng thời PostgreSQL, Redis, Frontend (Next.js) và Backend (NestJS) cục bộ.
+*   **Cấu trúc thư mục:** Thiết lập dạng **Monorepo** (dùng thư mục con đơn giản hoặc công cụ như Nx, Turborepo). Điều này giúp chia tách nhiều services nhưng vẫn dùng chung các cấu hình, kiểu dữ liệu (types) hoặc thư viện cốt lõi.
 
 ### 3. Phát triển Core APIs
-Tích hợp Lambda + Node.js + PostgreSQL.
+Tích hợp NestJS + PostgreSQL + Redis.
 
-*   **Định tuyến:** Cấu hình các route trên API Gateway (ví dụ: `POST /orders`, `GET /restaurants`). Mỗi route sẽ kích hoạt một Lambda function tương ứng.
-*   **Tương tác dữ liệu:** Dùng thư viện `pg` hoặc ORM (Prisma/TypeORM) trong Node.js để query PostgreSQL.
-*   **Tối ưu kiến trúc:** Thiết lập cơ chế quản lý connection hợp lý (ví dụ dùng Amazon RDS Proxy trong thực tế) để tránh làm sập connection pool của PostgreSQL khi Lambda scale up hàng ngàn instance.
+*   **Định tuyến:** Phát triển các RESTful APIs hoặc GraphQL endpoints trên NestJS.
+*   **Tương tác dữ liệu:** Dùng TypeORM hoặc Prisma trong NestJS để query PostgreSQL.
+*   **Caching:** Sử dụng Redis để cache dữ liệu tần suất truy cập cao (ví dụ: danh sách món ăn, thông tin nhà hàng) và quản lý session/rate limiting.
 
 ### 4. Xử lý Bất đồng bộ & Event-Driven
 Giao tiếp giữa các Services thông qua luồng dữ liệu mang tính sự kiện.
@@ -41,7 +44,7 @@ Giao tiếp giữa các Services thông qua luồng dữ liệu mang tính sự 
 ### 5. Tự động hóa CI/CD Pipeline
 Kiểm thử và triển khai tự động.
 
-*   **Công cụ:** Sử dụng GitHub Actions hoặc GitLab CI.
+*   **Công cụ:** Sử dụng GitHub Actions.
 *   **CI:** Tự động cài đặt dependencies, chạy linter và unit test cho code Node.js mỗi lần có commit mới.
 *   **CD:** Viết script tự động đóng gói và deploy toàn bộ API Gateway cùng Lambda functions lên môi trường Cloud.
 
