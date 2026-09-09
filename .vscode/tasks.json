@@ -38,6 +38,32 @@
                 "panel": "shared"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "DB: Migrate Up",
+            "type": "shell",
+            "command": "npm run migrate:up",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "DB: Reset",
+            "type": "shell",
+            "command": "npm run migrate:reset",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
         }
     ]
 }
