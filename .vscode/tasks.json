@@ -3,6 +3,7 @@
     "tasks": [
         {
             "label": "Docker: Build",
+            "detail": "Xây dựng các Docker container của dự án",
             "type": "shell",
             "command": "docker-compose build",
             "group": {
@@ -17,6 +18,7 @@
         },
         {
             "label": "Docker: Run",
+            "detail": "Khởi chạy toàn bộ hệ thống (Docker Compose)",
             "type": "shell",
             "command": "docker-compose up",
             "group": {
@@ -31,6 +33,7 @@
         },
         {
             "label": "Docker: Stop",
+            "detail": "Dừng và tắt toàn bộ các container đang chạy",
             "type": "shell",
             "command": "docker-compose down",
             "presentation": {
@@ -41,6 +44,7 @@
         },
         {
             "label": "DB: Migrate Up",
+            "detail": "Cập nhật cấu trúc (schema) của Database",
             "type": "shell",
             "command": "npm run migrate:up",
             "options": {
@@ -54,6 +58,7 @@
         },
         {
             "label": "DB: Reset",
+            "detail": "Xoá sạch dữ liệu và tạo lại Database từ đầu",
             "type": "shell",
             "command": "npm run migrate:reset",
             "options": {
@@ -67,6 +72,7 @@
         },
         {
             "label": "Git: Create PR",
+            "detail": "Tự động tạo nhánh và Draft PR từ Issue",
             "type": "process",
             "command": "powershell",
             "args": [
@@ -82,6 +88,7 @@
         },
         {
             "label": "CI: Frontend Lint",
+            "detail": "Kiểm tra lỗi mã nguồn (Lint) cho Frontend",
             "type": "shell",
             "command": "npm run lint",
             "options": {
@@ -91,6 +98,7 @@
         },
         {
             "label": "CI: Backend Lint",
+            "detail": "Kiểm tra lỗi mã nguồn (Lint) cho Backend",
             "type": "shell",
             "command": "npm run lint",
             "options": {
@@ -100,6 +108,7 @@
         },
         {
             "label": "CI: Backend Test",
+            "detail": "Chạy kiểm thử (Unit Tests) cho Backend",
             "type": "shell",
             "command": "npm run test",
             "options": {
@@ -109,6 +118,7 @@
         },
         {
             "label": "CI: Run All",
+            "detail": "Kiểm tra tổng thể toàn bộ dự án (Lint & Test)",
             "dependsOn": [
                 "CI: Frontend Lint",
                 "CI: Backend Lint",
