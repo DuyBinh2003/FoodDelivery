@@ -1,0 +1,99 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  # ==========================================
+  # 1. CONTINUOUS INTEGRATION (CI) - BACKEND
+  # ==========================================
+  ci-backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './backend/package-lock.json'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Run Tests
+        run: npm run test
+
+  # ==========================================
+  # 2. CONTINUOUS INTEGRATION (CI) - FRONTEND
+  # ==========================================
+  ci-frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json' # package-lock.json might not exist yet if you haven't run npm install in frontend
+
+      - name: Install Dependencies
+        run: npm install # Dùng npm install thay vì npm ci để tránh lỗi nếu chưa có package-lock.json
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Build Project
+        run: npm run build
+
+  # ==========================================
+  # 3. CONTINUOUS DEPLOYMENT (CD) - PLACEHOLDER
+  # ==========================================
+  cd-deploy:
+    name: Deploy to Staging/Production
+    # CD chỉ chạy khi code được push/merge vào nhánh main (không chạy khi mở PR)
+    # CD cũng cần chờ 2 jobs CI ở trên pass thì mới chạy (needs)
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    needs: [ci-backend, ci-frontend]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: CD Placeholder - Learning Section
+        run: |
+          echo "🚀 Bắt đầu quá trình Continuous Deployment (CD)..."
+          echo ""
+          echo "💡 [HƯỚNG DẪN DÀNH CHO BẠN]"
+          echo "Tại bước này, hệ thống CI (Continuous Integration) đã kiểm tra code của bạn thành công."
+          echo "Bây giờ là lúc CD đưa code này lên Server (Cloud, VPS, v.v.)."
+          echo ""
+          echo "Bạn có thể mở rộng phần này trong tương lai bằng các công việc như:"
+          echo "1. Đóng gói Docker (Docker build & push lên Docker Hub / AWS ECR)."
+          echo "2. SSH vào VPS bằng rsync hoặc ssh-action để kéo code mới về và chạy docker-compose up -d."
+          echo "3. Deploy Frontend lên Vercel thông qua Vercel CLI."
+          echo "4. Deploy Backend lên AWS Lambda/EC2."
+          echo ""
+          echo "Hiện tại step này chỉ in ra màn hình để bạn hiểu luồng làm việc. Chúc bạn học tốt!"
