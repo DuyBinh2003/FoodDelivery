@@ -79,6 +79,47 @@
                 "panel": "shared"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "CI: Frontend Lint",
+            "type": "shell",
+            "command": "npm run lint",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "presentation": { "reveal": "silent", "panel": "shared" }
+        },
+        {
+            "label": "CI: Backend Lint",
+            "type": "shell",
+            "command": "npm run lint",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "presentation": { "reveal": "silent", "panel": "shared" }
+        },
+        {
+            "label": "CI: Backend Test",
+            "type": "shell",
+            "command": "npm run test",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "presentation": { "reveal": "silent", "panel": "shared" }
+        },
+        {
+            "label": "CI: Run All",
+            "dependsOn": [
+                "CI: Frontend Lint",
+                "CI: Backend Lint",
+                "CI: Backend Test"
+            ],
+            "dependsOrder": "sequence",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
         }
     ]
 }

@@ -18,9 +18,5 @@
   "bugs": {
     "url": "https://github.com/DuyBinh2003/FoodDelivery/issues"
   },
-  "homepage": "https://github.com/DuyBinh2003/FoodDelivery#readme",
-  "devDependencies": {
-    "husky": "^9.1.7",
-    "lint-staged": "^17.5.0"
-  }
+  "homepage": "https://github.com/DuyBinh2003/FoodDelivery#readme"
 }
