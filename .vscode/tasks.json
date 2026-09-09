@@ -67,8 +67,13 @@
         },
         {
             "label": "Git: Create PR",
-            "type": "shell",
-            "command": "gh pr create --web",
+            "type": "process",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "gh issue list -a '@me'; $id = Read-Host 'Nhập ID của task để tạo PR (hoặc Enter để hủy)'; if ($id) { gh pr create --web --body \"Closes #$id\" }"
+            ],
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
