@@ -72,7 +72,7 @@
             "args": [
                 "-NoProfile",
                 "-Command",
-                "gh issue list -a '@me'; $id = Read-Host 'Nhập ID của task để tạo PR (hoặc Enter để hủy)'; if ($id) { Write-Host 'Đang tạo nhánh cho Issue...'; gh issue develop $id -c; Write-Host 'Đang tạo commit rỗng...'; git commit --allow-empty -m \"chore: start issue #$id\"; Write-Host 'Đang đẩy code lên remote...'; git push -u origin HEAD; Write-Host 'Đang tạo PR...'; gh pr create --web --body \"Closes #$id\" }"
+                "gh issue list -a '@me'; $id = Read-Host 'Nhập ID của task để tạo PR (hoặc Enter để hủy)'; if ($id) { Write-Host 'Đang tạo nhánh cho Issue...'; gh issue develop $id -c; Write-Host 'Đang tạo commit rỗng...'; git commit --allow-empty -m \"chore: start issue #$id\"; Write-Host 'Đang đẩy code lên remote...'; git push -u origin HEAD; Write-Host 'Đang tạo PR tự động...'; gh pr create --title \"Resolves #$id\" --body-file \".github/PULL_REQUEST_TEMPLATE.md\" }"
             ],
             "presentation": {
                 "reveal": "always",
