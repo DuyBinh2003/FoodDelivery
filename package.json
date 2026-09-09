@@ -1,0 +1,26 @@
+{
+  "name": "fooddelivery",
+  "version": "1.0.0",
+  "description": "Dự án cá nhân xây dựng hệ thống đặt đồ ăn (Food Delivery) theo kiến trúc **Microservices**. Dự án bám sát các tiêu chuẩn thực tế trên môi trường Cloud.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DuyBinh2003/FoodDelivery.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DuyBinh2003/FoodDelivery/issues"
+  },
+  "homepage": "https://github.com/DuyBinh2003/FoodDelivery#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.0"
+  }
+}
