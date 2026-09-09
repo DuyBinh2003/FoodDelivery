@@ -64,6 +64,16 @@
                 "panel": "shared"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "Git: Create PR",
+            "type": "shell",
+            "command": "gh pr create --web",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
         }
     ]
 }
