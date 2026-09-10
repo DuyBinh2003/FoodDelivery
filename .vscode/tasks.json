@@ -140,6 +140,22 @@
                 "panel": "shared"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "GithubCI",
+            "detail": "Khởi động lại CI check cho PR hiện hành bằng cách gán lại assignee",
+            "type": "process",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-Command",
+                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; $currentBranchName = git branch --show-current; if ($currentBranchName -eq 'develop') { Write-Host 'Bạn không thể chạy script này trên nhánh develop.'; exit 1; } $issueNumber = $currentBranchName.Split('-')[0]; Write-Host \"Đang kiểm tra PR cho nhánh $currentBranchName...\"; $prList = gh pr list -L 1000 --json headRefName,assignees | ConvertFrom-Json; $pr = $prList | Where-Object { $_.headRefName -match \"^$issueNumber-\" } | Select-Object -First 1; if (-not $pr) { Write-Host 'PR không tồn tại.'; exit 1; } $assignee = $pr.assignees[0].login; if (-not $assignee) { Write-Host 'Không tìm thấy assignee.'; exit 1; } gh pr edit $currentBranchName --remove-assignee $assignee; gh pr edit $currentBranchName --add-assignee $assignee; Write-Host \"Bắt đầu CI check cho PR của nhánh $currentBranchName.\"; exit 0;"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
         }
     ]
 }
