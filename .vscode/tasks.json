@@ -129,6 +129,16 @@
                 "reveal": "always",
                 "panel": "new"
             },
+        },
+        {
+            "label": "GitHub: Trigger Remote CI",
+            "detail": "Gửi yêu cầu kích hoạt chạy CI trên máy chủ GitHub cho nhánh hiện tại",
+            "type": "shell",
+            "command": "gh workflow run ci-cd.yml --ref $(git rev-parse --abbrev-ref HEAD) && echo '🚀 Đã gửi yêu cầu chạy CI lên GitHub!'",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
             "problemMatcher": []
         }
     ]
