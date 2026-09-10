@@ -72,15 +72,13 @@
         },
         {
             "label": "Git: Create PR",
-            "detail": "Tự động tạo nhánh (không dấu) và Draft PR từ Issue",
+            "detail": "Tự động tạo nhánh và Draft PR từ Issue",
             "type": "process",
             "command": "powershell",
             "args": [
                 "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                "${workspaceFolder}/.vscode/create-pr.ps1"
+                "-Command",
+                "gh issue list -a '@me'; $id = Read-Host 'Nhập ID của task để tạo PR (hoặc Enter để hủy)'; if ($id) { Write-Host 'Đang tạo nhánh cho Issue...'; gh issue develop $id -c; Write-Host 'Đang tạo commit rỗng...'; git commit --allow-empty -m \"chore: start issue #$id\"; Write-Host 'Đang đẩy code lên remote...'; git push -u origin HEAD; Write-Host 'Đang tạo PR tự động...'; gh pr create --title \"Resolves #$id\" --body-file \".github/PULL_REQUEST_TEMPLATE.md\" }"
             ],
             "presentation": {
                 "reveal": "always",
@@ -96,10 +94,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/frontend"
             },
-            "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
-            }
+            "presentation": { "reveal": "silent", "panel": "shared" }
         },
         {
             "label": "CI: Backend Lint",
@@ -109,10 +104,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/backend"
             },
-            "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
-            }
+            "presentation": { "reveal": "silent", "panel": "shared" }
         },
         {
             "label": "CI: Backend Test",
@@ -122,10 +114,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/backend"
             },
-            "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
-            }
+            "presentation": { "reveal": "silent", "panel": "shared" }
         },
         {
             "label": "CI: Run All",
