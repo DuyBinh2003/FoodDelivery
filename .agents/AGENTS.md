@@ -12,3 +12,11 @@ Mọi thao tác thay đổi code trên dự án này đều phải tuân thủ n
 **Quy chuẩn Database (Data Modeling)**
 Mọi thao tác thay đổi, thêm mới bảng hoặc trường trong Database đều phải tuân thủ chuẩn Microservices và cấu trúc Master (`m_`) / Transaction (`t_`). Khóa chính phải luôn dùng UUID.
 *Chi tiết bắt buộc phải xem tại skill `database-schema-policy`.*
+
+**Quy chuẩn Kiến trúc Backend (NestJS)**
+Toàn bộ mã nguồn Backend NestJS phải tuân thủ kiến trúc Modular. Controller chỉ để parse request (Thin Controller), logic nằm ở Service. DTO phải được validate chặt chẽ.
+*Chi tiết bắt buộc phải xem tại skill `nestjs-patterns`.*
+
+**Quy chuẩn Đặt tên (Naming Conventions)**
+Mọi file, biến, class, interface, database table/column đều phải được đặt tên đồng nhất theo quy tắc chuẩn chung.
+*Chi tiết bắt buộc phải xem tại skill `naming-convention-policy`.*
