@@ -31,6 +31,9 @@ services:
     container_name: food_delivery_backend
     ports:
       - "3001:3000" # Maps localhost:3001 to container:3000
+    volumes:
+      - ./backend:/app
+      - /app/node_modules # Giữ node_modules bên trong container không bị đè bởi host
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-food_delivery}

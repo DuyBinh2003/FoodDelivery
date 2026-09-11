@@ -31,7 +31,7 @@ Dockerize hệ thống.
 Tích hợp NestJS + PostgreSQL + Redis.
 
 *   **Định tuyến:** Phát triển các RESTful APIs hoặc GraphQL endpoints trên NestJS.
-*   **Tương tác dữ liệu:** Dùng TypeORM hoặc Prisma trong NestJS để query PostgreSQL.
+*   **Tương tác dữ liệu:** Dùng **TypeORM** (với `synchronize: false`) để query PostgreSQL, ánh xạ chính xác với các file migrate của `node-pg-migrate`. Cấu trúc source code (Modules, Entities, DTOs) tuân thủ chặt chẽ theo chuẩn `nestjs-patterns`.
 *   **Caching:** Sử dụng Redis để cache dữ liệu tần suất truy cập cao (ví dụ: danh sách món ăn, thông tin nhà hàng) và quản lý session/rate limiting.
 
 ### 4. Xử lý Bất đồng bộ & Event-Driven
