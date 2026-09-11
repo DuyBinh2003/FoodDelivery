@@ -28,6 +28,9 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Fix Oxlint Permissions (Windows to Linux issue)
+        run: chmod +x node_modules/.bin/oxlint || true
+
       - name: Run Linter
         run: npm run lint
 
