@@ -143,13 +143,13 @@
         },
         {
             "label": "GithubCI",
-            "detail": "Khởi động lại CI check cho PR hiện hành bằng cách gán lại assignee",
+            "detail": "Gửi yêu cầu thực thi workflow CI/CD cho nhánh hiện hành",
             "type": "process",
             "command": "powershell",
             "args": [
                 "-NoProfile",
                 "-Command",
-                "$env:LANG='C.UTF-8'; $env:LC_ALL='C.UTF-8'; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; $currentBranchName = git -c core.quotepath=false branch --show-current; if ($currentBranchName -eq 'develop') { Write-Host 'Bạn không thể chạy script này trên nhánh develop.'; exit 1; } $issueNumber = $currentBranchName.Split('-')[0]; Write-Host \"Đang kiểm tra PR cho nhánh $currentBranchName...\"; $prList = gh pr list -L 1000 --json headRefName,assignees | ConvertFrom-Json; $pr = $prList | Where-Object { $_.headRefName.StartsWith(\"$issueNumber-\") } | Select-Object -First 1; if (-not $pr) { Write-Host 'PR không tồn tại.'; exit 1; } $assignee = $pr.assignees[0].login; if (-not $assignee) { Write-Host 'Không tìm thấy assignee.'; exit 1; } gh pr edit $currentBranchName --remove-assignee $assignee; gh pr edit $currentBranchName --add-assignee $assignee; Write-Host \"Bắt đầu CI check cho PR của nhánh $currentBranchName.\"; exit 0;"
+                "$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; $env:LANG='C.UTF-8'; $env:LC_ALL='C.UTF-8'; $currentBranchName = git -c core.quotepath=false branch --show-current; if ($currentBranchName -eq 'develop') { Write-Host 'Bạn không thể chạy script này trên nhánh develop.'; exit 1; } Write-Host \"Đang gửi yêu cầu chạy CI cho nhánh: $currentBranchName...\"; gh workflow run ci-cd.yml --ref $currentBranchName; if ($LASTEXITCODE -eq 0) { Write-Host '🚀 Đã gửi yêu cầu chạy CI lên GitHub thành công!' } else { Write-Host '❌ Có lỗi xảy ra khi gửi yêu cầu chạy CI.' }"
             ],
             "presentation": {
                 "reveal": "always",
