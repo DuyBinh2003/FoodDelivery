@@ -1,21 +1,21 @@
 ---
 name: nestjs-patterns
-description: NestJS architecture patterns for modules, controllers, providers, DTO validation, guards, interceptors, config, and production-grade TypeScript backends. Use when building or reviewing a NestJS backend — modules, providers, DTO validation, guards, or interceptors.
+description: NestJS architecture patterns for modules, controllers, providers, DTO validation, guards, interceptors, config, TypeORM, and production-grade TypeScript backends. Use when building or reviewing a NestJS backend — modules, providers, DTO validation, guards, or interceptors.
 metadata:
   origin: ECC
 ---
 
 # NestJS Development Patterns
 
-Production-grade NestJS patterns for modular TypeScript backends.
+Production-grade NestJS patterns for modular TypeScript backends, adapted for the Food Delivery project's specific folder structure, conventions, and tech stack.
 
 ## When to Activate
 
 - Building NestJS APIs or services
 - Structuring modules, controllers, and providers
 - Adding DTO validation, guards, interceptors, or exception filters
-- Configuring environment-aware settings and database integrations
-- Testing NestJS units or HTTP endpoints
+- Configuring environment-aware settings and database integrations (TypeORM)
+- Testing NestJS units or HTTP endpoints (using Vitest)
 
 ## Project Structure
 
@@ -45,12 +45,13 @@ src/
 │       ├── users.controller.ts
 │       ├── users.module.ts
 │       └── users.service.ts
-└── prisma/ or database/
+migrations/
 ```
 
-- Keep domain code inside feature modules.
-- Put cross-cutting filters, decorators, guards, and interceptors in `common/`.
-- Keep DTOs close to the module that owns them.
+- Keep domain code inside feature modules (`src/modules/*`).
+- Put cross-cutting filters, decorators, guards, and interceptors in `src/common/`.
+- Keep DTOs and TypeORM Entities close to the module that owns them.
+- Migrations are managed via `node-pg-migrate` in the root `migrations/` folder of the backend.
 
 ## Bootstrap and Global Validation
 
@@ -82,6 +83,7 @@ bootstrap();
 
 ```ts
 @Module({
+  imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],
@@ -105,16 +107,20 @@ export class UsersController {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepo: UsersRepository) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepo: Repository<User>,
+  ) {}
 
   async create(dto: CreateUserDto) {
-    return this.usersRepo.create(dto);
+    const user = this.usersRepo.create(dto);
+    return this.usersRepo.save(user);
   }
 }
 ```
 
-- Controllers should stay thin: parse HTTP input, call a provider, return response DTOs.
-- Put business logic in injectable services, not controllers.
+- **Controllers should stay thin**: parse HTTP input, call a provider, return response DTOs.
+- **Put business logic in injectable services**, not controllers.
 - Export only the providers other modules genuinely need.
 
 ## DTOs and Validation
@@ -137,6 +143,29 @@ export class CreateUserDto {
 - Validate every request DTO with `class-validator`.
 - Use dedicated response DTOs or serializers instead of returning ORM entities directly.
 - Avoid leaking internal fields such as password hashes, tokens, or audit columns.
+
+## Database Entities (TypeORM)
+
+According to the project's **Database Schema Policy**:
+- Tables MUST follow Microservices standard and use Master (`m_`) or Transaction (`t_`) prefixes.
+- Primary Keys MUST always use `UUID`.
+
+```ts
+@Entity('m_users') // or 't_orders' depending on data type
+export class User {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  email: string;
+
+  @Column()
+  name: string;
+}
+```
+
+- Always define TypeORM entities according to these naming conventions.
+- Keep entity classes in `entities/` inside their respective module.
 
 ## Auth, Guards, and Request Context
 
@@ -197,12 +226,18 @@ ConfigModule.forRoot({
 ## Persistence and Transactions
 
 - Keep repository / ORM code behind providers that speak domain language.
-- For Prisma or TypeORM, isolate transactional workflows in services that own the unit of work.
+- Isolate TypeORM transactional workflows in services that own the unit of work.
 - Do not let controllers coordinate multi-step writes directly.
 
-## Testing
+## Testing (Vitest)
+
+The project relies on **Vitest** rather than Jest. Ensure testing syntax and imports conform to Vitest.
 
 ```ts
+import { Test } from '@nestjs/testing';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { describe, beforeAll, it, expect } from 'vitest';
+
 describe('UsersController', () => {
   let app: INestApplication;
 
@@ -214,6 +249,10 @@ describe('UsersController', () => {
     app = moduleRef.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
+  });
+  
+  it('should be defined', () => {
+    expect(app).toBeDefined();
   });
 });
 ```

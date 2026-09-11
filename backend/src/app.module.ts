@@ -7,12 +7,18 @@ import { AppService } from './app.service.js';
 import { getDatabaseConfig } from './config/database.config.js';
 import { getRedisConfig } from './config/redis.config.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+
+import configuration from './config/configuration.js';
+import { validate } from './config/validation.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      load: [configuration],
+      validate: validate,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -21,6 +27,7 @@ import { UsersModule } from './modules/users/users.module.js';
     }),
     CacheModule.registerAsync(getRedisConfig()),
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
