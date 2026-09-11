@@ -10,37 +10,64 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service.js';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { UserRole } from './entities/user.entity.js';
+import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from './dto/profile.dto.js';
 let UsersController = class UsersController {
     usersService;
-    cacheManager;
-    constructor(usersService, cacheManager) {
+    constructor(usersService) {
         this.usersService = usersService;
-        this.cacheManager = cacheManager;
     }
-    async testDbConnection() {
-        const count = await this.usersService.countUsers();
-        await this.cacheManager.set('test_key', `Total users: ${count}`, 10000);
-        const cachedValue = await this.cacheManager.get('test_key');
-        return {
-            message: 'Database and Redis connections are working!',
-            userCount: count,
-            redisCacheTest: cachedValue,
-        };
+    getProfile(user) {
+        if (user.role === UserRole.CUSTOMER) {
+            return this.usersService.getCustomerProfile(user.id);
+        }
+        if (user.role === UserRole.DRIVER) {
+            return this.usersService.getDriverProfile(user.id);
+        }
+        return user;
+    }
+    updateCustomerProfile(user, dto) {
+        return this.usersService.updateCustomerProfile(user.id, dto);
+    }
+    updateDriverProfile(user, dto) {
+        return this.usersService.updateDriverProfile(user.id, dto);
     }
 };
 __decorate([
-    Get('test-db'),
+    Get('profile'),
+    __param(0, CurrentUser()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], UsersController.prototype, "testDbConnection", null);
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getProfile", null);
+__decorate([
+    Roles(UserRole.CUSTOMER),
+    Put('profile/customer'),
+    __param(0, CurrentUser()),
+    __param(1, Body()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, UpdateCustomerProfileDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateCustomerProfile", null);
+__decorate([
+    Roles(UserRole.DRIVER),
+    Put('profile/driver'),
+    __param(0, CurrentUser()),
+    __param(1, Body()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, UpdateDriverProfileDto]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateDriverProfile", null);
 UsersController = __decorate([
     Controller('users'),
-    __param(1, Inject(CACHE_MANAGER)),
-    __metadata("design:paramtypes", [UsersService, Object])
+    UseGuards(JwtAuthGuard, RolesGuard),
+    __metadata("design:paramtypes", [UsersService])
 ], UsersController);
 export { UsersController };
 //# sourceMappingURL=users.controller.js.map

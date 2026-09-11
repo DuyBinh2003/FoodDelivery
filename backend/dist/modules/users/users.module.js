@@ -5,9 +5,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Module } from '@nestjs/common';
-import { UsersController } from './users.controller.js';
-import { UsersService } from './users.service.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsersService } from './users.service.js';
+import { UsersController } from './users.controller.js';
 import { User } from './entities/user.entity.js';
 import { CustomerProfile } from './entities/customer-profile.entity.js';
 import { DriverProfile } from './entities/driver-profile.entity.js';

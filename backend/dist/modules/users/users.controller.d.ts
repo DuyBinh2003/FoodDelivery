@@ -1,12 +1,9 @@
 import { UsersService } from './users.service.js';
-import type { Cache } from 'cache-manager';
+import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from './dto/profile.dto.js';
 export declare class UsersController {
     private readonly usersService;
-    private cacheManager;
-    constructor(usersService: UsersService, cacheManager: Cache);
-    testDbConnection(): Promise<{
-        message: string;
-        userCount: number;
-        redisCacheTest: unknown;
-    }>;
+    constructor(usersService: UsersService);
+    getProfile(user: any): any;
+    updateCustomerProfile(user: any, dto: UpdateCustomerProfileDto): Promise<import("./entities/customer-profile.entity.js").CustomerProfile>;
+    updateDriverProfile(user: any, dto: UpdateDriverProfileDto): Promise<import("./entities/driver-profile.entity.js").DriverProfile>;
 }

@@ -1,30 +1,37 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service.js';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
+import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { UserRole } from './entities/user.entity.js';
+import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from './dto/profile.dto.js';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) { }
+  constructor(private readonly usersService: UsersService) {}
 
-  @Get('test-db')
-  async testDbConnection() {
-    // Gọi DB qua service
-    const count = await this.usersService.countUsers();
+  @Get('profile')
+  getProfile(@CurrentUser() user: any) {
+    if (user.role === UserRole.CUSTOMER) {
+      return this.usersService.getCustomerProfile(user.id);
+    }
+    if (user.role === UserRole.DRIVER) {
+      return this.usersService.getDriverProfile(user.id);
+    }
+    return user; // Return basic user info for ADMIN
+  }
 
-    // Ghi cache Redis
-    await this.cacheManager.set('test_key', `Total users: ${count}`, 10000); // 10s
+  @Roles(UserRole.CUSTOMER)
+  @Put('profile/customer')
+  updateCustomerProfile(@CurrentUser() user: any, @Body() dto: UpdateCustomerProfileDto) {
+    return this.usersService.updateCustomerProfile(user.id, dto);
+  }
 
-    // Lấy lại từ cache Redis
-    const cachedValue = await this.cacheManager.get('test_key');
-
-    return {
-      message: 'Database and Redis connections are working!',
-      userCount: count,
-      redisCacheTest: cachedValue,
-    };
+  @Roles(UserRole.DRIVER)
+  @Put('profile/driver')
+  updateDriverProfile(@CurrentUser() user: any, @Body() dto: UpdateDriverProfileDto) {
+    return this.usersService.updateDriverProfile(user.id, dto);
   }
 }
