@@ -1,11 +1,11 @@
 import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
-import { UsersService } from './users.service.js';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
-import { RolesGuard } from '../../common/guards/roles.guard.js';
-import { Roles } from '../../common/decorators/roles.decorator.js';
-import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
-import { UserRole } from './entities/user.entity.js';
-import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from './dto/profile.dto.js';
+import { UsersService } from '@/modules/users/users.service.js';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '@/common/guards/roles.guard.js';
+import { Roles } from '@/common/decorators/roles.decorator.js';
+import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
+import { UserRole } from '@/modules/users/entities/user.entity.js';
+import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from '@/modules/users/dto/profile.dto.js';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
