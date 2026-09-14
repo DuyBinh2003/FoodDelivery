@@ -1,5 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
+import { Order } from '@/modules/orders/entities/order.entity.js';
+
 @Entity('t_order_item', { schema: 'schema_order' })
 export class OrderItem {
   @PrimaryGeneratedColumn('uuid')

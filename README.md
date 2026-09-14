@@ -18,7 +18,7 @@ Xác định ranh giới Microservices. Trước khi viết code, cần xác đ�
 *   **Phân chia Service:**
     *   **User Service:** Quản lý tài khoản, xác thực cho Customer, Driver và Admin.
     *   **Restaurant Service:** Quản lý thực đơn (Menu), giá cả, ca làm việc.
-    *   **Order Service:** Quản lý logic đặt món, state machine cho trạng thái đơn (Pending, Cooking, Delivering, Completed).
+    *   **Order Service:** Quản lý logic đặt món, state machine cho trạng thái đơn (Pending, Cooking, Delivering, Completed). (Xem [Tài liệu Order Service](./docs/order-service.md))
 *   **Database Schema:** Thiết kế các bảng trên PostgreSQL. Phân chia tách schema (VD: `schema_user`, `schema_order`) để đảm bảo tính độc lập dữ liệu giữa các service trên cùng 1 instance.
 
 ### 2. Hạ tầng Local & Môi trường Dev
@@ -38,8 +38,8 @@ Tích hợp NestJS + PostgreSQL + Redis.
 Giao tiếp giữa các Services thông qua luồng dữ liệu mang tính sự kiện.
 
 *   Khi khách chốt đơn, Order Service sẽ **không** gọi HTTP trực tiếp đến dịch vụ tìm tài xế. Thay vào đó, đẩy một sự kiện vào Message Broker.
-*   **Công nghệ:** Sử dụng Amazon SQS / SNS hoặc Amazon EventBridge.
-*   **Luồng xử lý:** Một hàm Lambda (Driver Service) sẽ lắng nghe hàng đợi này, lọc danh sách tài xế gần nhất và gửi thông báo, đảm bảo hệ thống không bị nghẽn nếu không tìm thấy tài xế ngay lập tức.
+*   **Công nghệ:** Sử dụng Amazon SQS / SNS hoặc Amazon EventBridge. (Trên local, dùng LocalStack).
+*   **Luồng xử lý:** Một hàm Lambda (hoặc Worker như Driver Service) sẽ lắng nghe hàng đợi này, lọc danh sách tài xế gần nhất và gửi thông báo, đảm bảo hệ thống không bị nghẽn nếu không tìm thấy tài xế ngay lập tức. (Xem [Tài liệu Driver Service](./docs/driver-service.md))
 
 ### 5. Tự động hóa CI/CD Pipeline
 Kiểm thử và triển khai tự động.
