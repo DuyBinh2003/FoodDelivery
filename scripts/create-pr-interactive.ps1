@@ -49,7 +49,7 @@ function Clear-Below {
     Write-Ansi "$ESC[J"
 }
 
-function Do-CarriageReturn {
+function Write-CarriageReturn {
     Write-Ansi "`r"
 }
 
@@ -85,7 +85,7 @@ function Read-SingleKey {
 # ------------------------------------------------------------
 # Helper: render the issue list menu
 # ------------------------------------------------------------
-function Render-Menu {
+function Format-Menu {
     param (
         [array]$Issues,
         [int]$SelectedIndex,
@@ -137,7 +137,7 @@ try {
     # --------------------------------------------------------
     Write-Host "Dang tai danh sach issue cua ban..." -ForegroundColor Cyan
 
-    $issuesJson = gh issue list --assignee "@me" --state open --limit 100 --json number,title | Out-String
+    $issuesJson = gh issue list --assignee "@me" --state open --limit 100 --json number, title | Out-String
 
     if ([string]::IsNullOrWhiteSpace($issuesJson)) {
         Write-Host "`nKhong tim thay issue nao duoc giao cho ban." -ForegroundColor Yellow
@@ -171,7 +171,7 @@ try {
         # Move cursor back to top of menu area
         if ($lastRenderLineCount -gt 0) {
             Move-CursorUp $lastRenderLineCount
-            Do-CarriageReturn
+            Write-CarriageReturn
             Clear-Below
         }
 
@@ -183,8 +183,8 @@ try {
             $scrollOffset = $selectedIndex - $pageSize + 1
         }
 
-        # Render menu
-        $menuLines = Render-Menu -Issues $issues -SelectedIndex $selectedIndex -PageSize $pageSize -ScrollOffset $scrollOffset
+        # Format menu
+        $menuLines = Format-Menu -Issues $issues -SelectedIndex $selectedIndex -PageSize $pageSize -ScrollOffset $scrollOffset
 
         foreach ($line in $menuLines) {
             [Console]::WriteLine($line)
@@ -212,7 +212,7 @@ try {
                 # Escape
                 Restore-Cursor
                 Move-CursorUp $lastRenderLineCount
-                Do-CarriageReturn
+                Write-CarriageReturn
                 Clear-Below
                 Write-Host "Da huy." -ForegroundColor Yellow
                 exit 0
@@ -224,7 +224,7 @@ try {
 
     # Clear menu area
     Move-CursorUp $lastRenderLineCount
-    Do-CarriageReturn
+    Write-CarriageReturn
     Clear-Below
 
     # --------------------------------------------------------
@@ -290,8 +290,8 @@ Closes #$issueId
 - [ ] Checked for lint/type errors
 "@
 
-    gh pr create --draft --title "$branchName" --body "$prBody"
-
+    $prUrl = gh pr create --draft --title "$branchName" --body "$prBody"
+    
     if ($LASTEXITCODE -ne 0) {
         throw "Khong the tao Pull Request."
     }
@@ -300,18 +300,22 @@ Closes #$issueId
     Write-Host "Draft PR da duoc tao thanh cong!" -ForegroundColor Green
     Write-Host "Issue : #$issueId" -ForegroundColor Green
     Write-Host "Branch: $branchName" -ForegroundColor Green
+    Write-Host "URL   : $prUrl" -ForegroundColor Green
     Write-Host "========================================" -ForegroundColor Green
+
+    # 11. Open in Browser
+    if ($prUrl) {
+        Start-Process $prUrl
+    }
 }
 catch {
     Restore-Cursor
-
     Write-Host "`n========================================" -ForegroundColor Red
     Write-Host "ERROR" -ForegroundColor Red
     Write-Host "========================================" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
-
     exit 1
 }
-finally {
-    Restore-Cursor
-}
+    finally {
+        Restore-Cursor
+    }
