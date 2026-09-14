@@ -16,13 +16,16 @@ interface OrderTrackerProps {
 
 export default function OrderTracker({ order }: OrderTrackerProps) {
   const [currentStatus, setCurrentStatus] = useState<OrderStatus>(order.status);
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(() => {
+    const startIndex = STATUS_FLOW.indexOf(order.status);
+    return startIndex >= 0 && startIndex < STATUS_FLOW.length - 1;
+  });
 
   useEffect(() => {
     const startIndex = STATUS_FLOW.indexOf(currentStatus);
     if (startIndex < 0 || startIndex >= STATUS_FLOW.length - 1) return;
 
-    setIsSimulating(true);
+
     const interval = setInterval(() => {
       setCurrentStatus((prev) => {
         const idx = STATUS_FLOW.indexOf(prev);
