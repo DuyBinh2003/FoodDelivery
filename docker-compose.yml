@@ -57,6 +57,9 @@ services:
     container_name: food_delivery_frontend
     ports:
       - "3000:3000" # Next.js default port
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
