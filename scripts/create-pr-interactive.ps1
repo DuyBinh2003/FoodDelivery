@@ -1,15 +1,13 @@
-```powershell
 # ============================================================
 # Git: Create PR
 #
-
 # Flow:
-#   1. Get issues assigned to current GitHub user
+#   1. Get open issues assigned to current GitHub user
 #   2. Select issue with Up / Down / Enter
 #   3. Create branch from selected issue
 #   4. Create empty commit
 #   5. Push branch
-#   6. Create Draft PR
+#   6. Create Draft PR and link it to the issue
 # ============================================================
 
 $ErrorActionPreference = "Stop"
@@ -23,14 +21,14 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------------------------------------------------------
-# Helper: restore cursor before exiting
+# Helper: restore cursor
 # ------------------------------------------------------------
 function Restore-Cursor {
     [Console]::CursorVisible = $true
 }
 
 # ------------------------------------------------------------
-# Helper: execute command and check exit code
+# Helper: run command and check exit code
 # ------------------------------------------------------------
 function Invoke-CommandChecked {
     param (
@@ -47,7 +45,11 @@ function Invoke-CommandChecked {
 
 try {
     # --------------------------------------------------------
-    # Get issues assigned to current user
+    # Get issues assigned to current GitHub user
+    #
+    # Out-String is important here:
+    # It ensures the complete JSON output from gh is passed
+    # to ConvertFrom-Json as one string.
     # --------------------------------------------------------
     Write-Host "Đang tải danh sách issue của bạn..." -ForegroundColor Cyan
 
@@ -63,7 +65,7 @@ try {
         exit 0
     }
 
-    $issues = @(ConvertFrom-Json $issuesJson)
+    $issues = @(ConvertFrom-Json $issuesJson | Sort-Object number -Descending)
 
     if ($issues.Count -eq 0) {
         Write-Host "`nKhông tìm thấy issue nào được giao cho bạn." -ForegroundColor Yellow
@@ -85,9 +87,16 @@ try {
         Write-Host "Chọn Issue:`n" -ForegroundColor Cyan
 
         for ($i = 0; $i -lt $issues.Count; $i++) {
-
             $issueNumber = $issues[$i].number
             $issueTitle = $issues[$i].title
+
+            # Keep every issue on exactly one terminal line.
+            # Truncate very long titles so they do not wrap.
+            $maxTitleLength = 100
+
+            if ($issueTitle.Length -gt $maxTitleLength) {
+                $issueTitle = $issueTitle.Substring(0, $maxTitleLength - 3) + "..."
+            }
 
             if ($i -eq $selectedIndex) {
                 Write-Host "> #$issueNumber - $issueTitle" -ForegroundColor Green
@@ -103,7 +112,6 @@ try {
         $key = [Console]::ReadKey($true)
 
         switch ($key.Key) {
-
             "UpArrow" {
                 if ($selectedIndex -gt 0) {
                     $selectedIndex--
@@ -240,4 +248,3 @@ catch {
 finally {
     Restore-Cursor
 }
-```
