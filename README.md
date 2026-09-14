@@ -10,6 +10,15 @@ Dự án cá nhân xây dựng hệ thống đặt đồ ăn (Food Delivery) the
 
 ---
 
+## 🏗️ Kiến Trúc Kết Nối (Frontend - Backend)
+Dự án áp dụng mô hình **Hybrid Pattern** để giao tiếp giữa Next.js và NestJS nhằm tối ưu hoá trải nghiệm:
+1. **Server-to-Server (RSC):** Fetch nội bộ cho trang Public (SEO tốt, tốc độ bàn thờ).
+2. **Client Fetching (CSR):** Dùng React Query cho các tương tác mutation (Form đặt hàng, Login).
+3. **WebSockets:** Bắt buộc dùng để tracking tài xế và nhận trạng thái đơn hàng thời gian thực.
+*(Chi tiết xem tại: [Tài liệu Kiến trúc Kết nối FE-BE](./docs/frontend-backend-connection.md))*
+
+---
+
 ## 🗺️ Lộ Trình Phát Triển
 
 ### 1. Thiết kế Hệ thống & Database

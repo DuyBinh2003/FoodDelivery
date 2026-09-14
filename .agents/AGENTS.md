@@ -17,9 +17,19 @@ Mọi thao tác thay đổi, thêm mới bảng hoặc trường trong Database 
 Toàn bộ mã nguồn Backend NestJS phải tuân thủ kiến trúc Modular. Controller chỉ để parse request (Thin Controller), logic nằm ở Service. DTO phải được validate chặt chẽ.
 *Chi tiết bắt buộc phải xem tại skill `nestjs-patterns`.*
 
+**Quy chuẩn Kiến trúc Frontend (Next.js)**
+Toàn bộ mã nguồn Frontend Next.js phải tuân thủ kiến trúc App Router và Feature-Based Design. Logic và UI phải được đóng gói gọn gàng theo từng tính năng (Feature).
+*Chi tiết bắt buộc phải xem tại skill `nextjs-patterns`.*
+
 **Quy chuẩn Đặt tên (Naming Conventions)**
 Mọi file, biến, class, interface, database table/column đều phải được đặt tên đồng nhất theo quy tắc chuẩn chung.
 *Chi tiết bắt buộc phải xem tại skill `naming-convention-policy`.*
 
 **Quy chuẩn Import (Import Conventions)**
 Luôn luôn sử dụng đường dẫn tuyệt đối với alias `@/` thay vì đường dẫn tương đối (`./` hoặc `../`) khi import bất kỳ file nào nội bộ trong project. Alias `@/` trỏ tới thư mục `src/`.
+
+**Quy chuẩn UI/UX**
+Mọi tác vụ liên quan đến thiết kế, xây dựng, review hoặc sửa đổi giao diện người dùng (UI/UX) đều bắt buộc phải tuân thủ và tham khảo skill `ui-ux-pro-max`. Cần áp dụng các best practice về màu sắc, typography, component và layout đã được chuẩn hoá trong skill này.
+
+**Quy chuẩn Viết Tài liệu (Documentation)**
+Bất cứ khi nào triển khai một tính năng logic (feature) mới, bắt buộc phải viết hoặc cập nhật tài liệu kỹ thuật chi tiết vào thư mục `docs/`. Tài liệu cần giải thích luồng hoạt động, API endpoints (nếu có), và cách hệ thống xử lý logic.
