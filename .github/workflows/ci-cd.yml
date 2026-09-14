@@ -3,8 +3,8 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  # pull_request:
+  #   branches: [ main, master ]
   workflow_dispatch: # Chỉ cho phép chạy thủ công trên GitHub nếu cần
 
 jobs:
