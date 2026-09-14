@@ -20,3 +20,6 @@ Toàn bộ mã nguồn Backend NestJS phải tuân thủ kiến trúc Modular. C
 **Quy chuẩn Đặt tên (Naming Conventions)**
 Mọi file, biến, class, interface, database table/column đều phải được đặt tên đồng nhất theo quy tắc chuẩn chung.
 *Chi tiết bắt buộc phải xem tại skill `naming-convention-policy`.*
+
+**Quy chuẩn Import (Import Conventions)**
+Luôn luôn sử dụng đường dẫn tuyệt đối với alias `@/` thay vì đường dẫn tương đối (`./` hoặc `../`) khi import bất kỳ file nào nội bộ trong project. Alias `@/` trỏ tới thư mục `src/`.
