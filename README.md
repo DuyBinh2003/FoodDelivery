@@ -5,7 +5,7 @@ Dự án cá nhân xây dựng hệ thống đặt đồ ăn (Food Delivery) the
 **Tech Stack:**
 - **Frontend:** Next.js + TypeScript + Tailwind CSS
 - **Backend:** Node.js + NestJS + TypeScript
-- **Database & Cache:** PostgreSQL + Redis
+- **Database & Cache:** PostgreSQL + Redis + Elasticsearch
 - **Infrastructure:** Docker
 
 ---
@@ -65,3 +65,4 @@ Kiểm thử và triển khai tự động.
 *   **Bảo mật:** Dùng API Gateway Lambda Authorizer (xác thực bằng JWT) để phân quyền chặt chẽ giữa 3 role: Người đặt, Tài xế và Admin.
 *   **Giới hạn tài nguyên (Rate Limiting):** Cấu hình Usage Plans trên API Gateway để chặn spam request, bảo vệ hệ thống khỏi DDoS.
 *   **Observability (Giám sát):** Tích hợp CloudWatch và AWS X-Ray để theo dõi log tập trung. Cho phép nhìn được một request đi từ `API Gateway -> Lambda -> PostgreSQL` mất chính xác bao nhiêu mili-giây.
+*   **Tìm kiếm & Lọc thông minh (Smart Search):** Tích hợp engine tìm kiếm Elasticsearch để tìm kiếm full-text nhà hàng/món ăn, filter linh hoạt theo đánh giá, khoảng cách, freeship, và phân loại (category).

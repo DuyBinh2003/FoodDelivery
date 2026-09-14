@@ -8,7 +8,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from '@/app.service.js';
+import { AppService } from './app.service.js';
 let AppController = class AppController {
     appService;
     constructor(appService) {

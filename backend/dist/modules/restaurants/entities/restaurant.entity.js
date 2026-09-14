@@ -7,13 +7,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Category } from './category.entity.js';
 let Restaurant = class Restaurant {
     id;
     owner_id;
     name;
     address;
     is_active;
+    lat;
+    lon;
+    rating;
+    categories;
     created_at;
     updated_at;
     is_deleted;
@@ -38,6 +43,27 @@ __decorate([
     Column({ type: 'boolean', default: true }),
     __metadata("design:type", Boolean)
 ], Restaurant.prototype, "is_active", void 0);
+__decorate([
+    Column({ type: 'numeric', precision: 10, scale: 8, nullable: true }),
+    __metadata("design:type", Number)
+], Restaurant.prototype, "lat", void 0);
+__decorate([
+    Column({ type: 'numeric', precision: 11, scale: 8, nullable: true }),
+    __metadata("design:type", Number)
+], Restaurant.prototype, "lon", void 0);
+__decorate([
+    Column({ type: 'numeric', precision: 3, scale: 2, default: 0 }),
+    __metadata("design:type", Number)
+], Restaurant.prototype, "rating", void 0);
+__decorate([
+    ManyToMany(() => Category),
+    JoinTable({
+        name: 'm_restaurant_category',
+        joinColumn: { name: 'restaurant_id', referencedColumnName: 'id' },
+        inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' }
+    }),
+    __metadata("design:type", Array)
+], Restaurant.prototype, "categories", void 0);
 __decorate([
     CreateDateColumn({ type: 'timestamptz' }),
     __metadata("design:type", Date)

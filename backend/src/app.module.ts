@@ -15,6 +15,7 @@ import { DriversModule } from '@/modules/drivers/drivers.module.js';
 
 import configuration from '@/config/configuration.js';
 import { validate } from '@/config/validation.js';
+import { SearchModule } from '@/modules/search/search.module.js';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { validate } from '@/config/validation.js';
     MessagingModule,
     OrdersModule,
     DriversModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

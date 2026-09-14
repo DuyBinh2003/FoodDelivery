@@ -23,6 +23,20 @@ services:
       - redisdata:/data
     restart: unless-stopped
 
+  # Search Engine
+  elasticsearch:
+    image: elasticsearch:8.10.2
+    container_name: food_delivery_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    restart: unless-stopped
+
   # Backend Service (NestJS)
   backend:
     build:
@@ -43,9 +57,11 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - SQS_ENDPOINT=http://localstack:4566
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
     depends_on:
       - db
       - redis
+      - elasticsearch
       - localstack
     restart: unless-stopped
 
@@ -87,3 +103,4 @@ volumes:
   pgdata:
   redisdata:
   localstackdata:
+  esdata:

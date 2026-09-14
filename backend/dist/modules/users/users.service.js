@@ -13,9 +13,9 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { User, UserRole } from '@/modules/users/entities/user.entity.js';
-import { CustomerProfile } from '@/modules/users/entities/customer-profile.entity.js';
-import { DriverProfile, DriverStatus } from '@/modules/users/entities/driver-profile.entity.js';
+import { User, UserRole } from './entities/user.entity.js';
+import { CustomerProfile } from './entities/customer-profile.entity.js';
+import { DriverProfile, DriverStatus } from './entities/driver-profile.entity.js';
 let UsersService = class UsersService {
     userRepository;
     customerProfileRepository;
