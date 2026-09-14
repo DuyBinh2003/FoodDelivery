@@ -1,9 +1,16 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
+import { DataSource } from 'typeorm';
+import { Category } from '@/modules/restaurants/entities/category.entity.js';
+import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
+import { MenuItem } from '@/modules/restaurants/entities/menu-item.entity.js';
 
 @Injectable()
 export class SearchService implements OnModuleInit {
-  constructor(private readonly elasticsearchService: ElasticsearchService) {}
+  constructor(
+    private readonly elasticsearchService: ElasticsearchService,
+    private readonly dataSource: DataSource
+  ) {}
 
   async onModuleInit() {
     await this.createIndices();
@@ -168,5 +175,74 @@ export class SearchService implements OnModuleInit {
     });
 
     return hits.hits.map(hit => hit._source);
+  }
+
+  // Fetch all categories from Postgres
+  async getCategories() {
+    const categoryRepo = this.dataSource.getRepository(Category);
+    return categoryRepo.find({ where: { is_deleted: false } });
+  }
+
+  // Fetch all tags from Postgres
+  async getTags() {
+    const tagRepo = this.dataSource.getRepository(Tag);
+    return tagRepo.find();
+  }
+
+  // Search menu: get restaurants from ES, then fetch menu items from Postgres
+  async searchMenu(params: {
+    q?: string;
+    lat?: number;
+    lon?: number;
+    radius?: string;
+    rating?: number;
+    categories?: string[];
+    tags?: string[];
+    freeship?: boolean;
+    freeshipDistanceThreshold?: number;
+  }) {
+    // 1. Get matching restaurants from ES
+    const restaurants = await this.searchRestaurants(params) as any[];
+
+    if (!restaurants || restaurants.length === 0) {
+      return [];
+    }
+
+    const restaurantIds = restaurants.map(r => r.id);
+
+    // 2. Fetch menu items for these restaurants from DB
+    const menuItemRepo = this.dataSource.getRepository(MenuItem);
+    
+    // We should also apply the keyword and tag filters to the menu items
+    const qb = menuItemRepo.createQueryBuilder('item')
+      .leftJoinAndSelect('item.tags', 'tag')
+      .where('item.restaurant_id IN (:...restaurantIds)', { restaurantIds })
+      .andWhere('item.is_deleted = :isDeleted', { isDeleted: false });
+
+    // Filter menu items by name if search keyword is provided
+    if (params.q) {
+      qb.andWhere('item.name ILIKE :q', { q: `%${params.q}%` });
+    }
+
+    // Filter menu items by tags if tag filter is applied
+    if (params.tags && params.tags.length > 0) {
+      qb.andWhere('tag.id IN (:...tags)', { tags: params.tags });
+    }
+
+    const menuItems = await qb.getMany();
+
+    // 3. Format response: [{ restaurant: 'Name', items: [...] }]
+    const result = restaurants.map(restaurant => {
+      const itemsForRestaurant = menuItems.filter(item => item.restaurant_id === restaurant.id);
+      return {
+        restaurant: restaurant.name,
+        items: itemsForRestaurant.map(item => ({
+          ...item,
+          restaurant_name: restaurant.name
+        }))
+      };
+    }).filter(r => r.items.length > 0); // Only return restaurants that have matching items
+
+    return result;
   }
 }

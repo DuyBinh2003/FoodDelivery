@@ -8,7 +8,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
-import { Tag } from './tag.entity.js';
+import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
 let MenuItem = class MenuItem {
     id;
     restaurant_id;

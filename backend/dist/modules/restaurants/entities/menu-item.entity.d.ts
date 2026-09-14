@@ -1,4 +1,4 @@
-import { Tag } from './tag.entity.js';
+import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
 export declare class MenuItem {
     id: string;
     restaurant_id: string;
