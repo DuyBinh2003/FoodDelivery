@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { User, UserRole } from './entities/user.entity.js';
-import { CustomerProfile } from './entities/customer-profile.entity.js';
-import { DriverProfile, DriverStatus } from './entities/driver-profile.entity.js';
-import { RegisterDto } from '../auth/dto/auth.dto.js';
-import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from './dto/profile.dto.js';
+import { User, UserRole } from '@/modules/users/entities/user.entity.js';
+import { CustomerProfile } from '@/modules/users/entities/customer-profile.entity.js';
+import { DriverProfile, DriverStatus } from '@/modules/users/entities/driver-profile.entity.js';
+import { RegisterDto } from '@/modules/auth/dto/auth.dto.js';
+import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from '@/modules/users/dto/profile.dto.js';
 
 @Injectable()
 export class UsersService {
