@@ -1,14 +1,16 @@
+$env:LANG = 'C.UTF-8'
+$env:LC_ALL = 'C.UTF-8'
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "Đang tải danh sách issue của bạn..." -ForegroundColor Cyan
-$issuesJson = gh issue list -a '@me' --json number, title
-if (-not $issuesJson) {
+$issuesJson = gh issue list -a '@me' --json number,title
+if ([string]::IsNullOrWhiteSpace($issuesJson)) {
     Write-Host "Không tìm thấy issue nào được giao cho bạn."
     exit 0
 }
 
-$issues = $issuesJson | ConvertFrom-Json
+$issues = @($issuesJson | ConvertFrom-Json)
 
 if ($issues.Count -eq 0) {
     Write-Host "Không tìm thấy issue nào được giao cho bạn."
