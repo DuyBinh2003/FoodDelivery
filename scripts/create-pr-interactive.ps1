@@ -3,11 +3,16 @@
 #
 # Flow:
 #   1. Get open issues assigned to current GitHub user
-#   2. Select issue with Up / Down / Enter
+#   2. Select issue with Up / Down / Enter (arrow-key menu)
 #   3. Create branch from selected issue
 #   4. Create empty commit
 #   5. Push branch
 #   6. Create Draft PR and link it to the issue
+#
+# Compatibility:
+#   - VS Code integrated terminal (pwsh 7+)
+#   - Windows Terminal / ConEmu / plain pwsh
+#   - Uses $host.UI.RawUI.ReadKey + ANSI escapes for rendering
 # ============================================================
 
 $ErrorActionPreference = "Stop"
@@ -20,11 +25,39 @@ $env:LC_ALL = "C.UTF-8"
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+# Enable ANSI / VT100 sequences (pwsh 7+ / Windows 10+)
+try { $PSStyle.OutputRendering = 'Ansi' } catch {}
+
 # ------------------------------------------------------------
-# Helper: restore cursor
+# ANSI escape helpers
+# ------------------------------------------------------------
+$ESC = [char]27
+
+function Write-Ansi {
+    param ([string]$Text)
+    [Console]::Write($Text)
+}
+
+function Move-CursorUp {
+    param ([int]$Lines)
+    if ($Lines -gt 0) {
+        Write-Ansi "$ESC[$($Lines)A"
+    }
+}
+
+function Clear-Below {
+    Write-Ansi "$ESC[J"
+}
+
+function Do-CarriageReturn {
+    Write-Ansi "`r"
+}
+
+# ------------------------------------------------------------
+# Helper: restore cursor visibility
 # ------------------------------------------------------------
 function Restore-Cursor {
-    [Console]::CursorVisible = $true
+    try { [Console]::CursorVisible = $true } catch {}
 }
 
 # ------------------------------------------------------------
@@ -35,130 +68,181 @@ function Invoke-CommandChecked {
         [string]$Command,
         [string[]]$Arguments
     )
-
     & $Command @Arguments
-
     if ($LASTEXITCODE -ne 0) {
         throw "Command failed: $Command $($Arguments -join ' ')"
     }
 }
 
+# ------------------------------------------------------------
+# Helper: read a single key (works in VS Code terminal)
+# ------------------------------------------------------------
+function Read-SingleKey {
+    $opts = [System.Management.Automation.Host.ReadKeyOptions]::NoEcho -bor [System.Management.Automation.Host.ReadKeyOptions]::IncludeKeyDown
+    return $host.UI.RawUI.ReadKey($opts)
+}
+
+# ------------------------------------------------------------
+# Helper: render the issue list menu
+# ------------------------------------------------------------
+function Render-Menu {
+    param (
+        [array]$Issues,
+        [int]$SelectedIndex,
+        [int]$PageSize,
+        [int]$ScrollOffset
+    )
+
+    $lines = @()
+    $lines += "$ESC[36mGit: Create PR$ESC[0m"
+    $lines += ""
+    $lines += "$ESC[36mChon Issue:$ESC[0m"
+    $lines += ""
+
+    $visibleEnd = [Math]::Min($ScrollOffset + $PageSize, $Issues.Count)
+
+    if ($ScrollOffset -gt 0) {
+        $lines += "$ESC[90m  ... ($ScrollOffset issue phia tren)$ESC[0m"
+    }
+
+    for ($i = $ScrollOffset; $i -lt $visibleEnd; $i++) {
+        $num = $Issues[$i].number
+        $title = $Issues[$i].title
+        $maxLen = 80
+        if ($title.Length -gt $maxLen) {
+            $title = $title.Substring(0, $maxLen - 3) + "..."
+        }
+        if ($i -eq $SelectedIndex) {
+            $lines += "$ESC[32m> #$num - $title$ESC[0m"
+        }
+        else {
+            $lines += "  #$num - $title"
+        }
+    }
+
+    if ($visibleEnd -lt $Issues.Count) {
+        $remaining = $Issues.Count - $visibleEnd
+        $lines += "$ESC[90m  ... ($remaining issue phia duoi)$ESC[0m"
+    }
+
+    $lines += ""
+    $lines += "$ESC[90mUp/Down: Di chuyen    Enter: Chon    Esc: Huy$ESC[0m"
+
+    return $lines
+}
+
 try {
     # --------------------------------------------------------
     # Get issues assigned to current GitHub user
-    #
-    # Out-String is important here:
-    # It ensures the complete JSON output from gh is passed
-    # to ConvertFrom-Json as one string.
     # --------------------------------------------------------
-    Write-Host "Đang tải danh sách issue của bạn..." -ForegroundColor Cyan
+    Write-Host "Dang tai danh sach issue cua ban..." -ForegroundColor Cyan
 
-    $issuesJson = gh issue list `
-        --assignee "@me" `
-        --state open `
-        --limit 100 `
-        --json number,title |
-        Out-String
+    $issuesJson = gh issue list --assignee "@me" --state open --limit 100 --json number,title | Out-String
 
     if ([string]::IsNullOrWhiteSpace($issuesJson)) {
-        Write-Host "`nKhông tìm thấy issue nào được giao cho bạn." -ForegroundColor Yellow
+        Write-Host "`nKhong tim thay issue nao duoc giao cho ban." -ForegroundColor Yellow
         exit 0
     }
 
     $issues = @(ConvertFrom-Json $issuesJson | Sort-Object number -Descending)
 
     if ($issues.Count -eq 0) {
-        Write-Host "`nKhông tìm thấy issue nào được giao cho bạn." -ForegroundColor Yellow
+        Write-Host "`nKhong tim thay issue nao duoc giao cho ban." -ForegroundColor Yellow
         exit 0
     }
 
     # --------------------------------------------------------
-    # Interactive issue selection
+    # Interactive issue selection (arrow-key menu)
     # --------------------------------------------------------
     $selectedIndex = 0
     $done = $false
+    $pageSize = [Math]::Min(15, $issues.Count)
+    $scrollOffset = 0
+    $lastRenderLineCount = 0
 
-    [Console]::CursorVisible = $false
+    try { [Console]::CursorVisible = $false } catch {}
+
+    # Clear the "loading" message
+    Write-Ansi "`r$ESC[2K"
+    Move-CursorUp 1
+    Write-Ansi "$ESC[2K"
 
     while (-not $done) {
-        Clear-Host
-
-        Write-Host "Git: Create PR`n" -ForegroundColor Cyan
-        Write-Host "Chọn Issue:`n" -ForegroundColor Cyan
-
-        for ($i = 0; $i -lt $issues.Count; $i++) {
-            $issueNumber = $issues[$i].number
-            $issueTitle = $issues[$i].title
-
-            # Keep every issue on exactly one terminal line.
-            # Truncate very long titles so they do not wrap.
-            $maxTitleLength = 100
-
-            if ($issueTitle.Length -gt $maxTitleLength) {
-                $issueTitle = $issueTitle.Substring(0, $maxTitleLength - 3) + "..."
-            }
-
-            if ($i -eq $selectedIndex) {
-                Write-Host "> #$issueNumber - $issueTitle" -ForegroundColor Green
-            }
-            else {
-                Write-Host "  #$issueNumber - $issueTitle"
-            }
+        # Move cursor back to top of menu area
+        if ($lastRenderLineCount -gt 0) {
+            Move-CursorUp $lastRenderLineCount
+            Do-CarriageReturn
+            Clear-Below
         }
 
-        Write-Host "`n↑ / ↓ : Navigate    Enter : Select    Esc : Cancel" `
-            -ForegroundColor DarkGray
+        # Ensure selectedIndex is visible
+        if ($selectedIndex -lt $scrollOffset) {
+            $scrollOffset = $selectedIndex
+        }
+        elseif ($selectedIndex -ge ($scrollOffset + $pageSize)) {
+            $scrollOffset = $selectedIndex - $pageSize + 1
+        }
 
-        $key = [Console]::ReadKey($true)
+        # Render menu
+        $menuLines = Render-Menu -Issues $issues -SelectedIndex $selectedIndex -PageSize $pageSize -ScrollOffset $scrollOffset
 
-        switch ($key.Key) {
-            "UpArrow" {
-                if ($selectedIndex -gt 0) {
-                    $selectedIndex--
-                }
+        foreach ($line in $menuLines) {
+            [Console]::WriteLine($line)
+        }
+
+        $lastRenderLineCount = $menuLines.Count
+
+        # Read key
+        $keyInfo = Read-SingleKey
+
+        switch ($keyInfo.VirtualKeyCode) {
+            38 {
+                # UpArrow
+                if ($selectedIndex -gt 0) { $selectedIndex-- }
             }
-
-            "DownArrow" {
-                if ($selectedIndex -lt ($issues.Count - 1)) {
-                    $selectedIndex++
-                }
+            40 {
+                # DownArrow
+                if ($selectedIndex -lt ($issues.Count - 1)) { $selectedIndex++ }
             }
-
-            "Enter" {
+            13 {
+                # Enter
                 $done = $true
             }
-
-            "Escape" {
+            27 {
+                # Escape
                 Restore-Cursor
-                Clear-Host
-                Write-Host "Đã hủy." -ForegroundColor Yellow
+                Move-CursorUp $lastRenderLineCount
+                Do-CarriageReturn
+                Clear-Below
+                Write-Host "Da huy." -ForegroundColor Yellow
                 exit 0
             }
         }
     }
 
     Restore-Cursor
-    Clear-Host
+
+    # Clear menu area
+    Move-CursorUp $lastRenderLineCount
+    Do-CarriageReturn
+    Clear-Below
 
     # --------------------------------------------------------
     # Selected issue
     # --------------------------------------------------------
     $selectedIssue = $issues[$selectedIndex]
-
     $issueId = $selectedIssue.number
     $issueTitle = $selectedIssue.title
 
-    Write-Host "Issue được chọn:" -ForegroundColor Cyan
+    Write-Host "Issue duoc chon:" -ForegroundColor Cyan
     Write-Host "#$issueId - $issueTitle`n" -ForegroundColor Green
 
     # --------------------------------------------------------
     # Create branch from issue
     # --------------------------------------------------------
-    Write-Host "Đang tạo branch cho Issue #$issueId..." -ForegroundColor Cyan
+    Write-Host "Dang tao branch cho Issue #$issueId..." -ForegroundColor Cyan
 
-    Invoke-CommandChecked `
-        "gh" `
-        @("issue", "develop", "$issueId", "-c")
+    Invoke-CommandChecked "gh" @("issue", "develop", "$issueId", "-c")
 
     # --------------------------------------------------------
     # Get current branch
@@ -166,7 +250,7 @@ try {
     $branchName = (git branch --show-current).Trim()
 
     if ([string]::IsNullOrWhiteSpace($branchName)) {
-        throw "Không xác định được branch hiện tại."
+        throw "Khong xac dinh duoc branch hien tai."
     }
 
     Write-Host "Branch: $branchName" -ForegroundColor Green
@@ -174,35 +258,21 @@ try {
     # --------------------------------------------------------
     # Create empty commit
     # --------------------------------------------------------
-    Write-Host "`nĐang tạo commit..." -ForegroundColor Cyan
+    Write-Host "`nDang tao commit..." -ForegroundColor Cyan
 
-    Invoke-CommandChecked `
-        "git" `
-        @(
-            "commit",
-            "--allow-empty",
-            "-m",
-            "chore: start issue #$issueId"
-        )
+    Invoke-CommandChecked "git" @("commit", "--allow-empty", "-m", "chore: start issue #$issueId")
 
     # --------------------------------------------------------
     # Push branch
     # --------------------------------------------------------
-    Write-Host "`nĐang push branch lên remote..." -ForegroundColor Cyan
+    Write-Host "`nDang push branch len remote..." -ForegroundColor Cyan
 
-    Invoke-CommandChecked `
-        "git" `
-        @(
-            "push",
-            "-u",
-            "origin",
-            "HEAD"
-        )
+    Invoke-CommandChecked "git" @("push", "-u", "origin", "HEAD")
 
     # --------------------------------------------------------
     # Create Draft PR
     # --------------------------------------------------------
-    Write-Host "`nĐang tạo Draft PR..." -ForegroundColor Cyan
+    Write-Host "`nDang tao Draft PR..." -ForegroundColor Cyan
 
     $prBody = @"
 ## Related Issue
@@ -220,17 +290,14 @@ Closes #$issueId
 - [ ] Checked for lint/type errors
 "@
 
-    gh pr create `
-        --draft `
-        --title "$branchName" `
-        --body "$prBody"
+    gh pr create --draft --title "$branchName" --body "$prBody"
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Không thể tạo Pull Request."
+        throw "Khong the tao Pull Request."
     }
 
     Write-Host "`n========================================" -ForegroundColor Green
-    Write-Host "Draft PR đã được tạo thành công!" -ForegroundColor Green
+    Write-Host "Draft PR da duoc tao thanh cong!" -ForegroundColor Green
     Write-Host "Issue : #$issueId" -ForegroundColor Green
     Write-Host "Branch: $branchName" -ForegroundColor Green
     Write-Host "========================================" -ForegroundColor Green
