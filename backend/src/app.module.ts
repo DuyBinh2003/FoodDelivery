@@ -28,6 +28,7 @@ import { validate } from '@/config/validation.js';
     CacheModule.registerAsync(getRedisConfig()),
     UsersModule,
     AuthModule,
+    RestaurantsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

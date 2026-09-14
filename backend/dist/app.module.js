@@ -14,6 +14,7 @@ import { getDatabaseConfig } from './config/database.config.js';
 import { getRedisConfig } from './config/redis.config.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { RestaurantsModule } from './modules/restaurants/restaurants.module.js';
 import configuration from './config/configuration.js';
 import { validate } from './config/validation.js';
 let AppModule = class AppModule {
@@ -35,6 +36,7 @@ AppModule = __decorate([
             CacheModule.registerAsync(getRedisConfig()),
             UsersModule,
             AuthModule,
+            RestaurantsModule,
         ],
         controllers: [AppController],
         providers: [AppService],
