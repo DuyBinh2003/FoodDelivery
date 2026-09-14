@@ -55,14 +55,15 @@ try {
         --assignee "@me" `
         --state open `
         --limit 100 `
-        --json number,title
+        --json number,title |
+        Out-String
 
     if ([string]::IsNullOrWhiteSpace($issuesJson)) {
         Write-Host "`nKhông tìm thấy issue nào được giao cho bạn." -ForegroundColor Yellow
         exit 0
     }
 
-    $issues = @($issuesJson | ConvertFrom-Json)
+    $issues = @(ConvertFrom-Json $issuesJson)
 
     if ($issues.Count -eq 0) {
         Write-Host "`nKhông tìm thấy issue nào được giao cho bạn." -ForegroundColor Yellow
