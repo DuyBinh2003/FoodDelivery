@@ -2,7 +2,7 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "Đang tải danh sách issue của bạn..." -ForegroundColor Cyan
-$issuesJson = gh issue list -a '@me' --json number,title
+$issuesJson = gh issue list -a '@me' --json number, title
 if (-not $issuesJson) {
     Write-Host "Không tìm thấy issue nào được giao cho bạn."
     exit 0
@@ -28,7 +28,8 @@ while (-not $done) {
     for ($i = 0; $i -lt $issues.Count; $i++) {
         if ($i -eq $selectedIndex) {
             Write-Host "> $($issues[$i].number): $($issues[$i].title)" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "  $($issues[$i].number): $($issues[$i].title)"
         }
     }
@@ -36,11 +37,14 @@ while (-not $done) {
     $key = [console]::ReadKey($true)
     if ($key.Key -eq 'UpArrow') {
         if ($selectedIndex -gt 0) { $selectedIndex-- }
-    } elseif ($key.Key -eq 'DownArrow') {
+    }
+    elseif ($key.Key -eq 'DownArrow') {
         if ($selectedIndex -lt ($issues.Count - 1)) { $selectedIndex++ }
-    } elseif ($key.Key -eq 'Enter') {
+    }
+    elseif ($key.Key -eq 'Enter') {
         $done = $true
-    } elseif ($key.Key -eq 'Escape') {
+    }
+    elseif ($key.Key -eq 'Escape') {
         [console]::CursorVisible = $true
         Write-Host "`nĐã hủy."
         exit 0
@@ -53,13 +57,13 @@ Clear-Host
 $selectedIssue = $issues[$selectedIndex]
 $id = $selectedIssue.number
 
-Write-Host "Đã chọn Issue #$id: $($selectedIssue.title)" -ForegroundColor Yellow
+Write-Host "Đã chọn Issue #${id}: $($selectedIssue.title)" -ForegroundColor Yellow
 
-Write-Host "Đang tạo nhánh cho Issue #$id..."
+Write-Host "Đang tạo nhánh cho Issue #${id}..."
 gh issue develop $id -c
 
 Write-Host "Đang tạo commit rỗng..."
-git commit --allow-empty -m "chore: start issue #$id"
+git commit --allow-empty -m "chore: start issue #${id}"
 
 Write-Host "Đang đẩy code lên remote..."
 git push -u origin HEAD
