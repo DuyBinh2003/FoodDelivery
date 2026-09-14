@@ -77,8 +77,10 @@
             "command": "powershell",
             "args": [
                 "-NoProfile",
-                "-Command",
-                "gh issue list -a '@me'; $OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; $issues = gh issue list -a '@me' --json number,title | ConvertFrom-Json; if (-not $issues) { Write-Host 'Không tìm thấy issue nào được giao cho bạn.'; exit 0 }; $selected = $issues | Out-GridView -Title 'Chọn Issue để tạo PR' -OutputMode Single; if ($selected) { $id = $selected.number; Write-Host \"Đang tạo nhánh cho Issue #$id...\"; gh issue develop $id -c; Write-Host 'Đang tạo commit rỗng...'; git commit --allow-empty -m \"chore: start issue #$id\"; Write-Host 'Đang đẩy code lên remote...'; git push -u origin HEAD; $branchName = git branch --show-current; Write-Host 'Đang tạo PR tự động...'; gh pr create --title \"$branchName\" --body-file '.github/PULL_REQUEST_TEMPLATE.md' }"
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/scripts/create-pr-interactive.ps1"
             ],
             "presentation": {
                 "reveal": "always",
