@@ -3,12 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { Restaurant } from './entities/restaurant.entity.js';
-import { MenuItem } from './entities/menu-item.entity.js';
-import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
-import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
-import { CreateMenuItemDto } from './dto/create-menu-item.dto.js';
-import { UpdateMenuItemDto } from './dto/update-menu-item.dto.js';
+import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
+import { MenuItem } from '@/modules/restaurants/entities/menu-item.entity.js';
+import { CreateRestaurantDto } from '@/modules/restaurants/dto/create-restaurant.dto.js';
+import { UpdateRestaurantDto } from '@/modules/restaurants/dto/update-restaurant.dto.js';
+import { CreateMenuItemDto } from '@/modules/restaurants/dto/create-menu-item.dto.js';
+import { UpdateMenuItemDto } from '@/modules/restaurants/dto/update-menu-item.dto.js';
 
 @Injectable()
 export class RestaurantsService {

@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
-import { RestaurantsService } from './restaurants.service.js';
-import { CreateRestaurantDto } from './dto/create-restaurant.dto.js';
-import { UpdateRestaurantDto } from './dto/update-restaurant.dto.js';
-import { CreateMenuItemDto } from './dto/create-menu-item.dto.js';
-import { UpdateMenuItemDto } from './dto/update-menu-item.dto.js';
+import { RestaurantsService } from '@/modules/restaurants/restaurants.service.js';
+import { CreateRestaurantDto } from '@/modules/restaurants/dto/create-restaurant.dto.js';
+import { UpdateRestaurantDto } from '@/modules/restaurants/dto/update-restaurant.dto.js';
+import { CreateMenuItemDto } from '@/modules/restaurants/dto/create-menu-item.dto.js';
+import { UpdateMenuItemDto } from '@/modules/restaurants/dto/update-menu-item.dto.js';
 
 @Controller('restaurants')
 export class RestaurantsController {

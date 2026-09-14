@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/DuyBinh2003/FoodDelivery/issues"
   },
-  "homepage": "https://github.com/DuyBinh2003/FoodDelivery#readme"
+  "homepage": "https://github.com/DuyBinh2003/FoodDelivery#readme",
+  "dependencies": {
+    "@nestjs/mapped-types": "^12.0.0"
+  }
 }
