@@ -137,7 +137,7 @@ try {
     # --------------------------------------------------------
     Write-Host "Dang tai danh sach issue cua ban..." -ForegroundColor Cyan
 
-    $issuesJson = gh issue list --assignee "@me" --state open --limit 100 --json number, title | Out-String
+    $issuesJson = gh issue list --assignee "@me" --state open --limit 100 --json number --json title | Out-String
 
     if ([string]::IsNullOrWhiteSpace($issuesJson)) {
         Write-Host "`nKhong tim thay issue nao duoc giao cho ban." -ForegroundColor Yellow
