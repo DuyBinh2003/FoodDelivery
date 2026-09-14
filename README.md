@@ -15,7 +15,7 @@ Dự án áp dụng mô hình **Hybrid Pattern** để giao tiếp giữa Next.j
 1. **Server-to-Server (RSC):** Fetch nội bộ cho trang Public (SEO tốt, tốc độ bàn thờ).
 2. **Client Fetching (CSR):** Dùng React Query cho các tương tác mutation (Form đặt hàng, Login).
 3. **WebSockets:** Bắt buộc dùng để tracking tài xế và nhận trạng thái đơn hàng thời gian thực.
-*(Chi tiết xem tại: [Tài liệu Kiến trúc Kết nối FE-BE](./docs/frontend-backend-connection.md))*
+*(Chi tiết xem tại: [Tài liệu Kiến trúc Kết nối FE-BE](./docs/architecture/frontend-backend-connection.md))*
 
 ---
 
@@ -27,7 +27,7 @@ Xác định ranh giới Microservices. Trước khi viết code, cần xác đ�
 *   **Phân chia Service:**
     *   **User Service:** Quản lý tài khoản, xác thực cho Customer, Driver và Admin.
     *   **Restaurant Service:** Quản lý thực đơn (Menu), giá cả, ca làm việc.
-    *   **Order Service:** Quản lý logic đặt món, state machine cho trạng thái đơn (Pending, Cooking, Delivering, Completed). (Xem [Tài liệu Order Service](./docs/order-service.md))
+    *   **Order Service:** Quản lý logic đặt món, state machine cho trạng thái đơn (Pending, Cooking, Delivering, Completed). (Xem [Tài liệu Order Service](./docs/services/order-service.md))
 *   **Database Schema:** Thiết kế các bảng trên PostgreSQL. Phân chia tách schema (VD: `schema_user`, `schema_order`) để đảm bảo tính độc lập dữ liệu giữa các service trên cùng 1 instance.
 
 ### 2. Hạ tầng Local & Môi trường Dev
@@ -48,7 +48,7 @@ Giao tiếp giữa các Services thông qua luồng dữ liệu mang tính sự 
 
 *   Khi khách chốt đơn, Order Service sẽ **không** gọi HTTP trực tiếp đến dịch vụ tìm tài xế. Thay vào đó, đẩy một sự kiện vào Message Broker.
 *   **Công nghệ:** Sử dụng Amazon SQS / SNS hoặc Amazon EventBridge. (Trên local, dùng LocalStack).
-*   **Luồng xử lý:** Một hàm Lambda (hoặc Worker như Driver Service) sẽ lắng nghe hàng đợi này, lọc danh sách tài xế gần nhất và gửi thông báo, đảm bảo hệ thống không bị nghẽn nếu không tìm thấy tài xế ngay lập tức. (Xem [Tài liệu Driver Service](./docs/driver-service.md))
+*   **Luồng xử lý:** Một hàm Lambda (hoặc Worker như Driver Service) sẽ lắng nghe hàng đợi này, lọc danh sách tài xế gần nhất và gửi thông báo, đảm bảo hệ thống không bị nghẽn nếu không tìm thấy tài xế ngay lập tức. (Xem [Tài liệu Driver Service](./docs/services/driver-service.md))
 
 ### 5. Tự động hóa CI/CD Pipeline
 Kiểm thử và triển khai tự động.
