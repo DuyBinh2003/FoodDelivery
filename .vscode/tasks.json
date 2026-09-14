@@ -78,7 +78,7 @@
         },
         {
             "label": "Git: Create PR",
-            "detail": "Tự động tạo nhánh và Draft PR từ Issue",
+            "detail": "Chọn Issue được assign cho user và tự động tạo Draft PR",
             "type": "process",
             "command": "powershell",
             "args": [
@@ -90,6 +90,7 @@
             ],
             "presentation": {
                 "reveal": "always",
+                "focus": true,
                 "panel": "shared"
             },
             "problemMatcher": []
