@@ -30,11 +30,13 @@ Xác định ranh giới Microservices. Trước khi viết code, cần xác đ�
     *   **Order Service:** Quản lý logic đặt món, state machine cho trạng thái đơn (Pending, Cooking, Delivering, Completed). (Xem [Tài liệu Order Service](./docs/services/order-service.md))
 *   **Database Schema:** Thiết kế các bảng trên PostgreSQL. Phân chia tách schema (VD: `schema_user`, `schema_order`) để đảm bảo tính độc lập dữ liệu giữa các service trên cùng 1 instance.
 
-### 2. Hạ tầng Local & Môi trường Dev
-Dockerize hệ thống.
+### 2. Hạ tầng Local & Môi trường Dev (Hybrid Workflow)
+Hệ thống sử dụng mô hình phát triển **Hybrid** kết hợp giữa Docker và Local để đạt tốc độ lập trình (HMR) nhanh nhất.
 
-*   **Docker:** Sử dụng file `docker-compose.yml` để khởi chạy đồng thời PostgreSQL, Redis, Frontend (Next.js) và Backend (NestJS) cục bộ.
-*   **Cấu trúc thư mục:** Thiết lập dạng **Monorepo** (dùng thư mục con đơn giản hoặc công cụ như Nx, Turborepo). Điều này giúp chia tách nhiều services nhưng vẫn dùng chung các cấu hình, kiểu dữ liệu (types) hoặc thư viện cốt lõi.
+*   **Infrastructure (Docker):** Sử dụng `docker-compose.dev.yml` để chạy các database và services nền tảng (PostgreSQL, Redis, Elasticsearch, LocalStack).
+*   **Application (Local):** Frontend (Next.js) và Backend (NestJS) được chạy trực tiếp trên máy host (`npm run dev` / `npm run start:dev:local`) kết nối vào các container qua port đã expose.
+*   **Full Stack Docker:** Vẫn duy trì file `docker-compose.yml` nguyên bản chứa toàn bộ hệ thống phục vụ cho việc test tích hợp, CI/CD và onboarding nhanh chóng.
+*   **Cấu trúc thư mục:** Thiết lập dạng Monorepo chia tách Frontend và Backend rõ ràng.
 
 ### 3. Phát triển Core APIs
 Tích hợp NestJS + PostgreSQL + Redis.
