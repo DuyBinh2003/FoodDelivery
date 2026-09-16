@@ -9,20 +9,19 @@ export class SqsService {
   private readonly logger = new Logger(SqsService.name);
 
   constructor(@Inject(ConfigService) private configService: ConfigService) {
-    const region = this.configService.get<string>('AWS_REGION', 'us-east-1');
-    const endpoint = this.configService.get<string>('SQS_ENDPOINT', 'http://localhost:4566'); // default for local
+    const region = this.configService.get<string>('aws.region')!;
+    const endpoint = this.configService.get<string>('sqs.endpoint')!;
 
     this.sqsClient = new SQSClient({
       region,
       endpoint,
       credentials: {
-        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID', 'test'),
-        secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY', 'test'),
+        accessKeyId: this.configService.get<string>('aws.accessKeyId')!,
+        secretAccessKey: this.configService.get<string>('aws.secretAccessKey')!,
       }
     });
 
-    // Default URL format for localstack is http://<host>:4566/000000000000/<queue-name>
-    this.queueUrl = this.configService.get<string>('SQS_QUEUE_URL', 'http://localhost:4566/000000000000/food-delivery-orders');
+    this.queueUrl = this.configService.get<string>('sqs.queueUrl')!;
   }
 
   async publishEvent(eventName: string, payload: any) {
