@@ -1,13 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type {
-  Category,
-  Tag,
-  MenuSection,
-  MenuSearchParams,
-} from '@/features/search/types';
+import type { MenuSearchParams } from '@/features/search/types';
+import { getCategories, getTags, getMenuItems } from '@/features/search/api';
 
 /**
  * Query key factory — chuẩn hoá key cho invalidation & refetch.
@@ -31,7 +26,7 @@ export const searchKeys = {
 export function useCategories() {
   return useQuery({
     queryKey: searchKeys.categories(),
-    queryFn: () => apiClient<Category[]>('/api/search/categories'),
+    queryFn: getCategories,
     staleTime: 5 * 60 * 1000, // 5 phút
   });
 }
@@ -40,7 +35,7 @@ export function useCategories() {
 export function useTags() {
   return useQuery({
     queryKey: searchKeys.tags(),
-    queryFn: () => apiClient<Tag[]>('/api/search/tags'),
+    queryFn: getTags,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -49,13 +44,6 @@ export function useTags() {
 export function useMenuItems(params?: MenuSearchParams) {
   return useQuery({
     queryKey: searchKeys.menu(params),
-    queryFn: () =>
-      apiClient<MenuSection[]>('/api/search/menu', {
-        params: {
-          q: params?.q,
-          category: params?.category,
-          tag: params?.tag,
-        },
-      }),
+    queryFn: () => getMenuItems(params),
   });
 }
