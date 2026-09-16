@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User, UserRole } from '@/modules/users/entities/user.entity.js';
@@ -16,7 +16,7 @@ export class UsersService {
     private readonly customerProfileRepository: Repository<CustomerProfile>,
     @InjectRepository(DriverProfile)
     private readonly driverProfileRepository: Repository<DriverProfile>,
-    private readonly dataSource: DataSource,
+    @Inject(DataSource) private readonly dataSource: DataSource,
   ) {}
 
   async countUsers(): Promise<number> {

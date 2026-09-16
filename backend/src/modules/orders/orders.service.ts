@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
@@ -14,8 +14,8 @@ export class OrdersService {
     private readonly orderRepo: Repository<Order>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepo: Repository<OrderItem>,
-    private readonly dataSource: DataSource,
-    private readonly sqsService: SqsService,
+    @Inject(DataSource) private readonly dataSource: DataSource,
+    @Inject(SqsService) private readonly sqsService: SqsService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {

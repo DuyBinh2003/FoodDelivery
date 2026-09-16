@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 
@@ -8,7 +8,7 @@ export class SqsService {
   private readonly queueUrl: string;
   private readonly logger = new Logger(SqsService.name);
 
-  constructor(private configService: ConfigService) {
+  constructor(@Inject(ConfigService) private configService: ConfigService) {
     const region = this.configService.get<string>('AWS_REGION', 'us-east-1');
     const endpoint = this.configService.get<string>('SQS_ENDPOINT', 'http://localhost:4566'); // default for local
 

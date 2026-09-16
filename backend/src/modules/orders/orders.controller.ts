@@ -1,11 +1,11 @@
-import { Controller, Post, Body, Patch, Param, ParseUUIDPipe, Get } from '@nestjs/common';
+import { Controller, Inject, Post, Body, Patch, Param, ParseUUIDPipe, Get } from '@nestjs/common';
 import { OrdersService } from '@/modules/orders/orders.service.js';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from '@/modules/orders/dto/update-order-status.dto.js';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(@Inject(OrdersService) private readonly ordersService: OrdersService) {}
 
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {

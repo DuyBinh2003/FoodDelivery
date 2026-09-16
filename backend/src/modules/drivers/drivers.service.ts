@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SQSClient } from '@aws-sdk/client-sqs';
 import { Consumer } from 'sqs-consumer';
@@ -11,9 +11,9 @@ export class DriversService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(DriversService.name);
 
   constructor(
-    private readonly configService: ConfigService,
-    private readonly ordersService: OrdersService,
-  ) {}
+    @Inject(ConfigService) private configService: ConfigService,
+    @Inject(OrdersService) private readonly ordersService: OrdersService,
+  ) { }
 
   onModuleInit() {
     const region = this.configService.get<string>('AWS_REGION', 'us-east-1');
@@ -39,7 +39,7 @@ export class DriversService implements OnModuleInit, OnModuleDestroy {
           if (body.event === 'ORDER_CREATED') {
             const { orderId } = body.data;
             this.logger.log(`Received ORDER_CREATED for Order: ${orderId}. Finding nearest driver...`);
-            
+
             // Mocking driver search logic
             setTimeout(async () => {
               this.logger.log(`Driver found for Order: ${orderId}. Updating status to ACCEPTED.`);

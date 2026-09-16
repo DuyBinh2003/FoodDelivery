@@ -1,9 +1,9 @@
 import { Repository, DataSource } from 'typeorm';
-import { User } from '@/modules/users/entities/user.entity.js';
-import { CustomerProfile } from '@/modules/users/entities/customer-profile.entity.js';
-import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js';
-import { RegisterDto } from '@/modules/auth/dto/auth.dto.js';
-import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from '@/modules/users/dto/profile.dto.js';
+import { User } from './entities/user.entity.js';
+import { CustomerProfile } from './entities/customer-profile.entity.js';
+import { DriverProfile } from './entities/driver-profile.entity.js';
+import { RegisterDto } from '../auth/dto/auth.dto.js';
+import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from './dto/profile.dto.js';
 export declare class UsersService {
     private readonly userRepository;
     private readonly customerProfileRepository;

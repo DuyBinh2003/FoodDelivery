@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { DataSource } from 'typeorm';
 import { Category } from '@/modules/restaurants/entities/category.entity.js';
@@ -8,8 +8,8 @@ import { MenuItem } from '@/modules/restaurants/entities/menu-item.entity.js';
 @Injectable()
 export class SearchService implements OnModuleInit {
   constructor(
-    private readonly elasticsearchService: ElasticsearchService,
-    private readonly dataSource: DataSource
+    @Inject(ElasticsearchService) private readonly elasticsearchService: ElasticsearchService,
+    @Inject(DataSource) private readonly dataSource: DataSource
   ) {}
 
   async onModuleInit() {

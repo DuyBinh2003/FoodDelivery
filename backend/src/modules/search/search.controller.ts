@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { SearchService } from '@/modules/search/search.service.js';
 import { DataSource } from 'typeorm';
 import { Config } from '@/modules/restaurants/entities/config.entity.js';
@@ -6,8 +6,8 @@ import { Config } from '@/modules/restaurants/entities/config.entity.js';
 @Controller('api/search')
 export class SearchController {
   constructor(
-    private readonly searchService: SearchService,
-    private readonly dataSource: DataSource,
+    @Inject(SearchService) private readonly searchService: SearchService,
+    @Inject(DataSource) private readonly dataSource: DataSource,
   ) { }
 
   @Get('categories')

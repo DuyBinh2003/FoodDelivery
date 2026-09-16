@@ -1,4 +1,4 @@
-import { Category } from '@/modules/restaurants/entities/category.entity.js';
+import { Category } from './category.entity.js';
 export declare class Restaurant {
     id: string;
     owner_id: string;

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Inject, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
 import { RestaurantsService } from '@/modules/restaurants/restaurants.service.js';
 import { CreateRestaurantDto } from '@/modules/restaurants/dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from '@/modules/restaurants/dto/update-restaurant.dto.js';
@@ -7,7 +7,7 @@ import { UpdateMenuItemDto } from '@/modules/restaurants/dto/update-menu-item.dt
 
 @Controller('restaurants')
 export class RestaurantsController {
-  constructor(private readonly restaurantsService: RestaurantsService) {}
+  constructor(@Inject(RestaurantsService) private readonly restaurantsService: RestaurantsService) {}
 
   @Post()
   create(@Body() createRestaurantDto: CreateRestaurantDto) {

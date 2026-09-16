@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { DataSource, EntitySubscriberInterface, InsertEvent, UpdateEvent, RemoveEvent } from 'typeorm';
 import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
 import { SearchService } from '@/modules/search/search.service.js';
@@ -6,8 +6,8 @@ import { SearchService } from '@/modules/search/search.service.js';
 @Injectable()
 export class RestaurantSubscriber implements EntitySubscriberInterface<Restaurant>, OnModuleInit {
   constructor(
-    private readonly dataSource: DataSource,
-    private readonly searchService: SearchService,
+    @Inject(DataSource) private readonly dataSource: DataSource,
+    @Inject(SearchService) private readonly searchService: SearchService,
   ) {}
 
   onModuleInit() {

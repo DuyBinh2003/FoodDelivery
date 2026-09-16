@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject, Put, Body, UseGuards } from '@nestjs/common';
 import { UsersService } from '@/modules/users/users.service.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
@@ -10,7 +10,7 @@ import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from '@/modules/user
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(@Inject(UsersService) private readonly usersService: UsersService) {}
 
   @Get('profile')
   getProfile(@CurrentUser() user: any) {

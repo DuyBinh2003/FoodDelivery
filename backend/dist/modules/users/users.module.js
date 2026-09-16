@@ -6,16 +6,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersService } from '@/modules/users/users.service.js';
-import { UsersController } from '@/modules/users/users.controller.js';
-import { User } from '@/modules/users/entities/user.entity.js';
-import { CustomerProfile } from '@/modules/users/entities/customer-profile.entity.js';
-import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js';
+import { UsersService } from './users.service.js';
+import { UsersController } from './users.controller.js';
+import { User } from './entities/user.entity.js';
+import { CustomerProfile } from './entities/customer-profile.entity.js';
+import { DriverProfile } from './entities/driver-profile.entity.js';
+import { PassportModule } from '@nestjs/passport';
 let UsersModule = class UsersModule {
 };
 UsersModule = __decorate([
     Module({
-        imports: [TypeOrmModule.forFeature([User, CustomerProfile, DriverProfile])],
+        imports: [TypeOrmModule.forFeature([User, CustomerProfile, DriverProfile]), PassportModule.register({ defaultStrategy: 'jwt' })],
         controllers: [UsersController],
         providers: [UsersService],
         exports: [UsersService],
