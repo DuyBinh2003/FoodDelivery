@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { SearchFilters } from '@/features/search/components/SearchFilters';
 import FoodList from '@/features/menu/components/food-list';
@@ -8,14 +9,13 @@ export const metadata: Metadata = {
   description: 'Khám phá thực đơn đa dạng từ các nhà hàng nổi tiếng. Đặt món ngon giao tận nơi.',
 };
 
-export default async function MenuPage({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
+export default async function MenuPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
   const resolvedSearchParams = await searchParams;
 
-  // Fetch data in parallel
-  const [categories, tags, menuData] = await Promise.all([
+  // Fetch static filter data in parallel (Cached by ISR)
+  const [categories, tags] = await Promise.all([
     getCategories(),
     getTags(),
-    getMenuItems(resolvedSearchParams),
   ]);
 
   return (
@@ -30,23 +30,52 @@ export default async function MenuPage({ searchParams }: { searchParams: { [key:
           <SearchFilters categories={categories} tags={tags} />
         </div>
 
-        {/* Restaurant sections */}
-        <div className="space-y-12">
-          {menuData.length > 0 ? (
-            menuData.map((section) => (
-              <FoodList
-                key={section.restaurant}
-                items={section.items}
-                restaurantName={section.restaurant}
-              />
-            ))
-          ) : (
-            <div className="py-20 text-center">
-              <p className="text-zinc-400 text-lg">Không tìm thấy món ăn nào phù hợp với tìm kiếm của bạn.</p>
-            </div>
-          )}
-        </div>
+        {/* Restaurant sections with Suspense Streaming */}
+        <Suspense fallback={<MenuSkeleton />}>
+          <MenuSearchResults searchParams={resolvedSearchParams} />
+        </Suspense>
       </div>
     </main>
+  );
+}
+
+async function MenuSearchResults({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
+  const menuData = await getMenuItems(searchParams);
+
+  if (menuData.length === 0) {
+    return (
+      <div className="py-20 text-center">
+        <p className="text-zinc-400 text-lg">Không tìm thấy món ăn nào phù hợp với tìm kiếm của bạn.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-12">
+      {menuData.map((section) => (
+        <FoodList
+          key={section.restaurant}
+          items={section.items}
+          restaurantName={section.restaurant}
+        />
+      ))}
+    </div>
+  );
+}
+
+function MenuSkeleton() {
+  return (
+    <div className="space-y-12 animate-pulse">
+      {[1, 2].map((sectionId) => (
+        <div key={sectionId}>
+          <div className="h-7 bg-zinc-800/50 rounded w-48 mb-4"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map((itemId) => (
+              <div key={itemId} className="h-[280px] bg-zinc-800/30 rounded-2xl border border-zinc-800"></div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

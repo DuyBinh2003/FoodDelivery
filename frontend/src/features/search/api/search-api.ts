@@ -11,13 +11,9 @@ import type {
  * Dùng Next.js revalidate để cache 60 giây.
  */
 export async function getCategories(): Promise<Category[]> {
-  try {
-    return await apiClient<Category[]>('/api/search/categories', {
-      next: { revalidate: 60 } as NextFetchRequestConfig,
-    });
-  } catch {
-    return [];
-  }
+  return await apiClient<Category[]>('/api/search/categories', {
+    next: { revalidate: 60 } as NextFetchRequestConfig,
+  });
 }
 
 /**
@@ -25,13 +21,9 @@ export async function getCategories(): Promise<Category[]> {
  * Dùng Next.js revalidate để cache 60 giây.
  */
 export async function getTags(): Promise<Tag[]> {
-  try {
-    return await apiClient<Tag[]>('/api/search/tags', {
-      next: { revalidate: 60 } as NextFetchRequestConfig,
-    });
-  } catch {
-    return [];
-  }
+  return await apiClient<Tag[]>('/api/search/tags', {
+    next: { revalidate: 60 } as NextFetchRequestConfig,
+  });
 }
 
 /**
@@ -41,16 +33,12 @@ export async function getTags(): Promise<Tag[]> {
 export async function getMenuItems(
   searchParams?: MenuSearchParams,
 ): Promise<MenuSection[]> {
-  try {
-    return await apiClient<MenuSection[]>('/api/search/menu', {
-      params: {
-        q: searchParams?.q,
-        category: searchParams?.category,
-        tag: searchParams?.tag,
-      },
-      cache: 'no-store',
-    });
-  } catch {
-    return [];
-  }
+  return await apiClient<MenuSection[]>('/api/search/menu', {
+    params: {
+      q: searchParams?.q,
+      category: searchParams?.category,
+      tag: searchParams?.tag,
+    },
+    cache: 'no-store',
+  });
 }
