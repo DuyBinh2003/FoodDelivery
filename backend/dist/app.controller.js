@@ -7,8 +7,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from '@/app.service.js';
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+import { Controller, Get, Inject } from '@nestjs/common';
+import { AppService } from './app.service.js';
 let AppController = class AppController {
     appService;
     constructor(appService) {
@@ -26,6 +29,7 @@ __decorate([
 ], AppController.prototype, "getHello", null);
 AppController = __decorate([
     Controller(),
+    __param(0, Inject(AppService)),
     __metadata("design:paramtypes", [AppService])
 ], AppController);
 export { AppController };

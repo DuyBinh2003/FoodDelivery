@@ -7,13 +7,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Tag } from './tag.entity.js';
 let MenuItem = class MenuItem {
     id;
     restaurant_id;
     name;
     price;
     is_available;
+    tags;
     created_at;
     updated_at;
     is_deleted;
@@ -38,6 +40,15 @@ __decorate([
     Column({ type: 'boolean', default: true }),
     __metadata("design:type", Boolean)
 ], MenuItem.prototype, "is_available", void 0);
+__decorate([
+    ManyToMany(() => Tag),
+    JoinTable({
+        name: 'm_menu_item_tag',
+        joinColumn: { name: 'menu_item_id', referencedColumnName: 'id' },
+        inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' }
+    }),
+    __metadata("design:type", Array)
+], MenuItem.prototype, "tags", void 0);
 __decorate([
     CreateDateColumn({ type: 'timestamptz' }),
     __metadata("design:type", Date)

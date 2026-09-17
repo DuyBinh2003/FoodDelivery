@@ -7,15 +7,122 @@
         }
     },
     "tasks": [
+        // ============================================================
+        //  🚀 DEV: Daily Development (Hybrid — Local + Docker Infra)
+        // ============================================================
         {
-            "label": "Docker: Build",
-            "detail": "Xây dựng các Docker container của dự án",
-            "type": "shell",
-            "command": "docker-compose build",
+            "label": "Dev: Start All",
+            "detail": "Bật infrastructure Docker + Backend + Frontend cùng lúc",
+            "dependsOn": [
+                "Dev: Infra Up",
+                "Dev: Backend",
+                "Dev: Frontend"
+            ],
+            "dependsOrder": "sequence",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
+            "problemMatcher": []
+        },
+        {
+            "label": "Dev: Infra Up",
+            "detail": "Khởi động Infrastructure (PostgreSQL, Redis, ES, LocalStack)",
+            "type": "shell",
+            "command": "docker compose -f docker-compose.dev.yml up -d",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Dev: Infra Down",
+            "detail": "Tắt toàn bộ Infrastructure containers",
+            "type": "shell",
+            "command": "docker compose -f docker-compose.dev.yml down",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Dev: Backend",
+            "detail": "Chạy NestJS Backend local (hot reload)",
+            "type": "shell",
+            "command": "npm run start:dev:local",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "dev-servers"
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Starting compilation",
+                    "endsPattern": "Nest application successfully started"
+                }
+            }
+        },
+        {
+            "label": "Dev: Frontend",
+            "detail": "Chạy Next.js Frontend local (Turbopack HMR)",
+            "type": "shell",
+            "command": "npm run dev",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "dev-servers"
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Starting",
+                    "endsPattern": "Ready in"
+                }
+            }
+        },
+        {
+            "label": "Dev: Infra Restart",
+            "detail": "Restart toàn bộ Infrastructure containers",
+            "type": "shell",
+            "command": "docker compose -f docker-compose.dev.yml restart",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+
+        // ============================================================
+        //  🐳 Docker: Full Stack (cho CI/CD, Demo, Onboarding)
+        // ============================================================
+        {
+            "label": "Docker: Build",
+            "detail": "Xây dựng các Docker container của dự án (Full Stack)",
+            "type": "shell",
+            "command": "docker compose build",
             "presentation": {
                 "reveal": "always",
                 "panel": "new"
@@ -24,9 +131,9 @@
         },
         {
             "label": "Docker: Run",
-            "detail": "Khởi chạy toàn bộ hệ thống (Docker Compose)",
+            "detail": "Khởi chạy toàn bộ hệ thống Full Stack (Docker Compose)",
             "type": "shell",
-            "command": "docker-compose up",
+            "command": "docker compose up",
             "group": {
                 "kind": "test",
                 "isDefault": true
@@ -41,13 +148,17 @@
             "label": "Docker: Stop",
             "detail": "Dừng và tắt toàn bộ các container đang chạy",
             "type": "shell",
-            "command": "docker-compose down",
+            "command": "docker compose down",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
             },
             "problemMatcher": []
         },
+
+        // ============================================================
+        //  🗄️ DB: Database Management
+        // ============================================================
         {
             "label": "DB: Migrate Up",
             "detail": "Cập nhật cấu trúc (schema) của Database",
@@ -76,18 +187,10 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Git: Create PR",
-            "detail": "Chọn Issue được assign cho user và tự động tạo Draft PR",
-            "type": "shell",
-            "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File '${workspaceFolder}/scripts/create-pr-interactive.ps1'",
-            "presentation": {
-                "reveal": "always",
-                "focus": true,
-                "panel": "dedicated"
-            },
-            "problemMatcher": []
-        },
+
+        // ============================================================
+        //  ✅ CI: Quality Checks (Lint & Test)
+        // ============================================================
         {
             "label": "CI: Frontend Lint",
             "detail": "Kiểm tra lỗi mã nguồn (Lint) cho Frontend",
@@ -139,7 +242,23 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "new"
+            }
+        },
+
+        // ============================================================
+        //  🔧 Git & GitHub
+        // ============================================================
+        {
+            "label": "Git: Create PR",
+            "detail": "Chọn Issue được assign cho user và tự động tạo Draft PR",
+            "type": "shell",
+            "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File '${workspaceFolder}/scripts/create-pr-interactive.ps1'",
+            "presentation": {
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated"
             },
+            "problemMatcher": []
         },
         {
             "label": "GithubCI",

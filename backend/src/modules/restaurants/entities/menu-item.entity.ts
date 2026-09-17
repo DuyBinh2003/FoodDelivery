@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
 
 @Entity('m_menu_item', { schema: 'schema_restaurant' })
 export class MenuItem {
@@ -16,6 +17,14 @@ export class MenuItem {
 
   @Column({ type: 'boolean', default: true })
   is_available: boolean;
+
+  @ManyToMany(() => Tag)
+  @JoinTable({
+    name: 'm_menu_item_tag',
+    joinColumn: { name: 'menu_item_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' }
+  })
+  tags: Tag[];
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;

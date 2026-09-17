@@ -1,8 +1,8 @@
 export const getDatabaseConfig = (configService) => ({
     type: 'postgres',
-    url: configService.get('DATABASE_URL'),
+    url: configService.get('database.url'),
     synchronize: false,
     autoLoadEntities: true,
-    logging: configService.get('NODE_ENV') === 'development',
+    logging: configService.get('nodeEnv') === 'development',
 });
 //# sourceMappingURL=database.config.js.map

@@ -39,7 +39,7 @@ export const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 export const down = (pgm) => {
-  pgm.sql(`DELETE FROM schema_user.m_driver_profile WHERE id LIKE 'c0eebc99%';`);
-  pgm.sql(`DELETE FROM schema_user.m_customer_profile WHERE id LIKE 'b0eebc99%';`);
-  pgm.sql(`DELETE FROM schema_user.m_user WHERE id LIKE 'a0eebc99%';`);
+  pgm.sql(`DELETE FROM schema_user.m_driver_profile WHERE id::text LIKE 'c0eebc99%';`);
+  pgm.sql(`DELETE FROM schema_user.m_customer_profile WHERE id::text LIKE 'b0eebc99%';`);
+  pgm.sql(`DELETE FROM schema_user.m_user WHERE id::text LIKE 'a0eebc99%';`);
 };

@@ -5,8 +5,8 @@ export const getRedisConfig = () => ({
     imports: [ConfigModule],
     inject: [ConfigService],
     useFactory: async (configService) => {
-        const host = configService.get('REDIS_HOST', 'localhost');
-        const port = configService.get('REDIS_PORT', 6379);
+        const host = configService.get('redis.host');
+        const port = configService.get('redis.port');
         return {
             store: await redisStore({
                 url: `redis://${host}:${port}`,

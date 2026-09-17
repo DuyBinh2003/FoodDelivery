@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { UtensilsCrossed, Menu, ClipboardList, LogIn } from "lucide-react";
+import { QueryProvider } from "@/components/providers/query-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -65,7 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </header>
 
         {/* Main content */}
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
