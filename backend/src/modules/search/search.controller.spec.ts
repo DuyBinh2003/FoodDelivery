@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SearchController } from './search.controller.js';
+import { SearchController } from '@/modules/search/search.controller.js';
 import { SearchReadRepository } from '@/modules/search/repositories/search.read.repository.js';
 import { GetCategoriesUseCase } from '@/modules/search/usecases/get-categories.usecase.js';
 import { GetTagsUseCase } from '@/modules/search/usecases/get-tags.usecase.js';
