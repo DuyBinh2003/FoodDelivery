@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import { RegisterDto, LoginDto } from '@/modules/auth/dto/auth.dto.js';
 import { LoginUseCase } from '@/modules/auth/usecases/login.usecase.js';
 import { RegisterUseCase } from '@/modules/auth/usecases/register.usecase.js';
@@ -6,8 +6,8 @@ import { RegisterUseCase } from '@/modules/auth/usecases/register.usecase.js';
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly loginUseCase: LoginUseCase,
-    private readonly registerUseCase: RegisterUseCase,
+    @Inject(LoginUseCase) private readonly loginUseCase: LoginUseCase,
+    @Inject(RegisterUseCase) private readonly registerUseCase: RegisterUseCase,
   ) {}
 
   @Post('register')

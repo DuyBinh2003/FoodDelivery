@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject, Put, Body, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
@@ -76,6 +76,10 @@ __decorate([
 UsersController = __decorate([
     Controller('users'),
     UseGuards(JwtAuthGuard, RolesGuard),
+    __param(0, Inject(GetCustomerProfileUseCase)),
+    __param(1, Inject(GetDriverProfileUseCase)),
+    __param(2, Inject(UpdateCustomerProfileUseCase)),
+    __param(3, Inject(UpdateDriverProfileUseCase)),
     __metadata("design:paramtypes", [GetCustomerProfileUseCase,
         GetDriverProfileUseCase,
         UpdateCustomerProfileUseCase,

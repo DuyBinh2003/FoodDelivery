@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Inject } from '@nestjs/common';
 import { CreateRestaurantDto } from '@/modules/restaurants/dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from '@/modules/restaurants/dto/update-restaurant.dto.js';
 import { CreateMenuItemDto } from '@/modules/restaurants/dto/create-menu-item.dto.js';
@@ -16,15 +16,15 @@ import { DeleteMenuItemUseCase } from '@/modules/restaurants/usecases/delete-men
 @Controller('restaurants')
 export class RestaurantsController {
   constructor(
-    private readonly createRestaurantUseCase: CreateRestaurantUseCase,
-    private readonly getRestaurantsUseCase: GetRestaurantsUseCase,
-    private readonly getRestaurantUseCase: GetRestaurantUseCase,
-    private readonly updateRestaurantUseCase: UpdateRestaurantUseCase,
-    private readonly deleteRestaurantUseCase: DeleteRestaurantUseCase,
-    private readonly addMenuItemUseCase: AddMenuItemUseCase,
-    private readonly getMenuItemsUseCase: GetMenuItemsUseCase,
-    private readonly updateMenuItemUseCase: UpdateMenuItemUseCase,
-    private readonly deleteMenuItemUseCase: DeleteMenuItemUseCase,
+    @Inject(CreateRestaurantUseCase) private readonly createRestaurantUseCase: CreateRestaurantUseCase,
+    @Inject(GetRestaurantsUseCase) private readonly getRestaurantsUseCase: GetRestaurantsUseCase,
+    @Inject(GetRestaurantUseCase) private readonly getRestaurantUseCase: GetRestaurantUseCase,
+    @Inject(UpdateRestaurantUseCase) private readonly updateRestaurantUseCase: UpdateRestaurantUseCase,
+    @Inject(DeleteRestaurantUseCase) private readonly deleteRestaurantUseCase: DeleteRestaurantUseCase,
+    @Inject(AddMenuItemUseCase) private readonly addMenuItemUseCase: AddMenuItemUseCase,
+    @Inject(GetMenuItemsUseCase) private readonly getMenuItemsUseCase: GetMenuItemsUseCase,
+    @Inject(UpdateMenuItemUseCase) private readonly updateMenuItemUseCase: UpdateMenuItemUseCase,
+    @Inject(DeleteMenuItemUseCase) private readonly deleteMenuItemUseCase: DeleteMenuItemUseCase,
   ) {}
 
   @Post()

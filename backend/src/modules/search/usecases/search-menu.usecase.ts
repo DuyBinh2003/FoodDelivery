@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { SearchRestaurantsUseCase, SearchRestaurantsQuery } from '@/modules/search/usecases/search-restaurants.usecase.js';
 import { SearchReadRepository } from '@/modules/search/repositories/search.read.repository.js';
 
 @Injectable()
 export class SearchMenuUseCase {
   constructor(
+    @Inject(SearchRestaurantsUseCase)
     private readonly searchRestaurantsUseCase: SearchRestaurantsUseCase,
+    @Inject(SearchReadRepository)
     private readonly searchReadRepo: SearchReadRepository
   ) {}
 

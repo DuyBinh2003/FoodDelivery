@@ -14,7 +14,9 @@ export interface AddMenuItemCommand {
 @Injectable()
 export class AddMenuItemUseCase {
   constructor(
+    @Inject(RestaurantReadRepository)
     private readonly restaurantReadRepo: RestaurantReadRepository,
+    @Inject(RestaurantWriteRepository)
     private readonly restaurantWriteRepo: RestaurantWriteRepository,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,

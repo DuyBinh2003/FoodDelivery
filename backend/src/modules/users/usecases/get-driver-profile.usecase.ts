@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { UserReadRepository } from '@/modules/users/repositories/user.read.repository.js';
 import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js';
 
@@ -8,7 +8,7 @@ export interface GetDriverProfileQuery {
 
 @Injectable()
 export class GetDriverProfileUseCase {
-  constructor(private readonly userReadRepo: UserReadRepository) {}
+  constructor(@Inject(UserReadRepository) private readonly userReadRepo: UserReadRepository) {}
 
   async execute(query: GetDriverProfileQuery): Promise<DriverProfile> {
     const profile = await this.userReadRepo.getDriverProfile(query.userId);

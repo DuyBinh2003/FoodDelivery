@@ -7,7 +7,7 @@ import { SyncRestaurantIndexUseCase } from '@/modules/search/usecases/sync-resta
 export class RestaurantSubscriber implements EntitySubscriberInterface<Restaurant>, OnModuleInit {
   constructor(
     @Inject(DataSource) private readonly dataSource: DataSource,
-    private readonly syncRestaurantIndexUseCase: SyncRestaurantIndexUseCase,
+    @Inject(SyncRestaurantIndexUseCase) private readonly syncRestaurantIndexUseCase: SyncRestaurantIndexUseCase,
   ) {}
 
   onModuleInit() {

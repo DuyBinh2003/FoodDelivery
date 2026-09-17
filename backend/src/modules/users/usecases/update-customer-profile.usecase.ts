@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { UserReadRepository } from '@/modules/users/repositories/user.read.repository.js';
 import { UserWriteRepository } from '@/modules/users/repositories/user.write.repository.js';
 import { CustomerProfile } from '@/modules/users/entities/customer-profile.entity.js';
@@ -12,8 +12,8 @@ export interface UpdateCustomerProfileCommand {
 @Injectable()
 export class UpdateCustomerProfileUseCase {
   constructor(
-    private readonly userReadRepo: UserReadRepository,
-    private readonly userWriteRepo: UserWriteRepository,
+    @Inject(UserReadRepository) private readonly userReadRepo: UserReadRepository,
+    @Inject(UserWriteRepository) private readonly userWriteRepo: UserWriteRepository,
   ) {}
 
   async execute(command: UpdateCustomerProfileCommand): Promise<CustomerProfile> {

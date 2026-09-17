@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, ParseUUIDPipe, Get } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, ParseUUIDPipe, Get, Inject } from '@nestjs/common';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from '@/modules/orders/dto/update-order-status.dto.js';
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
@@ -8,9 +8,9 @@ import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order
 @Controller('orders')
 export class OrdersController {
   constructor(
-    private readonly createOrderUseCase: CreateOrderUseCase,
-    private readonly getOrderUseCase: GetOrderUseCase,
-    private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
+    @Inject(CreateOrderUseCase) private readonly createOrderUseCase: CreateOrderUseCase,
+    @Inject(GetOrderUseCase) private readonly getOrderUseCase: GetOrderUseCase,
+    @Inject(UpdateOrderStatusUseCase) private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
   ) {}
 
   @Post()

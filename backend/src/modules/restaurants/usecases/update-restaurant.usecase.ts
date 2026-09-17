@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { RestaurantReadRepository } from '@/modules/restaurants/repositories/restaurant.read.repository.js';
 import { RestaurantWriteRepository } from '@/modules/restaurants/repositories/restaurant.write.repository.js';
 import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
@@ -12,8 +12,8 @@ export interface UpdateRestaurantCommand {
 @Injectable()
 export class UpdateRestaurantUseCase {
   constructor(
-    private readonly restaurantReadRepo: RestaurantReadRepository,
-    private readonly restaurantWriteRepo: RestaurantWriteRepository,
+    @Inject(RestaurantReadRepository) private readonly restaurantReadRepo: RestaurantReadRepository,
+    @Inject(RestaurantWriteRepository) private readonly restaurantWriteRepo: RestaurantWriteRepository,
   ) {}
 
   async execute(command: UpdateRestaurantCommand): Promise<Restaurant> {

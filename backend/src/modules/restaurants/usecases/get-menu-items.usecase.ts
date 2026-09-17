@@ -11,6 +11,7 @@ export interface GetMenuItemsQuery {
 @Injectable()
 export class GetMenuItemsUseCase {
   constructor(
+    @Inject(RestaurantReadRepository)
     private readonly restaurantReadRepo: RestaurantReadRepository,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,

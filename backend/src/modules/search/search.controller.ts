@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { SearchReadRepository } from '@/modules/search/repositories/search.read.repository.js';
 import { GetCategoriesUseCase } from '@/modules/search/usecases/get-categories.usecase.js';
 import { GetTagsUseCase } from '@/modules/search/usecases/get-tags.usecase.js';
@@ -8,10 +8,15 @@ import { SearchMenuUseCase } from '@/modules/search/usecases/search-menu.usecase
 @Controller('api/search')
 export class SearchController {
   constructor(
+    @Inject(SearchReadRepository)
     private readonly searchReadRepo: SearchReadRepository,
+    @Inject(GetCategoriesUseCase)
     private readonly getCategoriesUseCase: GetCategoriesUseCase,
+    @Inject(GetTagsUseCase)
     private readonly getTagsUseCase: GetTagsUseCase,
+    @Inject(SearchRestaurantsUseCase)
     private readonly searchRestaurantsUseCase: SearchRestaurantsUseCase,
+    @Inject(SearchMenuUseCase)
     private readonly searchMenuUseCase: SearchMenuUseCase,
   ) {}
 

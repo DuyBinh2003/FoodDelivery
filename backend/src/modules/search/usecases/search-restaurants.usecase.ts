@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ElasticsearchRepository } from '@/modules/search/repositories/elasticsearch.repository.js';
 
 export interface SearchRestaurantsQuery {
@@ -15,7 +15,10 @@ export interface SearchRestaurantsQuery {
 
 @Injectable()
 export class SearchRestaurantsUseCase {
-  constructor(private readonly elasticsearchRepo: ElasticsearchRepository) {}
+  constructor(
+    @Inject(ElasticsearchRepository)
+    private readonly elasticsearchRepo: ElasticsearchRepository
+  ) {}
 
   async execute(query: SearchRestaurantsQuery) {
     return this.elasticsearchRepo.searchRestaurants(query);

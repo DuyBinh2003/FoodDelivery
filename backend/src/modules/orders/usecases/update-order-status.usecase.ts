@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
@@ -12,8 +12,8 @@ export interface UpdateOrderStatusCommand {
 @Injectable()
 export class UpdateOrderStatusUseCase {
   constructor(
-    private readonly orderReadRepo: OrderReadRepository,
-    private readonly orderWriteRepo: OrderWriteRepository,
+    @Inject(OrderReadRepository) private readonly orderReadRepo: OrderReadRepository,
+    @Inject(OrderWriteRepository) private readonly orderWriteRepo: OrderWriteRepository,
   ) {}
 
   async execute(command: UpdateOrderStatusCommand): Promise<Order> {

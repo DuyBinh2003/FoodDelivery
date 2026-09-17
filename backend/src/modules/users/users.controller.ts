@@ -14,10 +14,10 @@ import { UpdateDriverProfileUseCase } from '@/modules/users/usecases/update-driv
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(
-    private readonly getCustomerProfileUseCase: GetCustomerProfileUseCase,
-    private readonly getDriverProfileUseCase: GetDriverProfileUseCase,
-    private readonly updateCustomerProfileUseCase: UpdateCustomerProfileUseCase,
-    private readonly updateDriverProfileUseCase: UpdateDriverProfileUseCase,
+    @Inject(GetCustomerProfileUseCase) private readonly getCustomerProfileUseCase: GetCustomerProfileUseCase,
+    @Inject(GetDriverProfileUseCase) private readonly getDriverProfileUseCase: GetDriverProfileUseCase,
+    @Inject(UpdateCustomerProfileUseCase) private readonly updateCustomerProfileUseCase: UpdateCustomerProfileUseCase,
+    @Inject(UpdateDriverProfileUseCase) private readonly updateDriverProfileUseCase: UpdateDriverProfileUseCase,
   ) {}
 
   @Get('profile')

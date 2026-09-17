@@ -12,7 +12,9 @@ export interface DeleteMenuItemCommand {
 @Injectable()
 export class DeleteMenuItemUseCase {
   constructor(
+    @Inject(RestaurantReadRepository)
     private readonly restaurantReadRepo: RestaurantReadRepository,
+    @Inject(RestaurantWriteRepository)
     private readonly restaurantWriteRepo: RestaurantWriteRepository,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,

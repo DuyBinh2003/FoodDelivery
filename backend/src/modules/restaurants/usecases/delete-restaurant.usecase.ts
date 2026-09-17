@@ -11,7 +11,9 @@ export interface DeleteRestaurantCommand {
 @Injectable()
 export class DeleteRestaurantUseCase {
   constructor(
+    @Inject(RestaurantReadRepository)
     private readonly restaurantReadRepo: RestaurantReadRepository,
+    @Inject(RestaurantWriteRepository)
     private readonly restaurantWriteRepo: RestaurantWriteRepository,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
