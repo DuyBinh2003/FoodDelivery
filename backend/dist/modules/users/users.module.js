@@ -6,20 +6,35 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersService } from './users.service.js';
 import { UsersController } from './users.controller.js';
 import { User } from './entities/user.entity.js';
 import { CustomerProfile } from './entities/customer-profile.entity.js';
 import { DriverProfile } from './entities/driver-profile.entity.js';
 import { PassportModule } from '@nestjs/passport';
+import { UserReadRepository } from './repositories/user.read.repository.js';
+import { UserWriteRepository } from './repositories/user.write.repository.js';
+import { GetCustomerProfileUseCase } from './usecases/get-customer-profile.usecase.js';
+import { GetDriverProfileUseCase } from './usecases/get-driver-profile.usecase.js';
+import { UpdateCustomerProfileUseCase } from './usecases/update-customer-profile.usecase.js';
+import { UpdateDriverProfileUseCase } from './usecases/update-driver-profile.usecase.js';
 let UsersModule = class UsersModule {
 };
 UsersModule = __decorate([
     Module({
         imports: [TypeOrmModule.forFeature([User, CustomerProfile, DriverProfile]), PassportModule.register({ defaultStrategy: 'jwt' })],
         controllers: [UsersController],
-        providers: [UsersService],
-        exports: [UsersService],
+        providers: [
+            UserReadRepository,
+            UserWriteRepository,
+            GetCustomerProfileUseCase,
+            GetDriverProfileUseCase,
+            UpdateCustomerProfileUseCase,
+            UpdateDriverProfileUseCase,
+        ],
+        exports: [
+            UserReadRepository,
+            UserWriteRepository,
+        ],
     })
 ], UsersModule);
 export { UsersModule };

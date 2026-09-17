@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DriversService } from '@/modules/drivers/drivers.service.js';
+import { DriversConsumer } from '@/modules/drivers/drivers.consumer.js';
 import { OrdersModule } from '@/modules/orders/orders.module.js';
 
 @Module({
   imports: [ConfigModule, OrdersModule],
-  providers: [DriversService],
+  providers: [DriversConsumer],
 })
 export class DriversModule {}

@@ -81,47 +81,52 @@ bootstrap();
 
 ## Modules, Controllers, and Providers
 
-```ts
-@Module({
-  imports: [TypeOrmModule.forFeature([User])],
-  controllers: [UsersController],
-  providers: [UsersService],
-  exports: [UsersService],
-})
-export class UsersModule {}
+We follow a **CQRS-lite and Use Case** pattern:
+- **Thin Controllers**: Controllers are strictly for routing. They parse HTTP inputs (Body, Query, Params) into `Command` or `Query` types and pass them directly to Use Cases. They **do not** contain business logic or mapping logic.
+- **Single-Responsibility Use Cases**: Instead of a monolithic `XxxService`, logic is split into isolated Use Cases (e.g., `CreateUserUseCase`, `GetUserProfileUseCase`). Each Use Case handles exactly one core business action.
 
+```ts
+// users.controller.ts
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly createUserUseCase: CreateUserUseCase,
+    private readonly getUserUseCase: GetUserUseCase,
+  ) {}
 
   @Get(':id')
-  getById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.getById(id);
+  async getById(@Param('id', ParseUUIDPipe) id: string) {
+    // Controller just passes a strongly-typed Query to the Use Case
+    return this.getUserUseCase.execute({ userId: id });
   }
 
   @Post()
-  create(@Body() dto: CreateUserDto) {
-    return this.usersService.create(dto);
+  async create(@Body() dto: CreateUserDto) {
+    // Controller passes a Command to the Use Case
+    return this.createUserUseCase.execute(dto); // DTO can act as the Command payload
   }
 }
 
+// usecases/create-user.usecase.ts
 @Injectable()
-export class UsersService {
+export class CreateUserUseCase {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepo: Repository<User>,
+    private readonly userWriteRepo: UserWriteRepository,
+    private readonly userReadRepo: UserReadRepository,
   ) {}
 
-  async create(dto: CreateUserDto) {
-    const user = this.usersRepo.create(dto);
-    return this.usersRepo.save(user);
+  async execute(command: CreateUserDto) {
+    // Business logic goes here (e.g. check if email exists, hash password)
+    const exists = await this.userReadRepo.findByEmail(command.email);
+    if (exists) throw new ConflictException('Email already in use');
+
+    // Delegate persistence to the Write Repository
+    return this.userWriteRepo.create(command);
   }
 }
 ```
 
-- **Controllers should stay thin**: parse HTTP input, call a provider, return response DTOs.
-- **Put business logic in injectable services**, not controllers.
-- Export only the providers other modules genuinely need.
+- Export only the Use Cases and Repositories that other modules genuinely need.
 
 ## DTOs and Validation
 
@@ -225,8 +230,10 @@ ConfigModule.forRoot({
 
 ## Persistence and Transactions
 
-- Keep repository / ORM code behind providers that speak domain language.
-- Isolate TypeORM transactional workflows in services that own the unit of work.
+We mandate the separation of repositories for readability and maintainability (CQRS-lite):
+- **ReadRepository** (`*.read.repository.ts`): Handles all `find`, `findOne`, `count` operations. It transforms TypeORM entities into Data Transfer Objects (DTOs) or Domain Models to return to the Use Cases.
+- **WriteRepository** (`*.write.repository.ts`): Handles `create`, `update`, `delete`. It takes a Command/Domain model and maps it to the TypeORM entity for saving.
+- Isolate TypeORM transactional workflows in Use Cases that own the unit of work.
 - Do not let controllers coordinate multi-step writes directly.
 
 ## Testing (Vitest)

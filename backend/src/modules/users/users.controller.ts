@@ -1,24 +1,32 @@
 import { Controller, Get, Inject, Put, Body, UseGuards } from '@nestjs/common';
-import { UsersService } from '@/modules/users/users.service.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
 import { Roles } from '@/common/decorators/roles.decorator.js';
 import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
 import { UserRole } from '@/modules/users/entities/user.entity.js';
 import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from '@/modules/users/dto/profile.dto.js';
+import { GetCustomerProfileUseCase } from '@/modules/users/usecases/get-customer-profile.usecase.js';
+import { GetDriverProfileUseCase } from '@/modules/users/usecases/get-driver-profile.usecase.js';
+import { UpdateCustomerProfileUseCase } from '@/modules/users/usecases/update-customer-profile.usecase.js';
+import { UpdateDriverProfileUseCase } from '@/modules/users/usecases/update-driver-profile.usecase.js';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(@Inject(UsersService) private readonly usersService: UsersService) {}
+  constructor(
+    private readonly getCustomerProfileUseCase: GetCustomerProfileUseCase,
+    private readonly getDriverProfileUseCase: GetDriverProfileUseCase,
+    private readonly updateCustomerProfileUseCase: UpdateCustomerProfileUseCase,
+    private readonly updateDriverProfileUseCase: UpdateDriverProfileUseCase,
+  ) {}
 
   @Get('profile')
   getProfile(@CurrentUser() user: any) {
     if (user.role === UserRole.CUSTOMER) {
-      return this.usersService.getCustomerProfile(user.id);
+      return this.getCustomerProfileUseCase.execute({ userId: user.id });
     }
     if (user.role === UserRole.DRIVER) {
-      return this.usersService.getDriverProfile(user.id);
+      return this.getDriverProfileUseCase.execute({ userId: user.id });
     }
     return user; // Return basic user info for ADMIN
   }
@@ -26,12 +34,12 @@ export class UsersController {
   @Roles(UserRole.CUSTOMER)
   @Put('profile/customer')
   updateCustomerProfile(@CurrentUser() user: any, @Body() dto: UpdateCustomerProfileDto) {
-    return this.usersService.updateCustomerProfile(user.id, dto);
+    return this.updateCustomerProfileUseCase.execute({ userId: user.id, dto });
   }
 
   @Roles(UserRole.DRIVER)
   @Put('profile/driver')
   updateDriverProfile(@CurrentUser() user: any, @Body() dto: UpdateDriverProfileDto) {
-    return this.usersService.updateDriverProfile(user.id, dto);
+    return this.updateDriverProfileUseCase.execute({ userId: user.id, dto });
   }
 }

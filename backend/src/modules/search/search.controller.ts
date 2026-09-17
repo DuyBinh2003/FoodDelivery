@@ -1,23 +1,28 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
-import { SearchService } from '@/modules/search/search.service.js';
-import { DataSource } from 'typeorm';
-import { Config } from '@/modules/restaurants/entities/config.entity.js';
+import { Controller, Get, Query } from '@nestjs/common';
+import { SearchReadRepository } from '@/modules/search/repositories/search.read.repository.js';
+import { GetCategoriesUseCase } from '@/modules/search/usecases/get-categories.usecase.js';
+import { GetTagsUseCase } from '@/modules/search/usecases/get-tags.usecase.js';
+import { SearchRestaurantsUseCase } from '@/modules/search/usecases/search-restaurants.usecase.js';
+import { SearchMenuUseCase } from '@/modules/search/usecases/search-menu.usecase.js';
 
 @Controller('api/search')
 export class SearchController {
   constructor(
-    @Inject(SearchService) private readonly searchService: SearchService,
-    @Inject(DataSource) private readonly dataSource: DataSource,
-  ) { }
+    private readonly searchReadRepo: SearchReadRepository,
+    private readonly getCategoriesUseCase: GetCategoriesUseCase,
+    private readonly getTagsUseCase: GetTagsUseCase,
+    private readonly searchRestaurantsUseCase: SearchRestaurantsUseCase,
+    private readonly searchMenuUseCase: SearchMenuUseCase,
+  ) {}
 
   @Get('categories')
   async getCategories() {
-    return this.searchService.getCategories();
+    return this.getCategoriesUseCase.execute();
   }
 
   @Get('tags')
   async getTags() {
-    return this.searchService.getTags();
+    return this.getTagsUseCase.execute();
   }
 
   @Get('restaurants')
@@ -29,27 +34,17 @@ export class SearchController {
     @Query('rating') rating?: number,
     @Query('categories') categories?: string,
     @Query('tags') tags?: string,
-    @Query('freeship') freeship?: string, // received as string from query
+    @Query('freeship') freeship?: string,
   ) {
-    // Mock user lat/lon if not provided, per user request
     const userLat = lat ? Number(lat) : 10.762622;
     const userLon = lon ? Number(lon) : 106.660172;
 
-    let freeshipDistanceThreshold = 2; // default 2km
-    try {
-      const configRepo = this.dataSource.getRepository(Config);
-      const config = await configRepo.findOne({ where: { key: 'freeship_distance_threshold' } });
-      if (config && config.value) {
-        freeshipDistanceThreshold = Number(config.value);
-      }
-    } catch (e) {
-      console.warn('Could not fetch freeship config, using default 2km', e);
-    }
+    const freeshipDistanceThreshold = await this.searchReadRepo.getFreeshipDistanceThreshold();
 
     const categoriesArray = categories ? categories.split(',') : undefined;
     const tagsArray = tags ? tags.split(',') : undefined;
 
-    return this.searchService.searchRestaurants({
+    return this.searchRestaurantsUseCase.execute({
       q,
       lat: userLat,
       lon: userLon,
@@ -61,6 +56,7 @@ export class SearchController {
       freeshipDistanceThreshold
     });
   }
+
   @Get('menu')
   async searchMenu(
     @Query('q') q?: string,
@@ -72,25 +68,15 @@ export class SearchController {
     @Query('tag') tag?: string,
     @Query('freeship') freeship?: string,
   ) {
-    // Mock user lat/lon if not provided
     const userLat = lat ? Number(lat) : 10.762622;
     const userLon = lon ? Number(lon) : 106.660172;
 
-    let freeshipDistanceThreshold = 2; // default 2km
-    try {
-      const configRepo = this.dataSource.getRepository(Config);
-      const config = await configRepo.findOne({ where: { key: 'freeship_distance_threshold' } });
-      if (config && config.value) {
-        freeshipDistanceThreshold = Number(config.value);
-      }
-    } catch (e) {
-      console.warn('Could not fetch freeship config, using default 2km', e);
-    }
+    const freeshipDistanceThreshold = await this.searchReadRepo.getFreeshipDistanceThreshold();
 
     const categoriesArray = category ? category.split(',') : undefined;
     const tagsArray = tag ? tag.split(',') : undefined;
 
-    return this.searchService.searchMenu({
+    return this.searchMenuUseCase.execute({
       q,
       lat: userLat,
       lon: userLon,

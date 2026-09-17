@@ -1,13 +1,7 @@
 import { Suspense } from 'react';
-import type { Metadata } from 'next';
 import { SearchFilters } from '@/features/search/components/SearchFilters';
 import FoodList from '@/features/menu/components/food-list';
 import { getCategories, getTags, getMenuItems } from '@/features/search/api';
-
-export const metadata: Metadata = {
-  title: 'Thực đơn | FoodDelivery',
-  description: 'Khám phá thực đơn đa dạng từ các nhà hàng nổi tiếng. Đặt món ngon giao tận nơi.',
-};
 
 export default async function MenuPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
   const resolvedSearchParams = await searchParams;
@@ -41,6 +35,8 @@ export default async function MenuPage({ searchParams }: { searchParams: Promise
 
 async function MenuSearchResults({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
   const menuData = await getMenuItems(searchParams);
+  console.log("searchParams", searchParams);
+  console.log("Menu data: ", menuData);
 
   if (menuData.length === 0) {
     return (

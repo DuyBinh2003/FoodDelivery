@@ -11,32 +11,41 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
-import { UsersService } from './users.service.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { UserRole } from './entities/user.entity.js';
 import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from './dto/profile.dto.js';
+import { GetCustomerProfileUseCase } from './usecases/get-customer-profile.usecase.js';
+import { GetDriverProfileUseCase } from './usecases/get-driver-profile.usecase.js';
+import { UpdateCustomerProfileUseCase } from './usecases/update-customer-profile.usecase.js';
+import { UpdateDriverProfileUseCase } from './usecases/update-driver-profile.usecase.js';
 let UsersController = class UsersController {
-    usersService;
-    constructor(usersService) {
-        this.usersService = usersService;
+    getCustomerProfileUseCase;
+    getDriverProfileUseCase;
+    updateCustomerProfileUseCase;
+    updateDriverProfileUseCase;
+    constructor(getCustomerProfileUseCase, getDriverProfileUseCase, updateCustomerProfileUseCase, updateDriverProfileUseCase) {
+        this.getCustomerProfileUseCase = getCustomerProfileUseCase;
+        this.getDriverProfileUseCase = getDriverProfileUseCase;
+        this.updateCustomerProfileUseCase = updateCustomerProfileUseCase;
+        this.updateDriverProfileUseCase = updateDriverProfileUseCase;
     }
     getProfile(user) {
         if (user.role === UserRole.CUSTOMER) {
-            return this.usersService.getCustomerProfile(user.id);
+            return this.getCustomerProfileUseCase.execute({ userId: user.id });
         }
         if (user.role === UserRole.DRIVER) {
-            return this.usersService.getDriverProfile(user.id);
+            return this.getDriverProfileUseCase.execute({ userId: user.id });
         }
         return user;
     }
     updateCustomerProfile(user, dto) {
-        return this.usersService.updateCustomerProfile(user.id, dto);
+        return this.updateCustomerProfileUseCase.execute({ userId: user.id, dto });
     }
     updateDriverProfile(user, dto) {
-        return this.usersService.updateDriverProfile(user.id, dto);
+        return this.updateDriverProfileUseCase.execute({ userId: user.id, dto });
     }
 };
 __decorate([
@@ -67,7 +76,10 @@ __decorate([
 UsersController = __decorate([
     Controller('users'),
     UseGuards(JwtAuthGuard, RolesGuard),
-    __metadata("design:paramtypes", [UsersService])
+    __metadata("design:paramtypes", [GetCustomerProfileUseCase,
+        GetDriverProfileUseCase,
+        UpdateCustomerProfileUseCase,
+        UpdateDriverProfileUseCase])
 ], UsersController);
 export { UsersController };
 //# sourceMappingURL=users.controller.js.map

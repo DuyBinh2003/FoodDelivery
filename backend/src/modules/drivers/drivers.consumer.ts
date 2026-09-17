@@ -2,17 +2,17 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Inject } from '@nest
 import { ConfigService } from '@nestjs/config';
 import { SQSClient } from '@aws-sdk/client-sqs';
 import { Consumer } from 'sqs-consumer';
-import { OrdersService } from '@/modules/orders/orders.service.js';
+import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
 import { OrderStatus } from '@/modules/orders/entities/order.entity.js';
 
 @Injectable()
-export class DriversService implements OnModuleInit, OnModuleDestroy {
+export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
   private consumer: Consumer;
-  private readonly logger = new Logger(DriversService.name);
+  private readonly logger = new Logger(DriversConsumer.name);
 
   constructor(
     @Inject(ConfigService) private configService: ConfigService,
-    @Inject(OrdersService) private readonly ordersService: OrdersService,
+    @Inject(UpdateOrderStatusUseCase) private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
   ) { }
 
   onModuleInit() {
@@ -31,7 +31,7 @@ export class DriversService implements OnModuleInit, OnModuleDestroy {
 
     this.consumer = Consumer.create({
       queueUrl,
-      sqs: sqsClient as any, // sqs-consumer sometimes has slight type mismatch with v3 client, casting to any is a quick workaround
+      sqs: sqsClient as any,
       handleMessage: async (message) => {
         if (!message.Body) return undefined;
         try {
@@ -40,10 +40,9 @@ export class DriversService implements OnModuleInit, OnModuleDestroy {
             const { orderId } = body.data;
             this.logger.log(`Received ORDER_CREATED for Order: ${orderId}. Finding nearest driver...`);
 
-            // Mocking driver search logic
             setTimeout(async () => {
               this.logger.log(`Driver found for Order: ${orderId}. Updating status to ACCEPTED.`);
-              await this.ordersService.updateStatus(orderId, { status: OrderStatus.ACCEPTED });
+              await this.updateOrderStatusUseCase.execute({ orderId, dto: { status: OrderStatus.ACCEPTED } });
             }, 3000);
           }
           return message;
