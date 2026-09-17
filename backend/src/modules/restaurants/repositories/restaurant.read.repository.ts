@@ -14,7 +14,10 @@ export class RestaurantReadRepository {
   ) {}
 
   async findAll(): Promise<Restaurant[]> {
-    return this.restaurantRepo.find({ where: { is_deleted: false } });
+    return this.restaurantRepo.find({ 
+      where: { is_deleted: false },
+      relations: { categories: true }
+    });
   }
 
   async findById(id: string): Promise<Restaurant | null> {
