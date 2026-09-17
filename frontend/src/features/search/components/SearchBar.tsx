@@ -9,8 +9,15 @@ export const SearchBar: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const initialQuery = searchParams.get('q') || '';
-  const [query, setQuery] = useState(initialQuery);
+  const searchParamQuery = searchParams.get('q') || '';
+  const [query, setQuery] = useState(searchParamQuery);
+  const [prevSearchParamQuery, setPrevSearchParamQuery] = useState(searchParamQuery);
+
+  if (searchParamQuery !== prevSearchParamQuery) {
+    setPrevSearchParamQuery(searchParamQuery);
+    setQuery(searchParamQuery);
+  }
+
   const debouncedQuery = useDebounce(query, 500);
 
   // When debounced query changes, update the URL
@@ -26,11 +33,6 @@ export const SearchBar: React.FC = () => {
       router.push(`?${params.toString()}`, { scroll: false });
     }
   }, [debouncedQuery, router, searchParams]);
-
-  // Sync state if URL changes externally
-  useEffect(() => {
-    setQuery(searchParams.get('q') || '');
-  }, [searchParams]);
 
   return (
     <div className="relative w-full max-w-xl group">
