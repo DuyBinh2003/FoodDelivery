@@ -35,8 +35,6 @@ export default async function MenuPage({ searchParams }: { searchParams: Promise
 
 async function MenuSearchResults({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
   const menuData = await getMenuItems(searchParams);
-  console.log("searchParams", searchParams);
-  console.log("Menu data: ", menuData);
 
   if (menuData.length === 0) {
     return (

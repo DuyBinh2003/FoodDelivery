@@ -8,9 +8,14 @@ import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
 import { GetOrderUseCase } from '@/modules/orders/usecases/get-order.usecase.js';
 import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
+import { ValidateCartUseCase } from '@/modules/orders/usecases/validate-cart.usecase.js';
+import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderItem])],
+  imports: [
+    TypeOrmModule.forFeature([Order, OrderItem]),
+    RestaurantsModule,
+  ],
   controllers: [OrdersController],
   providers: [
     OrderReadRepository,
@@ -18,6 +23,7 @@ import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order
     CreateOrderUseCase,
     GetOrderUseCase,
     UpdateOrderStatusUseCase,
+    ValidateCartUseCase,
   ],
   exports: [
     OrderReadRepository,
@@ -25,6 +31,7 @@ import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order
     CreateOrderUseCase,
     GetOrderUseCase,
     UpdateOrderStatusUseCase,
+    ValidateCartUseCase,
   ],
 })
 export class OrdersModule {}
