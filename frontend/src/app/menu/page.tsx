@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { CartClearer } from '@/features/cart';
 import { SearchFilters } from '@/features/search/components/SearchFilters';
-import FoodList from '@/features/menu/components/food-list';
+import FoodList from '@/features/menu/components/food-list/food-list';
 import { getCategories, getTags, getMenuItems } from '@/features/search/api';
 
 export default async function MenuPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {

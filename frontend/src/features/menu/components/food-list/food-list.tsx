@@ -1,11 +1,5 @@
-import FoodCard from '@/features/menu/components/food-card';
-import type { MenuItem } from '@/features/menu/types';
-
-interface FoodListProps {
-  items: MenuItem[];
-  restaurantName?: string;
-  mode?: 'menu' | 'restaurant';
-}
+import FoodCard from '@/features/menu/components/food-card/food-card';
+import type { FoodListProps } from './types';
 
 export default function FoodList({ items, restaurantName, mode = 'menu' }: FoodListProps) {
   if (items.length === 0) {

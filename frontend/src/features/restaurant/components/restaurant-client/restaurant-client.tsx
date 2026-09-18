@@ -3,16 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useCartStore, CartWidget } from '@/features/cart';
-import type { Restaurant, MenuItem } from '@/features/menu/types';
-import FoodList from '@/features/menu/components/food-list';
-import { AddToCartDialog } from '@/features/restaurant/components/add-to-cart-dialog';
+import type { MenuItem } from '@/features/menu/types';
+import FoodList from '@/features/menu/components/food-list/food-list';
+import { AddToCartDialog } from '@/features/restaurant/components/add-to-cart-dialog/add-to-cart-dialog';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-
-interface RestaurantClientProps {
-  restaurant: Restaurant;
-  menuItems: MenuItem[];
-}
+import type { RestaurantClientProps } from './types';
 
 export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProps) {
   const searchParams = useSearchParams();

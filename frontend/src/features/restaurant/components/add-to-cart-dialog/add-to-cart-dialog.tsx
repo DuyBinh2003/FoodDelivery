@@ -5,14 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Minus, Plus, ShoppingCart, X } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useCartStore, CartItemType } from '@/features/cart';
-import type { MenuItem } from '@/features/menu/types';
-
-interface AddToCartDialogProps {
-  item: MenuItem | null;
-  restaurantId: string;
-  isOpen: boolean;
-  onClose: () => void;
-}
+import type { AddToCartDialogProps } from './types';
 
 export function AddToCartDialog({ item, restaurantId, isOpen, onClose }: AddToCartDialogProps) {
   const [quantity, setQuantity] = useState(1);

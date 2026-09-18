@@ -33,6 +33,8 @@ export function useCartValidation() {
         }),
       });
 
+      console.log('Cart validation response:', response);
+
       if (!response.ok) {
         throw new Error('Không thể kiểm tra giỏ hàng');
       }

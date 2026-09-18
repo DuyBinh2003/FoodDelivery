@@ -1,15 +1,9 @@
 import { formatCurrency } from '@/lib/utils';
 import { Plus, Flame } from 'lucide-react';
-import type { MenuItem } from '@/features/menu/types';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-interface FoodCardProps {
-  item: MenuItem;
-  index: number;
-  mode?: 'menu' | 'restaurant';
-}
+import type { FoodCardProps } from './types';
 
 export default function FoodCard({ item, index, mode = 'menu' }: FoodCardProps) {
   // Deterministic gradient based on index
