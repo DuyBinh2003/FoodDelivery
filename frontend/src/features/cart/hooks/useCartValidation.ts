@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useCartStore } from '../store/useCartStore';
+import { useCartStore } from '@/features/cart/store/useCartStore';
+import { validateCartApi } from '@/features/cart/api/cart-api';
 
 interface ValidationResult {
   isValid: boolean;
@@ -18,31 +19,17 @@ export function useCartValidation() {
 
     setIsValidating(true);
     try {
-      const response = await fetch('/api/orders/validate-cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          restaurant_id: restaurantId,
-          items: items.map(i => ({
-            item_id: i.item_id,
-            quantity: i.quantity,
-            options: i.options
-          }))
-        }),
+      const data = await validateCartApi({
+        restaurant_id: restaurantId,
+        items: items.map(i => ({
+          item_id: i.item_id,
+          quantity: i.quantity,
+          options: i.options,
+        }))
       });
-
-      console.log('Cart validation response:', response);
-
-      if (!response.ok) {
-        throw new Error('Không thể kiểm tra giỏ hàng');
-      }
-
-      const data = await response.json();
       
       // Check if any item has is_available = false
-      const hasUnavailableItems = data.items.some((i: any) => !i.is_available);
+      const hasUnavailableItems = data.items && data.items.some((i: any) => !i.is_available);
       
       if (hasUnavailableItems) {
         return {

@@ -59,6 +59,7 @@ features/orders/
 ## 5. Fetching và Gọi API
 - **Tại Server Components:** Dùng `fetch()` chuẩn của Next.js (hoặc Server Actions) để tận dụng cơ chế Data Caching & Revalidation mặc định của Next.
 - **Tại Client Components:** Khuyến khích sử dụng thư viện như `SWR` hoặc `React Query` (cấu hình trong `lib/`) để gọi API. Việc này giúp quản lý state loading, error và auto-refetch tốt hơn so với tự viết `useEffect`.
+- **Tách biệt Logic Gọi API (Quan trọng):** Không hardcode logic gọi API (vd: dùng `apiClient`) trực tiếp bên trong các React Hooks (`useX`) hoặc UI Components. Phải luôn tách các hàm gọi API sang các file riêng biệt trong thư mục `api/` của feature đó (vd: `features/orders/api/order-api.ts`), và chỉ import hàm đã khai báo vào hook hoặc component để sử dụng. Phải định nghĩa DTOs chặt chẽ, không dùng kiểu `<any>`.
 
 ## 6. CSS & Styling
 - Tuân thủ quy chuẩn UI/UX của dự án (Tham chiếu skill `ui-ux-pro-max`).

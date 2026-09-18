@@ -7,7 +7,7 @@ import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order
 import { ValidateCartUseCase } from '@/modules/orders/usecases/validate-cart.usecase.js';
 import { ValidateCartDto } from '@/modules/orders/dto/validate-cart.dto.js';
 
-@Controller('api/orders')
+@Controller('orders')
 export class OrdersController {
   constructor(
     @Inject(CreateOrderUseCase) private readonly createOrderUseCase: CreateOrderUseCase,
