@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+
 
 export interface CartItemType {
   id: string; // unique id combining item_id and options string
@@ -23,10 +23,9 @@ export interface CartState {
 }
 
 export const useCartStore = create<CartState>()(
-  persist(
-    (set, get) => ({
-      restaurantId: null,
-      items: [],
+  (set, get) => ({
+    restaurantId: null,
+    items: [],
       
       addItem: (item, restaurantId) => {
         const state = get();
@@ -103,10 +102,5 @@ export const useCartStore = create<CartState>()(
         const { items } = get();
         return items.reduce((total, item) => total + item.quantity, 0);
       }
-    }),
-    {
-      name: 'food-delivery-cart',
-      storage: createJSONStorage(() => localStorage),
-    }
-  )
+    })
 );

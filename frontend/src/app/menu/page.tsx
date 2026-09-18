@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { CartClearer } from '@/features/cart';
 import { SearchFilters } from '@/features/search/components/SearchFilters';
 import FoodList from '@/features/menu/components/food-list';
 import { getCategories, getTags, getMenuItems } from '@/features/search/api';
@@ -14,6 +15,7 @@ export default async function MenuPage({ searchParams }: { searchParams: Promise
 
   return (
     <main className="flex-1 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950">
+      <CartClearer />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page header */}
         <div className="mb-10">
