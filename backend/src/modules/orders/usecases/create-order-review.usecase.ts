@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
@@ -8,7 +8,9 @@ import { OrderStatus } from '@/modules/orders/entities/order.entity.js';
 @Injectable()
 export class CreateOrderReviewUseCase {
   constructor(
+    @Inject(OrderReadRepository)
     private readonly orderReadRepo: OrderReadRepository,
+    @Inject(OrderWriteRepository)
     private readonly orderWriteRepo: OrderWriteRepository,
   ) {}
 
