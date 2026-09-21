@@ -44,7 +44,14 @@ features/orders/
 ```
 *Lưu ý: Component nằm trong feature nào thì chỉ feature đó hoặc page tương ứng dùng. Không import component từ feature `orders` sang feature `auth`.*
 
-## 4. Component Design & Server/Client
+## 4. Component Structure & Design
+- **1 File = 1 Component**: Mỗi file `.tsx` chỉ được phép export duy nhất 1 UI Component chính.
+- **Component Folder**: Mỗi component phải nằm trong một thư mục riêng biệt mang tên của component đó.
+- **Tên File Component**: File `.tsx` bên trong thư mục **PHẢI** giữ nguyên tên component (Vd: `my-component/my-component.tsx`, không dùng `index.tsx`).
+- **Tách file Types/Interfaces**: Các Props, Interfaces, hoặc Types dùng riêng cho component đó phải được định nghĩa ở một file `types.ts` riêng biệt cùng cấp thư mục với component (Vd: `my-component/types.ts`).
+- **Child Components**: Nếu một component có các component con đặc thù chỉ dùng riêng cho nó, các component con phải được đặt trong thư mục `components/` bên trong thư mục của component cha.
+
+## 5. Server vs Client Components
 - Luôn ưu tiên dùng **Server Components (RSC)** theo mặc định để tăng hiệu năng SEO, bảo mật API key và giảm JS bundle size.
 - Chỉ đặt dòng `"use client"` ở những file thực sự tương tác với người dùng hoặc dùng browser API (onClick, form validation, useState, useEffect, useRouter).
 - Tách biệt ranh giới: Đẩy các Client Component xuống các nút lá càng sâu trong DOM tree càng tốt. Hạn chế biến toàn bộ một trang lớn thành Client Component.
@@ -52,6 +59,7 @@ features/orders/
 ## 5. Fetching và Gọi API
 - **Tại Server Components:** Dùng `fetch()` chuẩn của Next.js (hoặc Server Actions) để tận dụng cơ chế Data Caching & Revalidation mặc định của Next.
 - **Tại Client Components:** Khuyến khích sử dụng thư viện như `SWR` hoặc `React Query` (cấu hình trong `lib/`) để gọi API. Việc này giúp quản lý state loading, error và auto-refetch tốt hơn so với tự viết `useEffect`.
+- **Tách biệt Logic Gọi API (Quan trọng):** Không hardcode logic gọi API (vd: dùng `apiClient`) trực tiếp bên trong các React Hooks (`useX`) hoặc UI Components. Phải luôn tách các hàm gọi API sang các file riêng biệt trong thư mục `api/` của feature đó (vd: `features/orders/api/order-api.ts`), và chỉ import hàm đã khai báo vào hook hoặc component để sử dụng. Phải định nghĩa DTOs chặt chẽ, không dùng kiểu `<any>`.
 
 ## 6. CSS & Styling
 - Tuân thủ quy chuẩn UI/UX của dự án (Tham chiếu skill `ui-ux-pro-max`).
