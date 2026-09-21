@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useCartStore, CartWidget } from '@/features/cart';
-import type { MenuItem } from '@/features/menu/types';
 import FoodList from '@/features/menu/components/food-list/food-list';
 import { AddToCartDialog } from '@/features/restaurant/components/add-to-cart-dialog/add-to-cart-dialog';
 import { ChevronLeft } from 'lucide-react';
@@ -18,8 +17,6 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
   const cartRestaurantId = useCartStore((state) => state.restaurantId);
   const clearCart = useCartStore((state) => state.clearCart);
 
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-
   // Clear cart if entering a different restaurant
   useEffect(() => {
     if (cartRestaurantId && cartRestaurantId !== restaurant.id) {
@@ -27,21 +24,11 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
     }
   }, [restaurant.id, cartRestaurantId, clearCart]);
 
-  // Handle ?item= query param
-  useEffect(() => {
-    const itemId = searchParams.get('item');
-    if (itemId) {
-      const item = menuItems.find(i => i.id === itemId);
-      if (item) {
-        setSelectedItem(item);
-      }
-    } else {
-      setSelectedItem(null);
-    }
-  }, [searchParams, menuItems]);
+  // Derive selected item from searchParams
+  const itemId = searchParams.get('item');
+  const selectedItem = itemId ? menuItems.find(i => i.id === itemId) || null : null;
 
   const handleCloseDialog = () => {
-    setSelectedItem(null);
     // Remove query param without refreshing the page
     router.replace(pathname, { scroll: false });
   };

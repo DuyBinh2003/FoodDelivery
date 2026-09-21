@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCartStore, CartItem } from '@/features/cart';
+import { useCartStore } from '@/features/cart';
 import { useCartValidation } from '@/features/cart/hooks/useCartValidation';
-import { MapPin, ChevronLeft, CreditCard, Clock, AlertCircle } from 'lucide-react';
+import { MapPin, ChevronLeft, CreditCard, AlertCircle } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -12,7 +12,6 @@ export default function CheckoutPage() {
   const { validateCart, isValidating } = useCartValidation();
   
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [validatedItems, setValidatedItems] = useState<any[] | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {

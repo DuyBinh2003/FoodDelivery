@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Minus, Plus, ShoppingCart, X } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
@@ -11,12 +11,10 @@ export function AddToCartDialog({ item, restaurantId, isOpen, onClose }: AddToCa
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
 
-  // Reset quantity when dialog opens
-  useEffect(() => {
-    if (isOpen) {
-      setQuantity(1);
-    }
-  }, [isOpen]);
+  const handleClose = () => {
+    setQuantity(1);
+    onClose();
+  };
 
   if (!isOpen || !item) return null;
 
@@ -30,7 +28,7 @@ export function AddToCartDialog({ item, restaurantId, isOpen, onClose }: AddToCa
     };
 
     addItem(cartItem, restaurantId);
-    onClose();
+    handleClose();
   };
 
   return (
@@ -45,7 +43,7 @@ export function AddToCartDialog({ item, restaurantId, isOpen, onClose }: AddToCa
             </p>
           </div>
           <button 
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 -mr-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
           >
             <X className="w-5 h-5" />
@@ -74,7 +72,7 @@ export function AddToCartDialog({ item, restaurantId, isOpen, onClose }: AddToCa
 
         {/* Footer */}
         <div className="p-6 pt-4 border-t border-white/10 bg-zinc-900/50 flex justify-end gap-3 mt-auto">
-          <Button variant="ghost" onClick={onClose} className="hover:bg-white/5 hover:text-white text-zinc-300">
+          <Button variant="ghost" onClick={handleClose} className="hover:bg-white/5 hover:text-white text-zinc-300">
             Hủy
           </Button>
           <Button 

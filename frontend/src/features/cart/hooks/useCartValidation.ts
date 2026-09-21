@@ -29,7 +29,7 @@ export function useCartValidation() {
       });
       
       // Check if any item has is_available = false
-      const hasUnavailableItems = data.items && data.items.some((i: any) => !i.is_available);
+      const hasUnavailableItems = data.items && data.items.some((i: { is_available: boolean }) => !i.is_available);
       
       if (hasUnavailableItems) {
         return {

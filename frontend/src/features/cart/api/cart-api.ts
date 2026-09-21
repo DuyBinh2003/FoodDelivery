@@ -3,7 +3,7 @@ import { apiClient } from '@/lib/api-client';
 export interface ValidateCartItem {
   item_id: string;
   quantity: number;
-  options?: any;
+  options?: string[];
 }
 
 export interface ValidateCartPayload {
@@ -14,7 +14,11 @@ export interface ValidateCartPayload {
 export interface ValidateCartResponse {
   items: Array<{
     is_available: boolean;
-    [key: string]: any;
+    error?: string;
+    item_id: string;
+    quantity: number;
+    price?: number;
+    options?: string[];
   }>;
 }
 
