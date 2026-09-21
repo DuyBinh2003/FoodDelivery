@@ -1,4 +1,6 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const DEFAULT_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_API_TIMEOUT) || 10000;
+
 
 interface ApiRequestOptions extends Omit<RequestInit, 'body' | 'signal'> {
   params?: Record<string, string | undefined>;
@@ -25,7 +27,7 @@ async function apiClient<T>(
   endpoint: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const { params, body, headers: customHeaders, timeoutMs = 10000, ...fetchOptions } = options;
+  const { params, body, headers: customHeaders, timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
 
   // Build URL with query params
   const url = new URL(`${BACKEND_URL}${endpoint}`);

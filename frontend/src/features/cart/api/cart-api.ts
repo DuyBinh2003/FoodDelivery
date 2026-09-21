@@ -22,7 +22,7 @@ export interface ValidateCartResponse {
  * Client-side: Validate the current cart items against the backend.
  */
 export async function validateCartApi(payload: ValidateCartPayload): Promise<ValidateCartResponse> {
-  return await apiClient<ValidateCartResponse>('/api/orders/validate-cart', {
+  return await apiClient<ValidateCartResponse>('/orders/validate-cart', {
     method: 'POST',
     body: payload,
   });
