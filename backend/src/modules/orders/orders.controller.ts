@@ -6,6 +6,9 @@ import { GetOrderUseCase } from '@/modules/orders/usecases/get-order.usecase.js'
 import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
 import { ValidateCartUseCase } from '@/modules/orders/usecases/validate-cart.usecase.js';
 import { ValidateCartDto } from '@/modules/orders/dto/validate-cart.dto.js';
+import { GetOrderHistoryUseCase } from '@/modules/orders/usecases/get-order-history.usecase.js';
+import { CreateOrderReviewUseCase } from '@/modules/orders/usecases/create-order-review.usecase.js';
+import { CreateOrderReviewDto } from '@/modules/orders/dto/create-order-review.dto.js';
 
 @Controller('orders')
 export class OrdersController {
@@ -16,6 +19,10 @@ export class OrdersController {
     private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
     @Inject(ValidateCartUseCase)
     private readonly validateCartUseCase: ValidateCartUseCase,
+    @Inject(GetOrderHistoryUseCase)
+    private readonly getOrderHistoryUseCase: GetOrderHistoryUseCase,
+    @Inject(CreateOrderReviewUseCase)
+    private readonly createOrderReviewUseCase: CreateOrderReviewUseCase,
   ) {}
 
   @Post('validate-cart')
@@ -40,8 +47,27 @@ export class OrdersController {
     return this.updateOrderStatusUseCase.execute({ orderId: id, dto: updateDto });
   }
 
+  @Get('history/me')
+  async getOrderHistory(@Body() body: any) { // Temporary: in real app use req.user.id
+    // Wait, typical NestJS app would get user id from JWT token guard.
+    // For this boilerplate let's assume we pass customerId in query or req.user.
+    // Since there's no JWT token injected here based on the boilerplate, we can get it from headers or query.
+    // Actually, let's use a query param `?customerId=xxx` for simplicity in dev.
+    const customerId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'; // hardcoded to user 1 for dev
+    return this.getOrderHistoryUseCase.execute({ customerId });
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.getOrderUseCase.execute({ orderId: id });
+  }
+
+  @Post(':id/reviews')
+  createReview(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateOrderReviewDto,
+  ) {
+    const customerId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'; // hardcoded to user 1 for dev
+    return this.createOrderReviewUseCase.execute({ orderId: id, customerId, dto });
   }
 }

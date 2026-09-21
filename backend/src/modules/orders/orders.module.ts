@@ -3,17 +3,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrdersController } from '@/modules/orders/orders.controller.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
 import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
+import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
 import { GetOrderUseCase } from '@/modules/orders/usecases/get-order.usecase.js';
+import { GetOrderHistoryUseCase } from '@/modules/orders/usecases/get-order-history.usecase.js';
+import { CreateOrderReviewUseCase } from '@/modules/orders/usecases/create-order-review.usecase.js';
 import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
 import { ValidateCartUseCase } from '@/modules/orders/usecases/validate-cart.usecase.js';
 import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem]),
+    TypeOrmModule.forFeature([Order, OrderItem, OrderReview]),
     RestaurantsModule,
   ],
   controllers: [OrdersController],
@@ -22,6 +25,8 @@ import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
     OrderWriteRepository,
     CreateOrderUseCase,
     GetOrderUseCase,
+    GetOrderHistoryUseCase,
+    CreateOrderReviewUseCase,
     UpdateOrderStatusUseCase,
     ValidateCartUseCase,
   ],
@@ -30,6 +35,8 @@ import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
     OrderWriteRepository,
     CreateOrderUseCase,
     GetOrderUseCase,
+    GetOrderHistoryUseCase,
+    CreateOrderReviewUseCase,
     UpdateOrderStatusUseCase,
     ValidateCartUseCase,
   ],

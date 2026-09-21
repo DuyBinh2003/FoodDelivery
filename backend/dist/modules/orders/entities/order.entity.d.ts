@@ -1,3 +1,5 @@
+import { OrderItem } from './order-item.entity.js';
+import { OrderReview } from './order-review.entity.js';
 export declare enum OrderStatus {
     PENDING = "PENDING",
     ACCEPTED = "ACCEPTED",
@@ -17,4 +19,6 @@ export declare class Order {
     created_at: Date;
     updated_at: Date;
     is_deleted: boolean;
+    items: OrderItem[];
+    review: OrderReview;
 }

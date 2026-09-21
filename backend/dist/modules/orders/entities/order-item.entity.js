@@ -7,7 +7,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Order } from './order.entity.js';
 let OrderItem = class OrderItem {
     id;
     order_id;
@@ -17,6 +18,7 @@ let OrderItem = class OrderItem {
     created_at;
     updated_at;
     is_deleted;
+    order;
 };
 __decorate([
     PrimaryGeneratedColumn('uuid'),
@@ -50,6 +52,11 @@ __decorate([
     Column({ type: 'boolean', default: false }),
     __metadata("design:type", Boolean)
 ], OrderItem.prototype, "is_deleted", void 0);
+__decorate([
+    ManyToOne(() => Order, order => order.items),
+    JoinColumn({ name: 'order_id' }),
+    __metadata("design:type", Order)
+], OrderItem.prototype, "order", void 0);
 OrderItem = __decorate([
     Entity('t_order_item', { schema: 'schema_order' })
 ], OrderItem);

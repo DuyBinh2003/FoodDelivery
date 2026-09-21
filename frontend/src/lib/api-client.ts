@@ -1,5 +1,5 @@
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-const DEFAULT_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_API_TIMEOUT) || 10000;
+const DEFAULT_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_API_TIMEOUT);
 
 
 interface ApiRequestOptions extends Omit<RequestInit, 'body' | 'signal'> {

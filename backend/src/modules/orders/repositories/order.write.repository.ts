@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
 import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
+import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
 
@@ -13,6 +14,8 @@ export class OrderWriteRepository {
     private readonly orderRepo: Repository<Order>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepo: Repository<OrderItem>,
+    @InjectRepository(OrderReview)
+    private readonly orderReviewRepo: Repository<OrderReview>,
     @Inject(DataSource) private readonly dataSource: DataSource,
     @Inject(SqsService) private readonly sqsService: SqsService,
   ) {}
@@ -67,5 +70,9 @@ export class OrderWriteRepository {
 
   async save(order: Order): Promise<Order> {
     return this.orderRepo.save(order);
+  }
+
+  async saveReview(review: OrderReview): Promise<OrderReview> {
+    return this.orderReviewRepo.save(review);
   }
 }

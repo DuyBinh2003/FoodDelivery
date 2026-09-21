@@ -1,3 +1,4 @@
+import { Order } from './order.entity.js';
 export declare class OrderItem {
     id: string;
     order_id: string;
@@ -7,4 +8,5 @@ export declare class OrderItem {
     created_at: Date;
     updated_at: Date;
     is_deleted: boolean;
+    order: Order;
 }

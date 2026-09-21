@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 import { Order } from '@/modules/orders/entities/order.entity.js';
 
@@ -27,4 +27,8 @@ export class OrderItem {
 
   @Column({ type: 'boolean', default: false })
   is_deleted: boolean;
+
+  @ManyToOne(() => Order, order => order.items)
+  @JoinColumn({ name: 'order_id' })
+  order: Order;
 }
