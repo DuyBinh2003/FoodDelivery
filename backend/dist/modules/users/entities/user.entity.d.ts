@@ -1,6 +1,5 @@
 export declare enum UserRole {
-    CUSTOMER = "CUSTOMER",
-    DRIVER = "DRIVER",
+    USER = "USER",
     ADMIN = "ADMIN"
 }
 export declare class User {

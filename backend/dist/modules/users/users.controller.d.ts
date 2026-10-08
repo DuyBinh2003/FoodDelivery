@@ -9,7 +9,7 @@ export declare class UsersController {
     private readonly updateCustomerProfileUseCase;
     private readonly updateDriverProfileUseCase;
     constructor(getCustomerProfileUseCase: GetCustomerProfileUseCase, getDriverProfileUseCase: GetDriverProfileUseCase, updateCustomerProfileUseCase: UpdateCustomerProfileUseCase, updateDriverProfileUseCase: UpdateDriverProfileUseCase);
-    getProfile(user: any): any;
+    getProfile(user: any): Promise<any>;
     updateCustomerProfile(user: any, dto: UpdateCustomerProfileDto): Promise<import("./entities/customer-profile.entity.js").CustomerProfile>;
     updateDriverProfile(user: any, dto: UpdateDriverProfileDto): Promise<import("./entities/driver-profile.entity.js").DriverProfile>;
 }

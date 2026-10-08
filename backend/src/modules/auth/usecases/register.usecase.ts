@@ -3,13 +3,14 @@ import { UserReadRepository } from '@/modules/users/repositories/user.read.repos
 import { UserWriteRepository } from '@/modules/users/repositories/user.write.repository.js';
 import { RegisterDto } from '@/modules/auth/dto/auth.dto.js';
 import * as bcrypt from 'bcrypt';
+import { UserRole } from '@/modules/users/entities/user.entity.js';
 
 @Injectable()
 export class RegisterUseCase {
   constructor(
     @Inject(UserReadRepository) private readonly userReadRepo: UserReadRepository,
     @Inject(UserWriteRepository) private readonly userWriteRepo: UserWriteRepository,
-  ) {}
+  ) { }
 
   async execute(dto: RegisterDto) {
     const existingUser = await this.userReadRepo.findByEmail(dto.email);
@@ -23,7 +24,7 @@ export class RegisterUseCase {
     const user = await this.userWriteRepo.createUserWithProfile({
       email: dto.email,
       password_hash,
-      role: dto.role,
+      role: UserRole.USER,
       fullName: dto.fullName,
       phone: dto.phone,
     });

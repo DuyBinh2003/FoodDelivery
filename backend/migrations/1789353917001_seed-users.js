@@ -14,11 +14,11 @@ export const up = (pgm) => {
 
   pgm.sql(`
     INSERT INTO schema_user.m_user (id, email, password_hash, role) VALUES
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'customer@fooddelivery.com', '${passwordHash}', 'CUSTOMER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'driver1@fooddelivery.com', '${passwordHash}', 'DRIVER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'driver2@fooddelivery.com', '${passwordHash}', 'DRIVER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'owner@phobien.com', '${passwordHash}', 'RESTAURANT_OWNER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'owner@bunbo.com', '${passwordHash}', 'RESTAURANT_OWNER'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'customer@fooddelivery.com', '${passwordHash}', 'USER'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'driver1@fooddelivery.com', '${passwordHash}', 'USER'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'driver2@fooddelivery.com', '${passwordHash}', 'USER'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'owner@phobien.com', '${passwordHash}', 'USER'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'owner@bunbo.com', '${passwordHash}', 'USER'),
     ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'admin@fooddelivery.com', '${passwordHash}', 'ADMIN');
   `);
 

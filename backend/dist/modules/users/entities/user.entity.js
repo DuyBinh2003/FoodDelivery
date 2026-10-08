@@ -10,8 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 export var UserRole;
 (function (UserRole) {
-    UserRole["CUSTOMER"] = "CUSTOMER";
-    UserRole["DRIVER"] = "DRIVER";
+    UserRole["USER"] = "USER";
     UserRole["ADMIN"] = "ADMIN";
 })(UserRole || (UserRole = {}));
 let User = class User {
