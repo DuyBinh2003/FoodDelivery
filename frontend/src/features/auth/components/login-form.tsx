@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { Eye, EyeOff, Mail, Lock, UtensilsCrossed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,11 @@ export default function LoginForm() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     if (email === 'customer@fooddelivery.com' && password === 'password123') {
+      useAuthStore.getState().login({
+        id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        email: 'customer@fooddelivery.com',
+        name: 'Nguyễn Văn An'
+      });
       router.push('/menu');
     } else {
       setError('Email hoặc mật khẩu không đúng.');
