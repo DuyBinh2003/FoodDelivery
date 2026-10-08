@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { apiClient } from '@/lib/api-client';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -22,18 +23,48 @@ export default function LoginForm() {
     setError('');
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // 1. Call login API
+      const data = await apiClient('/auth/login', {
+        method: 'POST',
+        body: { email, password },
+      }) as { access_token: string; user: Record<string, unknown> };
 
-    if (email === 'customer@fooddelivery.com' && password === 'password123') {
+      // 2. Save token to cookies so other requests (Server or Client) can use it
+      document.cookie = `access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}`;
+
+      // 3. Fetch full user profile using the token
+      const profile = await apiClient('/users/profile', {
+        headers: {
+          Authorization: `Bearer ${data.access_token}`
+        }
+      }) as {
+        id: string;
+        email: string;
+        role: 'USER' | 'ADMIN';
+        customerProfile?: Record<string, unknown>;
+        driverProfile?: Record<string, unknown>
+      };
+
+      // 4. Update auth store
       useAuthStore.getState().login({
-        id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-        email: 'customer@fooddelivery.com',
-        name: 'Nguyễn Văn An'
+        id: profile.id,
+        email: profile.email,
+        name: (profile.customerProfile?.full_name as string) || profile.email,
+        role: profile.role,
+        customerProfile: profile.customerProfile,
+        driverProfile: profile.driverProfile,
       });
-      router.push('/menu');
-    } else {
-      setError('Email hoặc mật khẩu không đúng.');
+
+      if (profile.role === 'ADMIN') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/menu');
+      }
+    } catch (err: unknown) {
+      const errorData = err as { data?: { message?: string } };
+      setError(errorData?.data?.message || 'Email hoặc mật khẩu không đúng.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -42,7 +73,7 @@ export default function LoginForm() {
     <div className="w-full max-w-md mx-auto relative group">
       {/* Background glow for premium feel */}
       <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-red-600 rounded-[32px] blur-xl opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200" />
-      
+
       <Card className="relative bg-zinc-950/80 backdrop-blur-xl border-white/10 shadow-2xl rounded-3xl overflow-hidden">
         <CardHeader className="text-center pb-6">
           <div className="mx-auto inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 mb-4 shadow-lg shadow-orange-500/25">

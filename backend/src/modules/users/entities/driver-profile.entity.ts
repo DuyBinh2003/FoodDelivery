@@ -16,6 +16,9 @@ export class DriverProfile {
   @Column({ type: 'varchar', length: 20, default: DriverStatus.OFFLINE })
   status: DriverStatus;
 
+  @Column({ type: 'varchar', length: 50, default: 'PENDING' })
+  verification_status: string;
+
   @Column({ type: 'numeric', nullable: true })
   current_location_lat: number;
 

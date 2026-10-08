@@ -15,6 +15,7 @@ let Restaurant = class Restaurant {
     name;
     address;
     is_active;
+    verification_status;
     lat;
     lon;
     rating;
@@ -43,6 +44,10 @@ __decorate([
     Column({ type: 'boolean', default: true }),
     __metadata("design:type", Boolean)
 ], Restaurant.prototype, "is_active", void 0);
+__decorate([
+    Column({ type: 'varchar', length: 50, default: 'PENDING' }),
+    __metadata("design:type", String)
+], Restaurant.prototype, "verification_status", void 0);
 __decorate([
     Column({ type: 'numeric', precision: 10, scale: 8, nullable: true }),
     __metadata("design:type", Number)

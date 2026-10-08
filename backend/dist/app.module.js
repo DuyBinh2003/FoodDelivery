@@ -21,6 +21,7 @@ import { DriversModule } from './modules/drivers/drivers.module.js';
 import configuration from './config/configuration.js';
 import { validate } from './config/validation.js';
 import { SearchModule } from './modules/search/search.module.js';
+import { AdminModule } from './modules/admin/admin.module.js';
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -45,6 +46,7 @@ AppModule = __decorate([
             OrdersModule,
             DriversModule,
             SearchModule,
+            AdminModule,
         ],
         controllers: [AppController],
         providers: [AppService],

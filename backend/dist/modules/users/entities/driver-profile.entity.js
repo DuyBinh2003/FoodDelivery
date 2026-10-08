@@ -17,6 +17,7 @@ let DriverProfile = class DriverProfile {
     id;
     user_id;
     status;
+    verification_status;
     current_location_lat;
     current_location_lng;
     created_at;
@@ -35,6 +36,10 @@ __decorate([
     Column({ type: 'varchar', length: 20, default: DriverStatus.OFFLINE }),
     __metadata("design:type", String)
 ], DriverProfile.prototype, "status", void 0);
+__decorate([
+    Column({ type: 'varchar', length: 50, default: 'PENDING' }),
+    __metadata("design:type", String)
+], DriverProfile.prototype, "verification_status", void 0);
 __decorate([
     Column({ type: 'numeric', nullable: true }),
     __metadata("design:type", Number)
