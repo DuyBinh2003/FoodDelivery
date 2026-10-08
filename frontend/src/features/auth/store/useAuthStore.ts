@@ -5,6 +5,9 @@ interface User {
   id: string;
   email: string;
   name: string;
+  role?: 'USER' | 'ADMIN';
+  customerProfile?: Record<string, unknown>;
+  driverProfile?: Record<string, unknown>;
 }
 
 interface AuthState {

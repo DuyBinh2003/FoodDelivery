@@ -32,12 +32,20 @@ let UsersController = class UsersController {
         this.updateCustomerProfileUseCase = updateCustomerProfileUseCase;
         this.updateDriverProfileUseCase = updateDriverProfileUseCase;
     }
-    getProfile(user) {
-        if (user.role === UserRole.CUSTOMER) {
-            return this.getCustomerProfileUseCase.execute({ userId: user.id });
-        }
-        if (user.role === UserRole.DRIVER) {
-            return this.getDriverProfileUseCase.execute({ userId: user.id });
+    async getProfile(user) {
+        if (user.role === UserRole.USER) {
+            const customerProfile = await this.getCustomerProfileUseCase.execute({ userId: user.id });
+            let driverProfile = null;
+            try {
+                driverProfile = await this.getDriverProfileUseCase.execute({ userId: user.id });
+            }
+            catch (e) {
+            }
+            return {
+                ...user,
+                customerProfile,
+                driverProfile,
+            };
         }
         return user;
     }
@@ -53,10 +61,10 @@ __decorate([
     __param(0, CurrentUser()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getProfile", null);
 __decorate([
-    Roles(UserRole.CUSTOMER),
+    Roles(UserRole.USER),
     Put('profile/customer'),
     __param(0, CurrentUser()),
     __param(1, Body()),
@@ -65,7 +73,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "updateCustomerProfile", null);
 __decorate([
-    Roles(UserRole.DRIVER),
+    Roles(UserRole.USER),
     Put('profile/driver'),
     __param(0, CurrentUser()),
     __param(1, Body()),

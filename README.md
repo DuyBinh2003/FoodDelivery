@@ -25,8 +25,8 @@ Dự án áp dụng mô hình **Hybrid Pattern** để giao tiếp giữa Next.j
 Xác định ranh giới Microservices. Trước khi viết code, cần xác định rõ các module độc lập và mô hình dữ liệu.
 
 *   **Phân chia Service:**
-    *   **User Service:** Quản lý tài khoản, xác thực cho Customer, Driver và Admin.
-    *   **Restaurant Service:** Quản lý thực đơn (Menu), giá cả, ca làm việc.
+    *   **User Service:** Quản lý tài khoản và xác thực cho toàn bộ người dùng (`USER`, `ADMIN`). Hệ thống sử dụng mô hình "Profile Mở rộng" (Add-ons): Một `USER` có thể gửi yêu cầu tạo thêm `driver_profile` hoặc đăng ký mở `restaurant` thay vì bị giới hạn cứng vào một Role duy nhất.
+    *   **Restaurant Service:** Quản lý thực đơn (Menu), giá cả, ca làm việc. Mối liên hệ thuộc quyền sở hữu của `USER`.
     *   **Order Service:** Quản lý logic đặt món, state machine cho trạng thái đơn (Pending, Cooking, Delivering, Completed). (Xem [Tài liệu Order Service](./docs/services/order-service.md))
 *   **Database Schema:** Thiết kế các bảng trên PostgreSQL. Phân chia tách schema (VD: `schema_user`, `schema_order`) để đảm bảo tính độc lập dữ liệu giữa các service trên cùng 1 instance.
 
@@ -64,7 +64,7 @@ Kiểm thử và triển khai tự động.
 ## 🚀 Các Tính Năng Nâng Cao (Ghi Điểm Dự Án)
 Để dự án thể hiện rõ tư duy của một kỹ sư hệ thống, cần bổ sung các yếu tố sau khi luồng cơ bản đã hoàn thành:
 
-*   **Bảo mật:** Dùng API Gateway Lambda Authorizer (xác thực bằng JWT) để phân quyền chặt chẽ giữa 3 role: Người đặt, Tài xế và Admin.
+*   **Bảo mật:** Dùng API Gateway Lambda Authorizer (xác thực bằng JWT) để phân quyền chặt chẽ giữa 2 role cơ bản: Người dùng (`USER`) và Quản trị viên (`ADMIN`), kết hợp kiểm tra quyền sở hữu đối với Profile (Driver/Restaurant).
 *   **Giới hạn tài nguyên (Rate Limiting):** Cấu hình Usage Plans trên API Gateway để chặn spam request, bảo vệ hệ thống khỏi DDoS.
 *   **Observability (Giám sát):** Tích hợp CloudWatch và AWS X-Ray để theo dõi log tập trung. Cho phép nhìn được một request đi từ `API Gateway -> Lambda -> PostgreSQL` mất chính xác bao nhiêu mili-giây.
 *   **Tìm kiếm & Lọc thông minh (Smart Search):** Tích hợp engine tìm kiếm Elasticsearch để tìm kiếm full-text nhà hàng/món ăn, filter linh hoạt theo đánh giá, khoảng cách, freeship, và phân loại (category).

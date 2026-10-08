@@ -21,23 +21,31 @@ export class UsersController {
   ) {}
 
   @Get('profile')
-  getProfile(@CurrentUser() user: any) {
-    if (user.role === UserRole.CUSTOMER) {
-      return this.getCustomerProfileUseCase.execute({ userId: user.id });
-    }
-    if (user.role === UserRole.DRIVER) {
-      return this.getDriverProfileUseCase.execute({ userId: user.id });
+  async getProfile(@CurrentUser() user: any) {
+    if (user.role === UserRole.USER) {
+      const customerProfile = await this.getCustomerProfileUseCase.execute({ userId: user.id });
+      let driverProfile = null;
+      try {
+        driverProfile = await this.getDriverProfileUseCase.execute({ userId: user.id });
+      } catch (e) {
+        // Not a driver yet, ignore
+      }
+      return {
+        ...user,
+        customerProfile,
+        driverProfile,
+      };
     }
     return user; // Return basic user info for ADMIN
   }
 
-  @Roles(UserRole.CUSTOMER)
+  @Roles(UserRole.USER)
   @Put('profile/customer')
   updateCustomerProfile(@CurrentUser() user: any, @Body() dto: UpdateCustomerProfileDto) {
     return this.updateCustomerProfileUseCase.execute({ userId: user.id, dto });
   }
 
-  @Roles(UserRole.DRIVER)
+  @Roles(UserRole.USER)
   @Put('profile/driver')
   updateDriverProfile(@CurrentUser() user: any, @Body() dto: UpdateDriverProfileDto) {
     return this.updateDriverProfileUseCase.execute({ userId: user.id, dto });

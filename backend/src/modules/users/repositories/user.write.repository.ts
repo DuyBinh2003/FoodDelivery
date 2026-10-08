@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User, UserRole } from '@/modules/users/entities/user.entity.js';
 import { CustomerProfile } from '@/modules/users/entities/customer-profile.entity.js';
-import { DriverProfile, DriverStatus } from '@/modules/users/entities/driver-profile.entity.js';
+import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js';
 
 export interface CreateUserPayload {
   email: string;
@@ -21,7 +21,7 @@ export class UserWriteRepository {
     @InjectRepository(DriverProfile)
     private readonly driverProfileRepo: Repository<DriverProfile>,
     @Inject(DataSource) private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   async createUserWithProfile(payload: CreateUserPayload): Promise<User> {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -36,17 +36,11 @@ export class UserWriteRepository {
       });
       const savedUser = await queryRunner.manager.save(user);
 
-      if (payload.role === UserRole.CUSTOMER) {
+      if (payload.role === UserRole.USER) {
         const profile = queryRunner.manager.create(CustomerProfile, {
           user_id: savedUser.id,
           full_name: payload.fullName,
           phone: payload.phone,
-        });
-        await queryRunner.manager.save(profile);
-      } else if (payload.role === UserRole.DRIVER) {
-        const profile = queryRunner.manager.create(DriverProfile, {
-          user_id: savedUser.id,
-          status: DriverStatus.OFFLINE,
         });
         await queryRunner.manager.save(profile);
       }
