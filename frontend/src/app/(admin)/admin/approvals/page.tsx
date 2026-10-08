@@ -18,7 +18,7 @@ export default function AdminApprovalsPage() {
   const loadApprovals = async () => {
     setLoading(true);
     try {
-      const data = await apiClient.get('/admin/approvals/pending');
+      const data = await apiClient<any>('/admin/approvals/pending');
       const mappedRestaurants = (data.restaurants || []).map((r: Record<string, unknown>) => ({
         id: r.id as string,
         name: r.name as string,
@@ -47,7 +47,7 @@ export default function AdminApprovalsPage() {
   async function handleAction(id: string, type: string, action: 'approve' | 'reject') {
     try {
       const endpoint = `/admin/approvals/${type.toLowerCase()}/${id}/${action}`;
-      await apiClient.post(endpoint, {});
+      await apiClient(endpoint, { method: 'POST', body: {} });
       await loadApprovals();
     } catch (error) {
       console.error(`Failed to ${action} ${type}:`, error);

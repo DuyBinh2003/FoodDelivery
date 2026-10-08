@@ -26,7 +26,7 @@ export default function AdminSettingsPage() {
   async function loadConfigs() {
     setLoading(true);
     try {
-      const data: SystemConfig[] = await apiClient.get('/admin/configs');
+      const data: SystemConfig[] = await apiClient('/admin/configs');
       setConfigs(data);
       const initialForm: Record<string, string> = {};
       data.forEach(c => {
@@ -45,7 +45,7 @@ export default function AdminSettingsPage() {
     setSaving(true);
     try {
       const promises = Object.entries(formData).map(([key, value]) => 
-        apiClient.put('/admin/configs', { key, value })
+        apiClient('/admin/configs', { method: 'PUT', body: { key, value } })
       );
       await Promise.all(promises);
       alert('Lưu cấu hình thành công!');

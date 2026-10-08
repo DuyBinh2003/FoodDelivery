@@ -60,7 +60,7 @@ export class ElasticsearchRepository implements OnModuleInit {
         index: 'restaurants',
         id: id,
       });
-    } catch (e) {
+    } catch (_e) {
       // Ignore not found errors
     }
   }

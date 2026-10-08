@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Put, Body, Param, UseGuards } from '@nestjs/common';
-import { AdminService } from './admin.service.js';
+import { AdminService } from '@/modules/admin/admin.service';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
 import { Roles } from '@/common/decorators/roles.decorator.js';

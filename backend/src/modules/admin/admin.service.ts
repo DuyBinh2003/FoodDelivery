@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SystemConfig } from './entities/system-config.entity.js';
+import { SystemConfig } from '@/modules/admin/entities/system-config.entity';
 import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
 import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js';
 import { User } from '@/modules/users/entities/user.entity.js';

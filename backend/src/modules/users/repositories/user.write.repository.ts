@@ -47,7 +47,7 @@ export class UserWriteRepository {
 
       await queryRunner.commitTransaction();
       return savedUser;
-    } catch (err) {
+    } catch (_err) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException('Could not create user and profile');
     } finally {
