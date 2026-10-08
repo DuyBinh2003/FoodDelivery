@@ -19,4 +19,22 @@ export interface Order {
   delivery_address: string;
   items: OrderItem[];
   created_at: string;
+  review?: OrderReview;
+}
+
+export interface OrderReview {
+  id: string;
+  restaurant_rating: number | null;
+  driver_rating: number | null;
+  food_rating: number | null;
+  comment: string | null;
+  image_urls: string[] | null;
+}
+
+export interface CreateOrderReviewDto {
+  restaurant_rating?: number;
+  driver_rating?: number;
+  food_rating?: number;
+  comment?: string;
+  image_urls?: string[];
 }

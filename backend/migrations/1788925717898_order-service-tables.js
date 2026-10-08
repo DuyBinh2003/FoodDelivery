@@ -34,6 +34,18 @@ export const up = (pgm) => {
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
   });
+  pgm.createTable({ schema, name: 't_order_review' }, {
+    id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
+    order_id: { type: 'uuid', references: { schema, name: 't_order' }, notNull: true, unique: true },
+    restaurant_rating: { type: 'integer' }, // 1-5
+    driver_rating: { type: 'integer' }, // 1-5
+    food_rating: { type: 'integer' }, // 1-5
+    comment: { type: 'text' },
+    image_urls: { type: 'text[]' }, // Array of text
+    created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
+    updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
+    is_deleted: { type: 'boolean', default: false }
+  });
 };
 
 /**
@@ -43,6 +55,7 @@ export const up = (pgm) => {
  */
 export const down = (pgm) => {
   const schema = 'schema_order';
+  pgm.dropTable({ schema, name: 't_order_review' }, { ifExists: true });
   pgm.dropTable({ schema, name: 't_order_item' });
   pgm.dropTable({ schema, name: 't_order' });
 };

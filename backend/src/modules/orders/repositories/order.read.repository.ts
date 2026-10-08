@@ -11,6 +11,17 @@ export class OrderReadRepository {
   ) {}
 
   async findById(id: string): Promise<Order | null> {
-    return this.orderRepo.findOne({ where: { id, is_deleted: false } });
+    return this.orderRepo.findOne({
+      where: { id, is_deleted: false },
+      relations: { items: true, review: true },
+    });
+  }
+
+  async findHistoryByCustomerId(customerId: string): Promise<Order[]> {
+    return this.orderRepo.find({
+      where: { customer_id: customerId, is_deleted: false },
+      relations: { items: true, review: true },
+      order: { created_at: 'DESC' },
+    });
   }
 }

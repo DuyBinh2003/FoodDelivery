@@ -20,6 +20,7 @@ export interface CartState {
   clearCart: () => void;
   getSubtotal: () => number;
   getTotalItems: () => number;
+  setItems: (items: CartItemType[], restaurantId: string) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -91,6 +92,10 @@ export const useCartStore = create<CartState>()(
       
       clearCart: () => {
         set({ items: [], restaurantId: null });
+      },
+      
+      setItems: (items, restaurantId) => {
+        set({ items, restaurantId });
       },
       
       getSubtotal: () => {

@@ -68,3 +68,4 @@ Kiểm thử và triển khai tự động.
 *   **Giới hạn tài nguyên (Rate Limiting):** Cấu hình Usage Plans trên API Gateway để chặn spam request, bảo vệ hệ thống khỏi DDoS.
 *   **Observability (Giám sát):** Tích hợp CloudWatch và AWS X-Ray để theo dõi log tập trung. Cho phép nhìn được một request đi từ `API Gateway -> Lambda -> PostgreSQL` mất chính xác bao nhiêu mili-giây.
 *   **Tìm kiếm & Lọc thông minh (Smart Search):** Tích hợp engine tìm kiếm Elasticsearch để tìm kiếm full-text nhà hàng/món ăn, filter linh hoạt theo đánh giá, khoảng cách, freeship, và phân loại (category).
+*   **Lịch sử, Đặt lại & Đánh giá (Order History & Review):** Người dùng xem lại lịch sử các đơn hàng đã đặt, thực hiện đặt lại nhanh (Reorder) với cơ chế Single Restaurant, và nộp đánh giá chi tiết (Rating 1-5 sao kèm hình ảnh) cho món ăn, nhà hàng, tài xế.
