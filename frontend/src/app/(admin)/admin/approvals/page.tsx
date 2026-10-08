@@ -18,14 +18,17 @@ export default function AdminApprovalsPage() {
   const loadApprovals = async () => {
     setLoading(true);
     try {
-      const data = await apiClient<any>('/admin/approvals/pending');
-      const mappedRestaurants = (data.restaurants || []).map((r: Record<string, unknown>) => ({
+      const data = await apiClient<{
+        restaurants?: Record<string, unknown>[];
+        drivers?: Record<string, unknown>[];
+      }>('/admin/approvals/pending');
+      const mappedRestaurants = (data.restaurants || []).map((r: Record<string, unknown>): PendingApproval => ({
         id: r.id as string,
         name: r.name as string,
         type: 'RESTAURANT',
         createdAt: r.created_at as string,
       }));
-      const mappedDrivers = (data.drivers || []).map((d: Record<string, unknown>) => ({
+      const mappedDrivers = (data.drivers || []).map((d: Record<string, unknown>): PendingApproval => ({
         id: d.id as string,
         name: d.user_id as string,
         type: 'DRIVER',
