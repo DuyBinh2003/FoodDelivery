@@ -19,14 +19,15 @@ export function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
-    
+
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -53,22 +54,21 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
-                  isActive ? 'text-white bg-white/10' : 'text-zinc-400 hover:text-white hover:bg-white/5'
-                }`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${isActive ? 'text-white bg-white/10' : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span className="hidden sm:inline">{item.label}</span>
               </Link>
             );
           })}
-          
+
           {/* Auth section - only render after mount to avoid hydration mismatch */}
           {mounted && (
             <>
               {isAuthenticated ? (
                 <div className="relative ml-4 pl-4 border-l border-white/10" ref={dropdownRef}>
-                  <button 
+                  <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center gap-2 text-sm text-zinc-300 hover:text-white transition-colors focus:outline-none"
                   >
@@ -78,7 +78,7 @@ export function Navbar() {
                     <span className="hidden sm:inline font-medium">{user?.name}</span>
                     <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  
+
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-3 w-56 bg-zinc-900 border border-white/10 rounded-xl shadow-xl overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 z-50">
                       <Link
