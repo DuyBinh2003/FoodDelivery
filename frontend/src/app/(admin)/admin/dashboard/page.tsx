@@ -19,7 +19,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     async function loadMetrics() {
       try {
-        const data = await apiClient.get('/admin/metrics/dashboard');
+        const data = await apiClient<Metrics>('/admin/metrics/dashboard');
         setMetrics(data);
       } catch (error) {
         console.error('Failed to load metrics:', error);
