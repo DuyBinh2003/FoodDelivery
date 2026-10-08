@@ -14,14 +14,14 @@ interface OrderReviewModalProps {
 const StarRating = ({ rating, setRating, label }: { rating: number; setRating: (val: number) => void; label: string }) => {
   return (
     <div className="flex flex-col gap-2 mb-4">
-      <span className="text-sm font-semibold text-gray-700">{label}</span>
+      <span className="text-sm font-semibold text-zinc-300">{label}</span>
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
             onClick={() => setRating(star)}
-            className={`transition-colors ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+            className={`transition-colors ${star <= rating ? 'text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]' : 'text-zinc-600'}`}
           >
             <Star className="w-8 h-8 fill-current" />
           </button>
@@ -72,10 +72,10 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="w-full max-w-lg bg-white rounded-xl shadow-xl overflow-hidden max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-900">Leave a Review</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="w-full max-w-lg bg-zinc-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-white/10">
+          <h2 className="text-2xl font-bold text-white">Leave a Review</h2>
         </div>
         
         <form onSubmit={handleSubmit} className="p-6">
@@ -84,9 +84,9 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
           <StarRating rating={driverRating} setRating={setDriverRating} label="Driver Rating" />
           
           <div className="flex flex-col gap-2 mb-4">
-            <span className="text-sm font-semibold text-gray-700">Comments</span>
+            <span className="text-sm font-semibold text-zinc-300">Comments</span>
             <textarea
-              className="w-full p-3 border rounded-lg resize-none min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+              className="w-full p-3 bg-zinc-950 border border-white/10 text-white rounded-lg resize-none min-h-[100px] focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
               placeholder="Tell us about your experience..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -94,30 +94,30 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
           </div>
 
           <div className="flex flex-col gap-2 mb-6">
-            <span className="text-sm font-semibold text-gray-700">Add Images (URLs)</span>
+            <span className="text-sm font-semibold text-zinc-300">Add Images (URLs)</span>
             <div className="flex gap-2">
               <input 
                 type="text" 
                 value={tempImageUrl}
                 onChange={(e) => setTempImageUrl(e.target.value)}
                 placeholder="https://example.com/image.jpg"
-                className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                className="flex-1 p-2 bg-zinc-950 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
               />
-              <Button type="button" onClick={handleAddImage} variant="secondary">Add</Button>
+              <Button type="button" onClick={handleAddImage} variant="secondary" className="bg-white/10 text-white hover:bg-white/20 border-0">Add</Button>
             </div>
             {imageUrls.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {imageUrls.map((url, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={url} alt={`Review img ${i}`} className="w-20 h-20 object-cover rounded-lg border" />
+                  <img key={i} src={url} alt={`Review img ${i}`} className="w-20 h-20 object-cover rounded-lg border border-white/10" />
                 ))}
               </div>
             )}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={createReview.isPending}>
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <Button type="button" variant="outline" onClick={onClose} className="border-white/10 text-white hover:bg-white/10">Cancel</Button>
+            <Button type="submit" disabled={createReview.isPending} className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0">
               {createReview.isPending ? 'Submitting...' : 'Submit Review'}
             </Button>
           </div>
