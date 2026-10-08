@@ -27,7 +27,7 @@ export class UsersController {
       let driverProfile = null;
       try {
         driverProfile = await this.getDriverProfileUseCase.execute({ userId: user.id });
-      } catch (e) {
+      } catch (_e) {
         // Not a driver yet, ignore
       }
       return {

@@ -26,6 +26,7 @@ Xác định ranh giới Microservices. Trước khi viết code, cần xác đ�
 
 *   **Phân chia Service:**
     *   **User Service:** Quản lý tài khoản và xác thực cho toàn bộ người dùng (`USER`, `ADMIN`). Hệ thống sử dụng mô hình "Profile Mở rộng" (Add-ons): Một `USER` có thể gửi yêu cầu tạo thêm `driver_profile` hoặc đăng ký mở `restaurant` thay vì bị giới hạn cứng vào một Role duy nhất.
+    *   **Admin Service:** Quản lý doanh thu, cấu hình tài chính (Tax, Commission) và phê duyệt quyền hoạt động của tài xế/nhà hàng. (Xem [Tài liệu Admin Service](./docs/services/admin-service.md))
     *   **Restaurant Service:** Quản lý thực đơn (Menu), giá cả, ca làm việc. Mối liên hệ thuộc quyền sở hữu của `USER`.
     *   **Order Service:** Quản lý logic đặt món, state machine cho trạng thái đơn (Pending, Cooking, Delivering, Completed). (Xem [Tài liệu Order Service](./docs/services/order-service.md))
 *   **Database Schema:** Thiết kế các bảng trên PostgreSQL. Phân chia tách schema (VD: `schema_user`, `schema_order`) để đảm bảo tính độc lập dữ liệu giữa các service trên cùng 1 instance.

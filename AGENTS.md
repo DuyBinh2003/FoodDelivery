@@ -31,3 +31,7 @@
 
 **Quy chuẩn Viết Tài liệu (Documentation)**
 - Luôn tạo hoặc cập nhật file markdown trong `docs/` để giải thích luồng hoạt động và API endpoint cho feature mới.
+
+**Quy chuẩn Code TypeScript (TypeScript Strictness)**
+- TUYỆT ĐỐI KHÔNG sử dụng `any` trong code để tránh lỗi `@typescript-eslint/no-explicit-any`. 
+- Bắt buộc phải định nghĩa type hoặc interface rõ ràng. Nếu chưa rõ cấu trúc, hãy sử dụng `unknown` hoặc `Record<string, unknown>`.

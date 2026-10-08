@@ -5,6 +5,7 @@ export declare class Restaurant {
     name: string;
     address: string;
     is_active: boolean;
+    verification_status: string;
     lat: number;
     lon: number;
     rating: number;

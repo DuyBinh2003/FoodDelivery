@@ -10,7 +10,7 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
-  const passwordHash = '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36PQm2Sjk1hGNn3Ug6LPe6W';
+  const passwordHash = '$2b$10$PC8vTwnyth6xfhVHTDGFruUlk2wY8rorUukhyB2oPKDIUfuSyUwMC'; // password123
 
   pgm.sql(`
     INSERT INTO schema_user.m_user (id, email, password_hash, role) VALUES

@@ -48,7 +48,7 @@ export class OrdersController {
   }
 
   @Get('history/me')
-  async getOrderHistory(@Body() body: any) { // Temporary: in real app use req.user.id
+  async getOrderHistory(@Body() _body: any) { // Temporary: in real app use req.user.id
     // Wait, typical NestJS app would get user id from JWT token guard.
     // For this boilerplate let's assume we pass customerId in query or req.user.
     // Since there's no JWT token injected here based on the boilerplate, we can get it from headers or query.

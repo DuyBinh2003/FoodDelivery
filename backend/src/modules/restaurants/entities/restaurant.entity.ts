@@ -18,6 +18,9 @@ export class Restaurant {
   @Column({ type: 'boolean', default: true })
   is_active: boolean;
 
+  @Column({ type: 'varchar', length: 50, default: 'PENDING' })
+  verification_status: string;
+
   @Column({ type: 'numeric', precision: 10, scale: 8, nullable: true })
   lat: number;
 
