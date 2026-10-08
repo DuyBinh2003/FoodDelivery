@@ -252,7 +252,7 @@
             "label": "Git: Create PR",
             "detail": "Chọn Issue được assign cho user và tự động tạo Draft PR",
             "type": "shell",
-            "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File '${workspaceFolder}/scripts/create-pr-interactive.ps1'",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File '${workspaceFolder}/scripts/create-pr-interactive.ps1'",
             "presentation": {
                 "reveal": "always",
                 "focus": true,
