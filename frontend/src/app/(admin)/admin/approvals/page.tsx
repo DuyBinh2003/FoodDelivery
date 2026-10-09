@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { CheckCircle2, XCircle } from 'lucide-react';
 
@@ -12,12 +13,9 @@ interface PendingApproval {
 }
 
 export default function AdminApprovalsPage() {
-  const [approvals, setApprovals] = useState<PendingApproval[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadApprovals = async () => {
-    setLoading(true);
-    try {
+  const { data: approvals = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ['admin', 'approvals'],
+    queryFn: async () => {
       const data = await apiClient<{
         restaurants?: Record<string, unknown>[];
         drivers?: Record<string, unknown>[];
@@ -34,24 +32,15 @@ export default function AdminApprovalsPage() {
         type: 'DRIVER',
         createdAt: d.created_at as string,
       }));
-      setApprovals([...mappedRestaurants, ...mappedDrivers].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
-    } catch (error) {
-      console.error('Failed to load approvals:', error);
-    } finally {
-      setLoading(false);
+      return [...mappedRestaurants, ...mappedDrivers].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadApprovals();
-  }, []);
+  });
 
   async function handleAction(id: string, type: string, action: 'approve' | 'reject') {
     try {
       const endpoint = `/admin/approvals/${type.toLowerCase()}/${id}/${action}`;
       await apiClient(endpoint, { method: 'POST', body: {} });
-      await loadApprovals();
+      await refetch();
     } catch (error) {
       console.error(`Failed to ${action} ${type}:`, error);
       alert(`Lỗi khi ${action} hồ sơ.`);

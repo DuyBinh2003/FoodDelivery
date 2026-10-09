@@ -16,21 +16,20 @@ const ADMIN_NAV = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, _hasHydrated } = useAuthStore();
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
+    if (!_hasHydrated) return;
+    
     if (!isAuthenticated) {
       router.push('/login');
     } else if (user?.role !== 'ADMIN') {
       router.push('/');
     }
-  }, [isAuthenticated, user, router]);
+  }, [_hasHydrated, isAuthenticated, user, router]);
 
-  if (!mounted || !isAuthenticated || user?.role !== 'ADMIN') {
+  if (!_hasHydrated || !isAuthenticated || user?.role !== 'ADMIN') {
     return <div className="min-h-screen flex items-center justify-center text-zinc-400">Đang kiểm tra quyền...</div>;
   }
 

@@ -8,9 +8,13 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
 export function AdminSocketProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
 
   useEffect(() => {
+    // Get token from cookie
+    const tokenMatch = document.cookie.match(/(^|;)\s*access_token\s*=\s*([^;]+)/);
+    const token = tokenMatch ? tokenMatch[2] : null;
+
     if (!user || user.role !== 'ADMIN' || !token) return;
 
     const socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001/admin', {
@@ -30,7 +34,7 @@ export function AdminSocketProvider({ children }: { children: React.ReactNode })
     return () => {
       socket.disconnect();
     };
-  }, [user, token, queryClient]);
+  }, [user, queryClient]);
 
   return <>{children}</>;
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, UseGuards, Inject } from '@nestjs/common';
 import { AdminService } from '@/modules/admin/admin.service.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
@@ -9,7 +9,9 @@ import { UserRole } from '@/modules/users/entities/user.entity.js';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    @Inject(AdminService) private readonly adminService: AdminService
+  ) { }
 
   @Get('metrics/dashboard')
   getDashboardMetrics() {

@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SystemConfig } from '@/modules/admin/entities/system-config.entity';
+import { SystemConfig } from '@/modules/admin/entities/system-config.entity.js';
 import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
 import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js';
 import { User } from '@/modules/users/entities/user.entity.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
+import { RegistrationRequest } from '@/modules/users/entities/registration-request.entity.js';
 
 @Injectable()
 export class AdminService {
@@ -20,6 +21,8 @@ export class AdminService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
+    @InjectRepository(RegistrationRequest)
+    private readonly registrationReqRepo: Repository<RegistrationRequest>,
   ) {}
 
   async getDashboardMetrics() {
@@ -45,17 +48,30 @@ export class AdminService {
   }
 
   async getPendingApprovals() {
-    const pendingRestaurants = await this.restaurantRepo.find({
-      where: { verification_status: 'PENDING' },
-    });
-    
-    const pendingDrivers = await this.driverRepo.find({
-      where: { verification_status: 'PENDING' },
+    const pendingRequests = await this.registrationReqRepo.find({
+      where: { status: 'PENDING' },
+      relations: { user: true },
     });
 
+    const restaurants = pendingRequests
+      .filter((r) => r.type === 'RESTAURANT')
+      .map((r) => ({
+        id: r.id,
+        name: (r.payload as any)?.name || r.user?.email || 'Unknown Restaurant',
+        created_at: r.createdAt,
+      }));
+
+    const drivers = pendingRequests
+      .filter((r) => r.type === 'DRIVER')
+      .map((r) => ({
+        id: r.id,
+        user_id: r.user?.email || r.userId,
+        created_at: r.createdAt,
+      }));
+
     return {
-      restaurants: pendingRestaurants,
-      drivers: pendingDrivers,
+      restaurants,
+      drivers,
     };
   }
 

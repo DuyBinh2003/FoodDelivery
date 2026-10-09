@@ -7,6 +7,7 @@ import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js'
 import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js';
 import { User } from '@/modules/users/entities/user.entity.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
+import { RegistrationRequest } from '@/modules/users/entities/registration-request.entity.js';
 import { PassportModule } from '@nestjs/passport';
 import { AdminGateway } from '@/modules/admin/gateways/admin.gateway.js';
 import { RegistrationSqsConsumer } from '@/modules/admin/consumers/registration.sqs.consumer.js';
@@ -19,6 +20,7 @@ import { RegistrationSqsConsumer } from '@/modules/admin/consumers/registration.
       DriverProfile,
       User,
       Order,
+      RegistrationRequest,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
