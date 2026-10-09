@@ -5,15 +5,6 @@ import Link from 'next/link';
 export default function RestaurantRegisterPage() {
   return (
     <div className="min-h-screen bg-black flex flex-col pt-10 pb-20 px-4">
-      {/* Simple Header */}
-      <div className="max-w-2xl mx-auto w-full mb-10 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform">
-            <span className="text-white font-bold text-xl">F</span>
-          </div>
-          <span className="text-white font-bold text-xl">FoodDelivery</span>
-        </Link>
-      </div>
 
       <div className="w-full max-w-2xl mx-auto">
         <div className="bg-zinc-900 border border-white/5 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">

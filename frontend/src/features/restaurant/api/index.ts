@@ -14,11 +14,12 @@ export async function getRestaurantMenu(id: string): Promise<MenuItem[]> {
 }
 
 export async function submitRestaurantRegistration(payload: Record<string, unknown>): Promise<void> {
+  console.log("registering restaurant:", payload);
   return await apiClient<void>('/users/registrations', {
     method: 'POST',
-    body: JSON.stringify({
+    body: {
       type: 'RESTAURANT',
       payload,
-    }),
+    },
   });
 }

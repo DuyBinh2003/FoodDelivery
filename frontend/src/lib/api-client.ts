@@ -39,10 +39,21 @@ async function apiClient<T>(
     });
   }
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...customHeaders,
+    ...(customHeaders as Record<string, string>),
   };
+
+  if (typeof window !== 'undefined') {
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('access_token='))
+      ?.split('=')[1];
+
+    if (token && !headers['Authorization']) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
 
   try {
     const response = await fetch(url.toString(), {

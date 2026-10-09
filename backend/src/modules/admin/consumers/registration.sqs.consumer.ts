@@ -31,6 +31,7 @@ export class RegistrationSqsConsumer implements OnModuleInit, OnModuleDestroy {
           const snsMessage = JSON.parse(body.Message);
 
           if (snsMessage.eventType === 'RegistrationCreated') {
+            console.log('Successfully processed RegistrationCreated event for:', snsMessage.data?.userId);
             this.adminGateway.server.to('admin_notifications').emit('new_registration', snsMessage.data);
           }
         } catch (error) {
