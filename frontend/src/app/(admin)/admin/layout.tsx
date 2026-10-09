@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, CheckSquare, Settings, LogOut } from 'lucide-react';
+import { AdminSocketProvider } from '@/components/providers/admin-socket-provider';
 
 const ADMIN_NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -86,7 +87,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
         <div className="flex-1 overflow-y-auto p-8">
           <div className="max-w-6xl mx-auto">
-            {children}
+            <AdminSocketProvider>
+              {children}
+            </AdminSocketProvider>
           </div>
         </div>
       </main>

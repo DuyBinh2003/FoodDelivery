@@ -8,6 +8,8 @@ import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js
 import { User } from '@/modules/users/entities/user.entity.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
 import { PassportModule } from '@nestjs/passport';
+import { AdminGateway } from '@/modules/admin/gateways/admin.gateway.js';
+import { RegistrationSqsConsumer } from '@/modules/admin/consumers/registration.sqs.consumer.js';
 
 @Module({
   imports: [
@@ -21,7 +23,7 @@ import { PassportModule } from '@nestjs/passport';
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [AdminController],
-  providers: [AdminService],
+  providers: [AdminService, AdminGateway, RegistrationSqsConsumer],
   exports: [AdminService],
 })
 export class AdminModule { }

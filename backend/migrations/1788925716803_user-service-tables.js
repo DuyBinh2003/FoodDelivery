@@ -41,6 +41,18 @@ export const up = (pgm) => {
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
   });
+
+  pgm.createTable({ schema, name: 't_registration_request' }, {
+    id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
+    user_id: { type: 'uuid', references: { schema, name: 'm_user' }, notNull: true, onDelete: 'RESTRICT' },
+    type: { type: 'varchar(20)', notNull: true },
+    payload: { type: 'jsonb', notNull: true },
+    status: { type: 'varchar(20)', notNull: true, default: "'PENDING'" },
+    reviewed_by: { type: 'uuid' },
+    created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
+    updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
+    is_deleted: { type: 'boolean', default: false }
+  });
 };
 
 /**
@@ -50,6 +62,7 @@ export const up = (pgm) => {
  */
 export const down = (pgm) => {
   const schema = 'schema_user';
+  pgm.dropTable({ schema, name: 't_registration_request' }, { ifExists: true });
   pgm.dropTable({ schema, name: 'm_driver_profile' });
   pgm.dropTable({ schema, name: 'm_customer_profile' });
   pgm.dropTable({ schema, name: 'm_user' });
