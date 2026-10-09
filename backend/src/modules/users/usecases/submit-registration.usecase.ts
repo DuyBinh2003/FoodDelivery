@@ -11,7 +11,7 @@ export class SubmitRegistrationUseCase {
     private readonly writeRepo: RegistrationWriteRepository,
   ) {
     this.snsClient = new SNSClient({
-      region: 'us-east-1',
+      region: 'ap-southeast-1',
       endpoint: process.env.LOCALSTACK_ENDPOINT || 'http://localhost:4566',
       credentials: {
         accessKeyId: 'test',
@@ -28,10 +28,10 @@ export class SubmitRegistrationUseCase {
     }
 
     const entity = await this.writeRepo.create(userId, dto);
-    
+
     // Publish to SNS
-    const topicArn = process.env.SNS_USER_REGISTRATION_TOPIC || 'arn:aws:sns:us-east-1:000000000000:user-registration-events';
-    
+    const topicArn = process.env.SNS_USER_REGISTRATION_TOPIC || 'arn:aws:sns:ap-southeast-1:000000000000:user-registration-events';
+
     try {
       await this.snsClient.send(new PublishCommand({
         TopicArn: topicArn,

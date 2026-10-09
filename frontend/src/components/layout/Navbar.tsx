@@ -111,7 +111,7 @@ export function Navbar() {
                       )}
 
                       <Link
-                        href="/restaurant/register"
+                        href="/register/restaurant"
                         onClick={() => setIsDropdownOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
                       >

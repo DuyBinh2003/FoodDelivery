@@ -12,3 +12,13 @@ export async function getRestaurantMenu(id: string): Promise<MenuItem[]> {
     next: { revalidate: 60 } as NextFetchRequestConfig,
   });
 }
+
+export async function submitRestaurantRegistration(payload: Record<string, unknown>): Promise<void> {
+  return await apiClient<void>('/users/registrations', {
+    method: 'POST',
+    body: JSON.stringify({
+      type: 'RESTAURANT',
+      payload,
+    }),
+  });
+}
