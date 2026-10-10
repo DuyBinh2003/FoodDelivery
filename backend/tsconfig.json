@@ -2,10 +2,12 @@
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "rootDir": ".",
     "baseUrl": "./",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["src/*"]
+      "@/common/*": ["libs/common/src/*"],
+      "@/config/*": ["libs/config/src/*"]
     },
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,

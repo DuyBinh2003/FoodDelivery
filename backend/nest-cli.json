@@ -1,8 +1,66 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "monorepo": true,
+  "root": "apps/user-service",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "tsConfigPath": "tsconfig.build.json"
+  },
+  "projects": {
+    "user-service": {
+      "type": "application",
+      "root": "apps/user-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user-service/tsconfig.json"
+      }
+    },
+    "restaurant-service": {
+      "type": "application",
+      "root": "apps/restaurant-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/restaurant-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/restaurant-service/tsconfig.json"
+      }
+    },
+    "order-service": {
+      "type": "application",
+      "root": "apps/order-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/order-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/order-service/tsconfig.json"
+      }
+    },
+    "delivery-service": {
+      "type": "application",
+      "root": "apps/delivery-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/delivery-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/delivery-service/tsconfig.json"
+      }
+    },
+    "admin-service": {
+      "type": "application",
+      "root": "apps/admin-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/admin-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/admin-service/tsconfig.json"
+      }
+    },
+    "search-service": {
+      "type": "application",
+      "root": "apps/search-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/search-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/search-service/tsconfig.json"
+      }
+    }
   }
 }
