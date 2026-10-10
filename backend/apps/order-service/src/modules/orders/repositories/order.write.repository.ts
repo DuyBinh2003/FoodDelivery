@@ -6,6 +6,7 @@ import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
+import { OrderEventTypes } from '@/events/index.js';
 
 @Injectable()
 export class OrderWriteRepository {
@@ -52,11 +53,12 @@ export class OrderWriteRepository {
 
       await queryRunner.commitTransaction();
 
-      await this.sqsService.publishEvent('ORDER_CREATED', {
+      await this.sqsService.publishEvent(OrderEventTypes.ORDER_CREATED, {
         orderId: savedOrder.id,
         restaurantId: savedOrder.restaurant_id,
-        customerId: savedOrder.customer_id,
-        deliveryAddress: savedOrder.delivery_address,
+        userId: savedOrder.customer_id,
+        totalAmount: totalAmount,
+        shippingAddress: savedOrder.delivery_address,
       });
 
       return savedOrder;

@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { Consumer } from 'sqs-consumer';
 import { AdminGateway } from '@/modules/admin/gateways/admin.gateway.js';
 import { SQSClient } from '@aws-sdk/client-sqs';
+import { RegistrationEventTypes, RegistrationCreatedEvent } from '@/events/index.js';
 
 @Injectable()
 export class RegistrationSqsConsumer implements OnModuleInit, OnModuleDestroy {
@@ -30,9 +31,10 @@ export class RegistrationSqsConsumer implements OnModuleInit, OnModuleDestroy {
           // SNS wraps the message in a JSON with "Message" field
           const snsMessage = JSON.parse(body.Message);
 
-          if (snsMessage.eventType === 'RegistrationCreated') {
-            console.log('Successfully processed RegistrationCreated event for:', snsMessage.data?.userId);
-            this.adminGateway.server.to('admin_notifications').emit('new_registration', snsMessage.data);
+          if (snsMessage.event === RegistrationEventTypes.REGISTRATION_CREATED) {
+            const event = snsMessage as RegistrationCreatedEvent;
+            console.log('Successfully processed RegistrationCreated event for:', event.data?.userId);
+            this.adminGateway.server.to('admin_notifications').emit('new_registration', event.data);
           }
         } catch (error) {
           console.error('Error processing SQS message:', error);

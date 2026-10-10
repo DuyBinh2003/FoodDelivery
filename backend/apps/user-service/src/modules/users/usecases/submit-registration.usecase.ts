@@ -2,6 +2,7 @@ import { Injectable, ConflictException, BadRequestException, Inject } from '@nes
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { RegistrationWriteRepository } from '@/modules/users/repositories/registration.write.repository.js';
 import { CreateRegistrationDto } from '@/modules/users/dto/create-registration.dto.js';
+import { RegistrationEventTypes, RegistrationCreatedEvent } from '@/events/index.js';
 
 @Injectable()
 export class SubmitRegistrationUseCase {
@@ -34,19 +35,25 @@ export class SubmitRegistrationUseCase {
       const topicArn = process.env.SNS_USER_REGISTRATION_TOPIC || 'arn:aws:sns:ap-southeast-1:000000000000:user-registration-events';
 
       try {
+        const event: RegistrationCreatedEvent = {
+          event: RegistrationEventTypes.REGISTRATION_CREATED,
+          data: {
+            id: entity.id,
+            userId: entity.userId,
+            type: entity.type as 'RESTAURANT' | 'DRIVER',
+            payload: entity.payload,
+            status: entity.status
+          }
+        };
+
         await this.snsClient.send(new PublishCommand({
           TopicArn: topicArn,
-          Message: JSON.stringify({
-            eventType: 'RegistrationCreated',
-            version: '1.0',
-            timestamp: new Date().toISOString(),
-            data: entity
-          })
+          Message: JSON.stringify(event)
         }));
         console.log('[SNS] RegistrationCreated published successfully, TopicArn:', topicArn);
       } catch (err) {
         console.error('[SNS] CRITICAL: Failed to publish RegistrationCreated event:', err);
-        // Do NOT throw — registration is already saved to DB, SNS failure is non-blocking
+        // Do NOT throw - registration is already saved to DB, SNS failure is non-blocking
       }
 
       return entity;
@@ -56,3 +63,4 @@ export class SubmitRegistrationUseCase {
     }
   }
 }
+

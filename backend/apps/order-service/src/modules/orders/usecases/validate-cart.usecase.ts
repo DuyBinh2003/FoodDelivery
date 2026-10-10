@@ -1,61 +1,59 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { ValidateCartDto } from '@/modules/orders/dto/validate-cart.dto.js';
 
 @Injectable()
 export class ValidateCartUseCase {
   constructor() {}
 
-  async execute(dto: ValidateCartDto) {
-    const { restaurant_id, items } = dto;
-
-    // Call restaurant-service internal API to fetch menu items
-    const res = await fetch(http://localhost:3002/internal/restaurants/ + restaurant_id + /menu);
-    if (!res.ok) {
-      throw new NotFoundException('Restaurant not found or unavailable');
-    }
+  async execute(dto: ValidateCartDto): Promise<any> {
+    const { items, restaurant_id } = dto;
     
-    const menuItems = await res.json();
-    const menuItemsMap = new Map(menuItems.map(m => [m.id, m]));
+    // Fetch menu items from restaurant-service via internal API
+    const res = await fetch(`http://localhost:3002/internal/restaurants/${restaurant_id}/menu`);
+    if (!res.ok) {
+      throw new BadRequestException('Restaurant not found or internal server error');
+    }
+    const menuItems: any[] = await res.json();
+    const menuItemsMap = new Map<string, any>(menuItems.map(m => [m.id, m]));
 
+    let totalAmount = 0;
     const validatedItems = [];
-    let subtotal = 0;
+    const invalidItems = [];
 
-    for (const cartItem of items) {
-      const dbItem = menuItemsMap.get(cartItem.item_id);
+    for (const item of items) {
+      const dbItem = menuItemsMap.get(item.item_id);
       
       if (!dbItem) {
-        validatedItems.push({
-          ...cartItem,
-          is_available: false,
-          error: 'Món ăn không tồn tại hoặc đã bị xóa',
-        });
+        invalidItems.push({ menu_item_id: item.item_id, reason: 'Item not found' });
         continue;
       }
 
       if (!dbItem.is_available) {
-        validatedItems.push({
-          ...cartItem,
+        invalidItems.push({ 
+          menu_item_id: item.item_id, 
+          reason: 'Item is out of stock',
           price: Number(dbItem.price),
-          is_available: false,
-          error: 'Món ăn hiện đang tạm hết',
+          name: dbItem.name 
         });
         continue;
       }
 
       const price = Number(dbItem.price);
-      subtotal += price * cartItem.quantity;
-      
+      totalAmount += price * item.quantity;
       validatedItems.push({
-        ...cartItem,
+        menu_item_id: item.item_id,
+        quantity: item.quantity,
         price,
-        is_available: true,
+        name: dbItem.name,
       });
     }
 
     return {
-      restaurant_id,
-      subtotal,
-      items: validatedItems,
+      isValid: invalidItems.length === 0,
+      totalAmount,
+      validatedItems,
+      invalidItems,
     };
   }
 }
+
