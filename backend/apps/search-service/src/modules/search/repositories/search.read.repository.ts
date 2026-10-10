@@ -1,56 +1,30 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { Category } from '@/modules/restaurants/entities/category.entity.js';
-import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
-import { MenuItem } from '@/modules/restaurants/entities/menu-item.entity.js';
-import { Config } from '@/modules/restaurants/entities/config.entity.js';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class SearchReadRepository {
-  constructor(@Inject(DataSource) private readonly dataSource: DataSource) {}
+  constructor() {}
 
   async getCategories() {
-    const categoryRepo = this.dataSource.getRepository(Category);
-    return categoryRepo.find({ where: { is_deleted: false } });
+    return fetch('http://localhost:3002/internal/restaurants/categories').then(r => r.json()).catch(() => []);
   }
 
   async getTags() {
-    const tagRepo = this.dataSource.getRepository(Tag);
-    return tagRepo.find();
+    return fetch('http://localhost:3002/internal/restaurants/tags').then(r => r.json()).catch(() => []);
   }
 
   async getMenuItemsForRestaurants(restaurantIds: string[], params: any) {
     if (!restaurantIds || restaurantIds.length === 0) {
       return [];
     }
-
-    const menuItemRepo = this.dataSource.getRepository(MenuItem);
-    const qb = menuItemRepo.createQueryBuilder('item')
-      .leftJoinAndSelect('item.tags', 'tag')
-      .where('item.restaurant_id IN (:...restaurantIds)', { restaurantIds })
-      .andWhere('item.is_deleted = :isDeleted', { isDeleted: false });
-
-    if (params.q) {
-      qb.andWhere('item.name ILIKE :q', { q: `%${params.q}%` });
-    }
-
-    if (params.tags && params.tags.length > 0) {
-      qb.andWhere('tag.id IN (:...tags)', { tags: params.tags });
-    }
-
-    return qb.getMany();
+    const q = new URLSearchParams();
+    q.set('restaurantIds', restaurantIds.join(','));
+    if (params.q) q.set('q', params.q);
+    if (params.tags) q.set('tags', params.tags.join(','));
+    
+    return fetch('http://localhost:3002/internal/restaurants/menu-items?' + q.toString()).then(r => r.json()).catch(() => []);
   }
 
   async getFreeshipDistanceThreshold(): Promise<number> {
-    try {
-      const configRepo = this.dataSource.getRepository(Config);
-      const config = await configRepo.findOne({ where: { key: 'freeship_distance_threshold' } });
-      if (config && config.value) {
-        return Number(config.value);
-      }
-    } catch (e) {
-      console.warn('Could not fetch freeship config, using default 2km', e);
-    }
-    return 2;
+    return fetch('http://localhost:3002/internal/restaurants/configs/freeship').then(r => r.json()).catch(() => 2);
   }
 }

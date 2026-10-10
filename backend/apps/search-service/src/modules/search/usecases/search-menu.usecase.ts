@@ -22,10 +22,10 @@ export class SearchMenuUseCase {
     const menuItems = await this.searchReadRepo.getMenuItemsForRestaurants(restaurantIds, query);
 
     const result = restaurants.map(restaurant => {
-      const itemsForRestaurant = menuItems.filter(item => item.restaurant_id === restaurant.id);
+      const itemsForRestaurant = menuItems.filter((item: any) => item.restaurant_id === restaurant.id);
       return {
         restaurant: restaurant.name,
-        items: itemsForRestaurant.map(item => ({
+        items: itemsForRestaurant.map((item: any) => ({
           ...item,
           restaurant_name: restaurant.name
         }))
@@ -35,3 +35,4 @@ export class SearchMenuUseCase {
     return result;
   }
 }
+

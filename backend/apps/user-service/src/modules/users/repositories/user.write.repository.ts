@@ -1,7 +1,8 @@
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { User, UserRole } from '@/modules/users/entities/user.entity.js';
+import { User } from '@/modules/users/entities/user.entity.js';
+import { UserRole } from '@/common/enums/user-role.enum.js';
 import { CustomerProfile } from '@/modules/users/entities/customer-profile.entity.js';
 import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js';
 
@@ -63,3 +64,4 @@ export class UserWriteRepository {
     return this.driverProfileRepo.save(profile);
   }
 }
+

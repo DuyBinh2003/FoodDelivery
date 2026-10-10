@@ -24,11 +24,12 @@
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
-    "migrate": "node-pg-migrate",
-    "migrate:up": "node-pg-migrate up",
-    "migrate:down": "node-pg-migrate down",
-    "migrate:create": "node-pg-migrate create",
-    "migrate:reset": "node-pg-migrate down 1000 && node-pg-migrate up"
+    "migrate:init": "node-pg-migrate -m migrations/init --schema public --migrations-schema public --migrations-table pgmigrations_init up",
+    "migrate:user": "node-pg-migrate -m migrations/user-service --schema schema_user --migrations-schema schema_user --migrations-table pgmigrations up",
+    "migrate:restaurant": "node-pg-migrate -m migrations/restaurant-service --schema schema_restaurant --migrations-schema schema_restaurant --migrations-table pgmigrations up",
+    "migrate:order": "node-pg-migrate -m migrations/order-service --schema schema_order --migrations-schema schema_order --migrations-table pgmigrations up",
+    "migrate:admin": "node-pg-migrate -m migrations/admin-service --schema schema_admin --migrations-schema schema_admin --migrations-table pgmigrations up",
+    "migrate:all": "npm run migrate:init && npm run migrate:user && npm run migrate:restaurant && npm run migrate:order && npm run migrate:admin"
   },
   "dependencies": {
     "@aws-sdk/client-sns": "^3.1147.0",

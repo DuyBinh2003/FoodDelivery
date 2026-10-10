@@ -1,29 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ValidateCartDto } from '@/modules/orders/dto/validate-cart.dto.js';
-import { RestaurantReadRepository } from '@/modules/restaurants/repositories/restaurant.read.repository.js';
 
 @Injectable()
 export class ValidateCartUseCase {
-  constructor(
-    private readonly restaurantReadRepo: RestaurantReadRepository,
-  ) {}
+  constructor() {}
 
   async execute(dto: ValidateCartDto) {
     const { restaurant_id, items } = dto;
 
-    // Verify restaurant exists
-    const restaurant = await this.restaurantReadRepo.findById(restaurant_id);
-    if (!restaurant) {
-      throw new NotFoundException('Restaurant not found');
+    // Call restaurant-service internal API to fetch menu items
+    const res = await fetch(http://localhost:3002/internal/restaurants/ + restaurant_id + /menu);
+    if (!res.ok) {
+      throw new NotFoundException('Restaurant not found or unavailable');
     }
+    
+    const menuItems = await res.json();
+    const menuItemsMap = new Map(menuItems.map(m => [m.id, m]));
 
     const validatedItems = [];
     let subtotal = 0;
-
-    // We can fetch all menu items of this restaurant to avoid N+1 queries
-    // In a real high-scale app, we might use Redis to cache these menu items
-    const menuItems = await this.restaurantReadRepo.findMenuItems(restaurant_id);
-    const menuItemsMap = new Map(menuItems.map(m => [m.id, m]));
 
     for (const cartItem of items) {
       const dbItem = menuItemsMap.get(cartItem.item_id);
@@ -40,14 +35,13 @@ export class ValidateCartUseCase {
       if (!dbItem.is_available) {
         validatedItems.push({
           ...cartItem,
-          price: Number(dbItem.price), // ensure it's a number
+          price: Number(dbItem.price),
           is_available: false,
           error: 'Món ăn hiện đang tạm hết',
         });
         continue;
       }
 
-      // Valid item
       const price = Number(dbItem.price);
       subtotal += price * cartItem.quantity;
       

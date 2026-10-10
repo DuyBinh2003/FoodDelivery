@@ -3,7 +3,7 @@ import { AdminService } from '@/modules/admin/admin.service.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
 import { Roles } from '@/common/decorators/roles.decorator.js';
-import { UserRole } from '@/modules/users/entities/user.entity.js';
+import { UserRole } from '@/common/enums/user-role.enum.js';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -53,3 +53,4 @@ export class AdminController {
     return this.adminService.updateConfig(dto.key, dto.value);
   }
 }
+

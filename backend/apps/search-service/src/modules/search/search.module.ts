@@ -10,7 +10,6 @@ import { GetTagsUseCase } from '@/modules/search/usecases/get-tags.usecase.js';
 import { SearchRestaurantsUseCase } from '@/modules/search/usecases/search-restaurants.usecase.js';
 import { SearchMenuUseCase } from '@/modules/search/usecases/search-menu.usecase.js';
 import { SyncRestaurantIndexUseCase } from '@/modules/search/usecases/sync-restaurant-index.usecase.js';
-import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
 
 @Module({
   imports: [
@@ -21,8 +20,7 @@ import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
         node: configService.get<string>('elasticsearch.node')!,
       }),
     }),
-    RestaurantsModule,
-  ],
+      ],
   providers: [
     RestaurantSubscriber,
     ElasticsearchRepository,
@@ -45,3 +43,4 @@ import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
   ],
 })
 export class SearchModule {}
+

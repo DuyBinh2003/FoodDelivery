@@ -1,9 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-export enum UserRole {
-  USER = 'USER',
-  ADMIN = 'ADMIN',
-}
+import { UserRole } from '@/common/enums/user-role.enum.js';
 
 @Entity('m_user', { schema: 'schema_user' })
 export class User {
@@ -28,3 +25,4 @@ export class User {
   @Column({ type: 'boolean', default: false })
   is_deleted: boolean;
 }
+

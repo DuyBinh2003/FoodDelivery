@@ -3,7 +3,7 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
 import { Roles } from '@/common/decorators/roles.decorator.js';
 import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
-import { UserRole } from '@/modules/users/entities/user.entity.js';
+import { UserRole } from '@/common/enums/user-role.enum.js';
 import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from '@/modules/users/dto/profile.dto.js';
 import { GetCustomerProfileUseCase } from '@/modules/users/usecases/get-customer-profile.usecase.js';
 import { GetDriverProfileUseCase } from '@/modules/users/usecases/get-driver-profile.usecase.js';
@@ -60,3 +60,4 @@ export class UsersController {
     return this.submitRegistrationUseCase.execute(user.id, dto);
   }
 }
+

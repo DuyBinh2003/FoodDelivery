@@ -3,7 +3,7 @@ import { UserReadRepository } from '@/modules/users/repositories/user.read.repos
 import { UserWriteRepository } from '@/modules/users/repositories/user.write.repository.js';
 import { RegisterDto } from '@/modules/auth/dto/auth.dto.js';
 import * as bcrypt from 'bcrypt';
-import { UserRole } from '@/modules/users/entities/user.entity.js';
+import { UserRole } from '@/common/enums/user-role.enum.js';
 
 @Injectable()
 export class RegisterUseCase {
@@ -39,3 +39,4 @@ export class RegisterUseCase {
     };
   }
 }
+

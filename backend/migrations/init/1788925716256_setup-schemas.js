@@ -12,6 +12,8 @@ export const up = (pgm) => {
   pgm.createSchema('schema_user');
   pgm.createSchema('schema_restaurant');
   pgm.createSchema('schema_order');
+  pgm.createSchema('schema_delivery');
+  pgm.createSchema('schema_admin');
   pgm.createExtension('uuid-ossp', { ifNotExists: true });
 };
 
@@ -22,6 +24,9 @@ export const up = (pgm) => {
  */
 export const down = (pgm) => {
   pgm.dropSchema('schema_order', { cascade: true });
+  pgm.dropSchema('schema_delivery', { cascade: true });
+  pgm.dropSchema('schema_admin', { cascade: true });
   pgm.dropSchema('schema_restaurant', { cascade: true });
   pgm.dropSchema('schema_user', { cascade: true });
 };
+

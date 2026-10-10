@@ -1,3 +1,4 @@
+import { UsersInternalController } from './users.internal.controller.js';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from '@/modules/users/users.controller.js';
@@ -17,7 +18,7 @@ import { SubmitRegistrationUseCase } from '@/modules/users/usecases/submit-regis
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, CustomerProfile, DriverProfile, RegistrationRequest]), PassportModule.register({ defaultStrategy: 'jwt' })],
-  controllers: [UsersController],
+  controllers: [UsersController, UsersInternalController],
   providers: [
     UserReadRepository,
     UserWriteRepository,
@@ -35,3 +36,5 @@ import { SubmitRegistrationUseCase } from '@/modules/users/usecases/submit-regis
   ],
 })
 export class UsersModule { }
+
+

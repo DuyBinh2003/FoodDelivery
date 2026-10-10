@@ -1,3 +1,4 @@
+import { RestaurantsInternalController } from './restaurants.internal.controller.js';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RestaurantsController } from '@/modules/restaurants/restaurants.controller.js';
@@ -22,7 +23,7 @@ import { DeleteMenuItemUseCase } from '@/modules/restaurants/usecases/delete-men
 
 @Module({
   imports: [TypeOrmModule.forFeature([Restaurant, MenuItem, Category, Tag, Config])],
-  controllers: [RestaurantsController],
+  controllers: [RestaurantsController, RestaurantsInternalController],
   providers: [
     RestaurantReadRepository,
     RestaurantWriteRepository,
@@ -51,3 +52,4 @@ import { DeleteMenuItemUseCase } from '@/modules/restaurants/usecases/delete-men
   ],
 })
 export class RestaurantsModule {}
+

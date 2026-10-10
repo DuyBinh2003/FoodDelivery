@@ -2,8 +2,6 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Inject } from '@nest
 import { ConfigService } from '@nestjs/config';
 import { SQSClient } from '@aws-sdk/client-sqs';
 import { Consumer } from 'sqs-consumer';
-import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
-import { OrderStatus } from '@/modules/orders/entities/order.entity.js';
 
 @Injectable()
 export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
@@ -12,7 +10,6 @@ export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(ConfigService) private configService: ConfigService,
-    @Inject(UpdateOrderStatusUseCase) private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
   ) { }
 
   onModuleInit() {
@@ -38,27 +35,31 @@ export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
           const body = JSON.parse(message.Body);
           if (body.event === 'ORDER_CREATED') {
             const { orderId } = body.data;
-            this.logger.log(`Received ORDER_CREATED for Order: ${orderId}. Finding nearest driver...`);
+            this.logger.log(Received ORDER_CREATED for Order: $orderId. Finding nearest driver...);
 
             setTimeout(async () => {
-              this.logger.log(`Driver found for Order: ${orderId}. Updating status to ACCEPTED.`);
-              await this.updateOrderStatusUseCase.execute({ orderId, dto: { status: OrderStatus.ACCEPTED } });
+              this.logger.log(Driver found for Order: $orderId. Updating status to ACCEPTED.);
+              await fetch(http://localhost:3003/internal/orders/ + orderId + /status, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'ACCEPTED' })
+              }).catch(e => this.logger.error('Failed to update order status: ' + e.message));
             }, 3000);
           }
           return message;
         } catch (err: any) {
-          this.logger.error(`Error processing message: ${err.message}`);
+          this.logger.error(Error processing message: $(rr.message));
           throw err;
         }
       },
     });
 
     this.consumer.on('error', (err: any) => {
-      this.logger.error(`SQS Consumer Error: ${err.message}`);
+      this.logger.error(SQS Consumer Error: $(rr.message));
     });
 
     this.consumer.on('processing_error', (err: any) => {
-      this.logger.error(`SQS Consumer Processing Error: ${err.message}`);
+      this.logger.error(SQS Consumer Processing Error: $(rr.message));
     });
 
     this.consumer.start();

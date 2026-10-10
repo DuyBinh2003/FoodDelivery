@@ -1,6 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { SearchReadRepository } from '@/modules/search/repositories/search.read.repository.js';
-import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
 
 @Injectable()
 export class GetTagsUseCase {
@@ -9,7 +8,9 @@ export class GetTagsUseCase {
     private readonly searchReadRepo: SearchReadRepository
   ) {}
 
-  async execute(): Promise<Tag[]> {
+  async execute(): Promise<any[]> {
     return this.searchReadRepo.getTags();
   }
 }
+
+

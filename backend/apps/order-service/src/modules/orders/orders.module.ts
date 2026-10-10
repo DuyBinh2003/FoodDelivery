@@ -1,3 +1,4 @@
+import { OrdersInternalController } from './orders.internal.controller.js';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrdersController } from '@/modules/orders/orders.controller.js';
@@ -12,14 +13,12 @@ import { GetOrderHistoryUseCase } from '@/modules/orders/usecases/get-order-hist
 import { CreateOrderReviewUseCase } from '@/modules/orders/usecases/create-order-review.usecase.js';
 import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
 import { ValidateCartUseCase } from '@/modules/orders/usecases/validate-cart.usecase.js';
-import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Order, OrderItem, OrderReview]),
-    RestaurantsModule,
-  ],
-  controllers: [OrdersController],
+      ],
+  controllers: [OrdersController, OrdersInternalController],
   providers: [
     OrderReadRepository,
     OrderWriteRepository,
@@ -42,3 +41,5 @@ import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
   ],
 })
 export class OrdersModule {}
+
+
