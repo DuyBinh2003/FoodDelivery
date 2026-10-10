@@ -5,6 +5,10 @@ import { SystemConfig } from '@/modules/admin/entities/system-config.entity.js';
 
 @Injectable()
 export class AdminService {
+  private readonly userUrl = process.env.USER_SERVICE_URL || 'http://localhost:3001';
+  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+  private readonly orderUrl = process.env.ORDER_SERVICE_URL || 'http://localhost:3004';
+  
   constructor(
     @InjectRepository(SystemConfig)
     private readonly configRepo: Repository<SystemConfig>,
@@ -12,9 +16,9 @@ export class AdminService {
 
   async getDashboardMetrics() {
     const [usersRes, restaurantsRes, ordersRes] = await Promise.all([
-      fetch('http://localhost:3001/internal/users/metrics').catch(() => ({ json: () => ({ totalUsers: 0, totalDrivers: 0 }) })),
-      fetch('http://localhost:3002/internal/restaurants/metrics').catch(() => ({ json: () => ({ totalRestaurants: 0 }) })),
-      fetch('http://localhost:3003/internal/orders/metrics').catch(() => ({ json: () => ({ totalOrders: 0, totalGmv: 0 }) })),
+      fetch(`${this.userUrl}/internal/users/metrics`).catch(() => ({ json: () => ({ totalUsers: 0, totalDrivers: 0 }) })),
+      fetch(`${this.restaurantUrl}/internal/restaurants/metrics`).catch(() => ({ json: () => ({ totalRestaurants: 0 }) })),
+      fetch(`${this.orderUrl}/internal/orders/metrics`).catch(() => ({ json: () => ({ totalOrders: 0, totalGmv: 0 }) })),
     ]);
 
     const usersData = await usersRes.json();
@@ -31,30 +35,30 @@ export class AdminService {
   }
 
   async getPendingApprovals() {
-    const res = await fetch('http://localhost:3001/internal/users/pending-approvals').catch(() => ({ json: () => ({ restaurants: [], drivers: [] }) }));
+    const res = await fetch(`${this.userUrl}/internal/users/pending-approvals`).catch(() => ({ json: () => ({ restaurants: [], drivers: [] }) }));
     return res.json();
   }
 
   async approveRestaurant(id: string) {
-    const res = await fetch('http://localhost:3002/internal/restaurants/' + id + '/approve', { method: 'POST' });
+    const res = await fetch(`${this.restaurantUrl}/internal/restaurants/${id}/approve`, { method: 'POST' });
     if (!res.ok) throw new NotFoundException('Failed to approve restaurant');
     return res.json();
   }
 
   async rejectRestaurant(id: string) {
-    const res = await fetch('http://localhost:3002/internal/restaurants/' + id + '/reject', { method: 'POST' });
+    const res = await fetch(`${this.restaurantUrl}/internal/restaurants/${id}/reject`, { method: 'POST' });
     if (!res.ok) throw new NotFoundException('Failed to reject restaurant');
     return res.json();
   }
 
   async approveDriver(id: string) {
-    const res = await fetch('http://localhost:3001/internal/drivers/' + id + '/approve', { method: 'POST' });
+    const res = await fetch(`${this.userUrl}/internal/drivers/${id}/approve`, { method: 'POST' });
     if (!res.ok) throw new NotFoundException('Failed to approve driver');
     return res.json();
   }
 
   async rejectDriver(id: string) {
-    const res = await fetch('http://localhost:3001/internal/drivers/' + id + '/reject', { method: 'POST' });
+    const res = await fetch(`${this.userUrl}/internal/drivers/${id}/reject`, { method: 'POST' });
     if (!res.ok) throw new NotFoundException('Failed to reject driver');
     return res.json();
   }

@@ -25,9 +25,9 @@ export class SearchController {
 
   @Get('discover/restaurants')
   async discoverRestaurants(@Query(new ValidationPipe({ transform: true })) query: any) {
-    // Fetch directly from restaurant-service since search doesn't own all restaurant discovery logic
     const q = new URLSearchParams(query as any).toString();
-    const res = await fetch('http://localhost:3002/restaurants?' + q);
+    const url = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+    const res = await fetch(`${url}/restaurants?${q}`);
     return res.json();
   }
 

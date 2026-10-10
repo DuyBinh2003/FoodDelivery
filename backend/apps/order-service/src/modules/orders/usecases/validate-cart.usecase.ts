@@ -9,7 +9,8 @@ export class ValidateCartUseCase {
     const { items, restaurant_id } = dto;
     
     // Fetch menu items from restaurant-service via internal API
-    const res = await fetch(`http://localhost:3002/internal/restaurants/${restaurant_id}/menu`);
+    const restaurantUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+    const res = await fetch(`${restaurantUrl}/internal/restaurants/${restaurant_id}/menu`);
     if (!res.ok) {
       throw new BadRequestException('Restaurant not found or internal server error');
     }
@@ -24,13 +25,13 @@ export class ValidateCartUseCase {
       const dbItem = menuItemsMap.get(item.item_id);
       
       if (!dbItem) {
-        invalidItems.push({ menu_item_id: item.item_id, reason: 'Item not found' });
+        invalidItems.push({ item_id: item.item_id, reason: 'Item not found' });
         continue;
       }
 
       if (!dbItem.is_available) {
         invalidItems.push({ 
-          menu_item_id: item.item_id, 
+          item_id: item.item_id, 
           reason: 'Item is out of stock',
           price: Number(dbItem.price),
           name: dbItem.name 
@@ -41,7 +42,7 @@ export class ValidateCartUseCase {
       const price = Number(dbItem.price);
       totalAmount += price * item.quantity;
       validatedItems.push({
-        menu_item_id: item.item_id,
+        item_id: item.item_id,
         quantity: item.quantity,
         price,
         name: dbItem.name,
@@ -56,4 +57,3 @@ export class ValidateCartUseCase {
     };
   }
 }
-

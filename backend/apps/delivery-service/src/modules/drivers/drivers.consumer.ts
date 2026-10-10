@@ -8,6 +8,7 @@ import { OrderEventTypes, OrderCreatedEvent } from '@/events/index.js';
 export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
   private consumer: Consumer;
   private readonly logger = new Logger(DriversConsumer.name);
+  private readonly orderUrl = process.env.ORDER_SERVICE_URL || 'http://localhost:3004';
 
   constructor(
     @Inject(ConfigService) private configService: ConfigService,
@@ -41,7 +42,7 @@ export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
 
             setTimeout(async () => {
               this.logger.log(`Driver found for Order: ${orderId}. Updating status to ACCEPTED.`);
-              await fetch('http://localhost:3003/internal/orders/' + orderId + '/status', {
+              await fetch(`${this.orderUrl}/internal/orders/${orderId}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'ACCEPTED' })

@@ -65,6 +65,120 @@ services:
       - ./scripts/localstack-init.sh:/etc/localstack/init/ready.d/init-aws.sh
     restart: unless-stopped
 
+  # ==========================================
+  # MICROSERVICES
+  # ==========================================
+  user-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: user-service
+    container_name: fd_user_service
+    ports:
+      - "3001:3001"
+    env_file: ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  admin-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: admin-service
+    container_name: fd_admin_service
+    ports:
+      - "3002:3002"
+    env_file: ./backend/.env
+    environment:
+      - USER_SERVICE_URL=http://user-service:3001
+      - RESTAURANT_SERVICE_URL=http://restaurant-service:3003
+      - ORDER_SERVICE_URL=http://order-service:3004
+      - DELIVERY_SERVICE_URL=http://delivery-service:3005
+    depends_on:
+      db:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+    restart: unless-stopped
+
+  restaurant-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: restaurant-service
+    container_name: fd_restaurant_service
+    ports:
+      - "3003:3003"
+    env_file: ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: order-service
+    container_name: fd_order_service
+    ports:
+      - "3004:3004"
+    env_file: ./backend/.env
+    environment:
+      - RESTAURANT_SERVICE_URL=http://restaurant-service:3003
+    depends_on:
+      db:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+    restart: unless-stopped
+
+  delivery-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: delivery-service
+    container_name: fd_delivery_service
+    ports:
+      - "3005:3005"
+    env_file: ./backend/.env
+    environment:
+      - ORDER_SERVICE_URL=http://order-service:3004
+    depends_on:
+      localstack:
+        condition: service_started
+    restart: unless-stopped
+
+  search-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: search-service
+    container_name: fd_search_service
+    ports:
+      - "3006:3006"
+    env_file: ./backend/.env
+    environment:
+      - RESTAURANT_SERVICE_URL=http://restaurant-service:3003
+    depends_on:
+      db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+    restart: unless-stopped
+
 volumes:
   pgdata:
   redisdata:
