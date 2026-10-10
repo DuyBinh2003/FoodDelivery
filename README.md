@@ -1,13 +1,13 @@
-# 🍔 Food Delivery System
+# 🍔 Food Delivery System (Microservices Architecture)
 
 Dự án cá nhân xây dựng hệ thống đặt đồ ăn (Food Delivery) theo kiến trúc **Microservices + Event-Driven**. Bám sát các tiêu chuẩn thực tế trên môi trường Cloud.
 
 **Tech Stack:**
-- **Frontend:** Next.js + TypeScript + Tailwind CSS
-- **Backend:** Node.js + NestJS + TypeScript (per-service)
-- **Database & Cache:** PostgreSQL (schema-per-service) + Redis + Elasticsearch
+- **Frontend:** Next.js + TypeScript + Tailwind CSS (App Router)
+- **Backend:** Node.js + NestJS + TypeScript (Monorepo Microservices Workspace)
+- **Database & Cache:** PostgreSQL (Schema-per-service) + Redis + Elasticsearch
 - **Messaging:** Amazon SNS/SQS (LocalStack trên dev)
-- **Infrastructure:** Docker + NGINX (API Gateway)
+- **Infrastructure:** Docker Compose (Full Stack) + NGINX (API Gateway)
 
 ---
 
@@ -19,21 +19,22 @@ graph TD
         FE["📱 Next.js Frontend :3000"]
     end
 
-    subgraph "API Gateway"
-        GW["🛡️ NGINX\nRoute by /api/v1/[service]/*"]
+    subgraph "API Gateway (Docker)"
+        GW["🚪 NGINX :3000\nRoute by /api/v1/[service]/*"]
     end
 
-    subgraph "Microservices (NestJS)"
+    subgraph "Microservices (NestJS Docker)"
         US["👤 User Service :3001"]
-        AS["👑 Admin Service :3002"]
+        AS["🛡️ Admin Service :3002"]
         RS["🏪 Restaurant Service :3003"]
-        OS["📦 Order Service :3004"]
-        DS["🛵 Driver Service :3005"]
+        OS["🛒 Order Service :3004"]
+        DS["🛵 Delivery Service :3005"]
+        SS["🔍 Search Service :3006"]
     end
 
     subgraph "Messaging (LocalStack)"
         SNS["📢 SNS Topics"]
-        SQS["📨 SQS Queues"]
+        SQS["📥 SQS Queues"]
     end
 
     subgraph "Data Layer (Docker)"
@@ -43,108 +44,94 @@ graph TD
     end
 
     FE --> GW
-    GW --> US & AS & RS & OS & DS
+    GW --> US & AS & RS & OS & DS & SS
 
-    US -->|"schema_user"| DB
-    AS -->|"public"| DB
-    RS -->|"schema_restaurant"| DB
-    OS -->|"schema_order"| DB
+    US -.->|"schema_user"| DB
+    AS -.->|"public"| DB
+    RS -.->|"schema_restaurant"| DB
+    OS -.->|"schema_order"| DB
 
-    US -->|"Publish"| SNS --> SQS
-    OS -->|"Publish"| SNS
+    US -->|"Publish Registration"| SNS --> SQS
+    OS -->|"Publish Order"| SNS
     SQS -->|"Consume"| AS & DS
+    
+    AS -.->|"Internal HTTP"| US & RS & OS & DS
+    OS -.->|"Internal HTTP"| RS
+    SS -.->|"Internal HTTP"| RS
 ```
 
 > 📖 **Xem kiến trúc chi tiết:** [`docs/architecture/system-architecture.md`](./docs/architecture/system-architecture.md)
 
 ---
 
-## 🗺️ Lộ Trình Phát Triển
+## 🛣️ Lộ Trình Phát Triển (Đã Hoàn Thành Migration)
 
-### Phase 0 — Fix Infrastructure 🔴
-- [ ] LocalStack SNS/SQS hoạt động đúng (Topic → Queue → Consumer)
-- [ ] `docker-compose.yml` là file duy nhất cho mọi môi trường
+Chúng ta đã hoàn tất việc chia tách dự án từ Monolith sang Microservices chuẩn mực:
 
-### Phase 1 — Core APIs ✅ (Đang tiến hành)
-- [x] User Service: Đăng ký, đăng nhập, JWT auth
-- [x] Admin Service: Xét duyệt hồ sơ, dashboard metrics, cấu hình hệ thống
-- [x] Restaurant Service: Quản lý nhà hàng, menu
-- [x] Order Service: Tạo đơn, state machine
-- [x] Database migrations (node-pg-migrate, schema tách biệt)
-- [x] Admin Dashboard UI (Next.js) với Realtime WebSocket
-
-### Phase 2 — Event-Driven Messaging 🔴
-- [ ] SNS/SQS hoạt động: `RegistrationCreated` → Admin nhận realtime
-- [ ] `OrderCreated` → Driver Service phân công tài xế
-- [ ] Typed Event Contracts (`libs/events/`)
-
-### Phase 3 — Search & Advanced Features 🟡
-- [ ] Elasticsearch integration (Full-text + Geo-search)
-- [ ] Smart Search API với filter đa chiều
-- [ ] Redis Geo cho Driver tracking
-
-### Phase 4 — Tách True Microservices 🔵
-- [ ] Tái cấu trúc `services/` directory (mỗi service = repo độc lập)
-- [ ] NGINX API Gateway
-- [ ] CI/CD Pipeline (GitHub Actions)
-
-> 📖 **Chi tiết lộ trình migration:** [`docs/architecture/migration-plan.md`](./docs/architecture/migration-plan.md)
+- **Phase 1: Cấu trúc thư mục (Monorepo)** ✅
+  - Chuyển source code sang `apps/` và `libs/`
+  - Tách DB Schema Isolation (`schema-per-service`)
+- **Phase 2: Xoá Cross-module Dependency** ✅
+  - Loại bỏ các `@InjectRepository` gọi chéo
+- **Phase 3: Internal API Endpoints** ✅
+  - Sử dụng REST API (fetch) để giao tiếp nội bộ thay vì TypeORM trực tiếp
+- **Phase 4: Event Contract Library** ✅
+  - Đóng gói giao thức sự kiện (Event Types) vào `libs/events/` để gửi nhận SQS/SNS
+- **Phase 5: Docker Compose Full Stack** ✅
+  - Tạo `Dockerfile` chuẩn cho toàn bộ 6 service
+  - Triển khai full stack bằng Docker Network
+- **Phase 6: API Gateway** ✅
+  - Triển khai NGINX làm Reverse Proxy (`gateway/nginx.conf`)
 
 ---
 
-## 🚀 Khởi Động (Local Development)
+## 🚀 Khởi Động Hệ Thống (Local Development)
+
+### Cách 1: Chạy Full Stack trên Docker (Recommended cho Test)
+Chỉ với 1 lệnh, toàn bộ hạ tầng và 6 microservices + API Gateway sẽ được khởi chạy độc lập:
 
 ```bash
-# 1. Khởi động toàn bộ infrastructure (DB, Redis, ES, LocalStack)
-docker compose up -d
-
-# 2. Chạy Backend (hot-reload, kết nối vào Docker)
-cd backend && npm run start:dev:local
-
-# 3. Chạy Frontend (hot-reload)
-cd frontend && npm run dev
+docker compose up -d --build
 ```
+*API Gateway sẽ mở tại: `http://localhost:3000`*
 
-> **Tại sao không chạy Backend/Frontend trong Docker?**
-> Chạy local để tận dụng HMR (Hot Module Replacement) — thay đổi code có hiệu lực tức thì, không cần rebuild container.
+### Cách 2: Chạy Local Development (Hot-reload từng Service)
+Nếu bạn muốn code và xem thay đổi ngay lập tức trên máy:
+```bash
+# 1. Khởi động hạ tầng (DB, Redis, Localstack) - Lưu ý comment các service backend trong file docker-compose nếu bị trùng port
+docker compose up -d db redis localstack elasticsearch
+
+# 2. Chạy lần lượt các microservice cần thiết trong terminal riêng:
+cd backend
+npx nest start user-service --watch
+npx nest start admin-service --watch
+# ...
+```
 
 ---
 
-## 📁 Cấu Trúc Thư Mục
+## 📁 Cấu Trúc Thư Mục Mới
 
 ```
 FoodDelivery/
-├── frontend/               # Next.js App (App Router)
-├── backend/                # NestJS Modular Monolith (đang tách ra services/)
-│   ├── src/modules/
-│   │   ├── users/          → (sẽ thành services/user-service)
-│   │   ├── admin/          → (sẽ thành services/admin-service)
-│   │   ├── restaurants/    → (sẽ thành services/restaurant-service)
-│   │   ├── orders/         → (sẽ thành services/order-service)
-│   │   └── drivers/        → (sẽ thành services/driver-service)
-│   └── migrations/
-├── docs/
-│   ├── architecture/       # Tài liệu kiến trúc kỹ thuật
-│   ├── services/           # Tài liệu chi tiết từng service
-│   └── business/           # Business logic & luồng nghiệp vụ
+├── frontend/               # Next.js App
+├── backend/                # NestJS Monorepo
+│   ├── apps/               # Các Microservices độc lập
+│   │   ├── admin-service/
+│   │   ├── delivery-service/
+│   │   ├── order-service/
+│   │   ├── restaurant-service/
+│   │   ├── search-service/
+│   │   └── user-service/
+│   ├── libs/               # Thư viện dùng chung
+│   │   ├── common/         # Decorators, Guards, Enums, Messaging SQS/SNS
+│   │   ├── config/         # Cấu hình TypeORM, AWS
+│   │   └── events/         # (Phase 4) Event Contracts, Types
+│   ├── Dockerfile          # Generic Dockerfile cho mọi service
+│   └── nest-cli.json
+├── gateway/
+│   └── nginx.conf          # NGINX API Gateway Config
 ├── scripts/
 │   └── localstack-init.sh  # Tự động tạo SNS Topics + SQS Queues
-└── docker-compose.yml      # Infrastructure (DB, Redis, ES, LocalStack)
+└── docker-compose.yml      # Hạ tầng & Toàn bộ 6 Microservices + Gateway
 ```
-
----
-
-## 📚 Tài Liệu Kỹ Thuật
-
-| Tài liệu | Mô tả |
-| :--- | :--- |
-| [`docs/architecture/system-architecture.md`](./docs/architecture/system-architecture.md) | Kiến trúc tổng thể, service boundaries, event map |
-| [`docs/architecture/migration-plan.md`](./docs/architecture/migration-plan.md) | Lộ trình và checklist Monolith → Microservices |
-| [`docs/architecture/frontend-backend-connection.md`](./docs/architecture/frontend-backend-connection.md) | Hybrid Pattern: RSC + CSR + WebSocket |
-| [`docs/services/user-service.md`](./docs/services/user-service.md) | User Service: Auth, Profile Add-ons |
-| [`docs/services/admin-service.md`](./docs/services/admin-service.md) | Admin Service: Approvals, Config, Metrics |
-| [`docs/services/order-service.md`](./docs/services/order-service.md) | Order Service: State machine, lịch sử đơn |
-| [`docs/services/driver-service.md`](./docs/services/driver-service.md) | Driver Service: SQS Consumer, GPS tracking |
-| [`docs/services/search-service.md`](./docs/services/search-service.md) | Search Service: Elasticsearch, Geo-search |
-| [`docs/business/restaurant-registration-flow.md`](./docs/business/restaurant-registration-flow.md) | Flow đăng ký nhà hàng end-to-end |
-| [`docs/business/business_roadmap.md`](./docs/business/business_roadmap.md) | Business features roadmap (Epics & Issues) |
