@@ -51,7 +51,7 @@
             "label": "Dev: Backend",
             "detail": "Chạy NestJS Backend local (hot reload)",
             "type": "shell",
-            "command": "npm run start:dev:local",
+            "command": "npm run start:all",
             "options": {
                 "cwd": "${workspaceFolder}/backend"
             },

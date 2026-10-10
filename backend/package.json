@@ -17,8 +17,9 @@
     "start:delivery": "nest start delivery-service --watch --exec \"tsc-alias -p apps/delivery-service/tsconfig.json && node\"",
     "start:admin": "nest start admin-service --watch --exec \"tsc-alias -p apps/admin-service/tsconfig.json && node\"",
     "start:search": "nest start search-service --watch --exec \"tsc-alias -p apps/search-service/tsconfig.json && node\"",
+    "start:all": "concurrently \"npm run start:user\" \"npm run start:admin\" \"npm run start:restaurant\" \"npm run start:order\" \"npm run start:delivery\" \"npm run start:search\"",
     "start:prod": "node dist/main",
-    "lint": "oxlint src/ test/ && node scripts/check-imports.js",
+    "lint": "oxlint apps/ libs/ test/ && node scripts/check-imports.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
@@ -76,6 +77,7 @@
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.0.0",
     "@vitest/coverage-v8": "^4.1.2",
+    "concurrently": "^10.0.6",
     "glob": "^13.0.6",
     "oxlint": "^1.58.0",
     "prettier": "^3.4.2",
@@ -89,3 +91,4 @@
     "vitest": "^4.1.2"
   }
 }
+
