@@ -11,11 +11,11 @@ export class SubmitRegistrationUseCase {
     @Inject(RegistrationWriteRepository) private readonly writeRepo: RegistrationWriteRepository,
   ) {
     this.snsClient = new SNSClient({
-      region: 'ap-southeast-1',
-      endpoint: process.env.LOCALSTACK_ENDPOINT || 'http://localhost:4566',
+      region: process.env.AWS_REGION || 'ap-southeast-1',
+      endpoint: process.env.SNS_ENDPOINT || 'http://localhost:4566',
       credentials: {
-        accessKeyId: 'test',
-        secretAccessKey: 'test',
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'test',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'test',
       },
     });
   }
@@ -38,11 +38,15 @@ export class SubmitRegistrationUseCase {
           TopicArn: topicArn,
           Message: JSON.stringify({
             eventType: 'RegistrationCreated',
+            version: '1.0',
+            timestamp: new Date().toISOString(),
             data: entity
           })
         }));
+        console.log('[SNS] RegistrationCreated published successfully, TopicArn:', topicArn);
       } catch (err) {
-        console.error('Failed to publish to SNS:', err);
+        console.error('[SNS] CRITICAL: Failed to publish RegistrationCreated event:', err);
+        // Do NOT throw — registration is already saved to DB, SNS failure is non-blocking
       }
 
       return entity;
