@@ -1,10 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { SearchModule } from '@/modules/search/search.module.js';
-// TODO: Create a proper AppModule for this microservice
+import { AppModule } from './app.module.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(SearchModule);
+  const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
@@ -13,7 +12,6 @@ async function bootstrap() {
     }),
   );
   await app.listen(3006);
-  console.log(' is running on: ');
+  console.log('search-service is running on: http://localhost:3006');
 }
-await bootstrap();
-
+bootstrap();

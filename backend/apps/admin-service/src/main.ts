@@ -1,10 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { AdminModule } from '@/modules/admin/admin.module.js';
-// TODO: Create a proper AppModule for this microservice
+import { AppModule } from './app.module.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AdminModule);
+  const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
@@ -13,7 +12,6 @@ async function bootstrap() {
     }),
   );
   await app.listen(3005);
-  console.log(' is running on: ');
+  console.log('admin-service is running on: http://localhost:3005');
 }
-await bootstrap();
-
+bootstrap();

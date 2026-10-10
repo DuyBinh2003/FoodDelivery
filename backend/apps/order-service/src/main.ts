@@ -1,10 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { OrdersModule } from '@/modules/orders/orders.module.js';
-// TODO: Create a proper AppModule for this microservice
+import { AppModule } from './app.module.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(OrdersModule);
+  const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
@@ -13,7 +12,6 @@ async function bootstrap() {
     }),
   );
   await app.listen(3003);
-  console.log(' is running on: ');
+  console.log('order-service is running on: http://localhost:3003');
 }
-await bootstrap();
-
+bootstrap();
