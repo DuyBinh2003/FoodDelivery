@@ -14,7 +14,7 @@ export const up = (pgm) => {
   pgm.createSchema('schema_order', { ifNotExists: true });
   pgm.createSchema('schema_delivery', { ifNotExists: true });
   pgm.createSchema('schema_admin', { ifNotExists: true });
-  pgm.createExtension('uuid-ossp', { ifNotExists: true });
+  pgm.sql('CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA pg_catalog;');
 };
 
 /**

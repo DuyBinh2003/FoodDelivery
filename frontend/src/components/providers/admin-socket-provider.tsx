@@ -12,23 +12,38 @@ export function AdminSocketProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     // Get token from cookie
-    const tokenMatch = document.cookie.match(/(^|;)\s*access_token\s*=\s*([^;]+)/);
-    const token = tokenMatch ? tokenMatch[2] : null;
+    const tokenMatch = typeof document !== 'undefined'
+      ? document.cookie.match(/(^|;)\s*access_token\s*=\s*([^;]+)/)
+      : null;
+    const token = tokenMatch ? decodeURIComponent(tokenMatch[2]) : null;
 
-    if (!user || user.role !== 'ADMIN' || !token) return;
+    if (!user || user.role !== 'ADMIN') return;
 
-    const socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001/admin', {
-      auth: { token }
-    });
+    const wsUrl =
+      process.env.NEXT_PUBLIC_ADMIN_WS_URL ||
+      process.env.NEXT_PUBLIC_WS_URL ||
+      (process.env.NEXT_PUBLIC_ADMIN_SERVICE_URL
+        ? `${process.env.NEXT_PUBLIC_ADMIN_SERVICE_URL}/admin`
+        : 'http://localhost:3002/admin');
 
-    socket.on('new_registration', (data) => {
-      toast.success(`Yêu cầu đăng ký mới: ${data.type}`);
-      // Invalidate queries to refresh the list of pending approvals
-      queryClient.invalidateQueries({ queryKey: ['admin', 'approvals'] });
+    const socket = io(wsUrl, {
+      auth: { token: token || undefined },
+      transports: ['websocket', 'polling'],
     });
 
     socket.on('connect', () => {
-      console.log('Admin WebSocket connected.');
+      console.log('✅ Admin WebSocket connected to:', wsUrl, 'Socket ID:', socket.id);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.warn('⚠️ Admin WebSocket connect error:', error.message);
+    });
+
+    socket.on('new_registration', (data: { type?: string }) => {
+      console.log('🔔 Admin received new_registration event:', data);
+      toast.success(`Yêu cầu đăng ký mới: ${data?.type || 'Đối tác'}`);
+      // Invalidate queries to refresh the list of pending approvals
+      queryClient.invalidateQueries({ queryKey: ['admin', 'approvals'] });
     });
 
     return () => {
