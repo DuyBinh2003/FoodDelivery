@@ -1,6 +1,63 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-const DEFAULT_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_API_TIMEOUT);
+const DEFAULT_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_API_TIMEOUT) || 10000;
 
+function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } {
+  // If full URL is passed
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    const urlObj = new URL(endpoint);
+    return { baseUrl: urlObj.origin, path: `${urlObj.pathname}${urlObj.search}` };
+  }
+
+  // If a unified API gateway URL is defined
+  const gatewayUrl = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
+  if (gatewayUrl) {
+    return {
+      baseUrl: gatewayUrl.replace(/\/$/, ''),
+      path: endpoint.startsWith('/') ? endpoint : `/${endpoint}`,
+    };
+  }
+
+  // Normalize path and remove leading slash
+  const rawPath = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  const isApiPrefix = rawPath.startsWith('api/');
+  const pathWithoutApi = isApiPrefix ? rawPath.slice(4) : rawPath;
+  const firstSegment = pathWithoutApi.split('/')[0];
+
+  let baseUrl = 'http://localhost:3000';
+
+  switch (firstSegment) {
+    case 'users':
+    case 'auth':
+      baseUrl = process.env.NEXT_PUBLIC_USER_SERVICE_URL || 'http://localhost:3001';
+      break;
+    case 'admin':
+      baseUrl = process.env.NEXT_PUBLIC_ADMIN_SERVICE_URL || 'http://localhost:3002';
+      break;
+    case 'restaurants':
+      baseUrl = process.env.NEXT_PUBLIC_RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+      break;
+    case 'orders':
+      baseUrl = process.env.NEXT_PUBLIC_ORDER_SERVICE_URL || 'http://localhost:3004';
+      break;
+    case 'delivery':
+      baseUrl = process.env.NEXT_PUBLIC_DELIVERY_SERVICE_URL || 'http://localhost:3005';
+      break;
+    case 'search':
+      baseUrl = process.env.NEXT_PUBLIC_SEARCH_SERVICE_URL || 'http://localhost:3006';
+      break;
+    default:
+      if (typeof window !== 'undefined') {
+        baseUrl = window.location.origin;
+      } else {
+        baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+      }
+      break;
+  }
+
+  return {
+    baseUrl: baseUrl.replace(/\/$/, ''),
+    path: `/${pathWithoutApi}`,
+  };
+}
 
 interface ApiRequestOptions extends Omit<RequestInit, 'body' | 'signal'> {
   params?: Record<string, string | undefined>;
@@ -22,6 +79,7 @@ class ApiError extends Error {
 /**
  * Lightweight wrapper around native `fetch()`.
  * Works on both Server Components (RSC) and Client Components.
+ * Automatically routes to the appropriate microservice in development and production.
  */
 async function apiClient<T>(
   endpoint: string,
@@ -29,8 +87,8 @@ async function apiClient<T>(
 ): Promise<T> {
   const { params, body, headers: customHeaders, timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
 
-  // Build URL with query params
-  const url = new URL(`${BACKEND_URL}${endpoint}`);
+  const { baseUrl, path } = resolveServiceUrl(endpoint);
+  const url = new URL(`${baseUrl}${path}`);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== '') {
@@ -39,10 +97,21 @@ async function apiClient<T>(
     });
   }
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...customHeaders,
+    ...(customHeaders as Record<string, string>),
   };
+
+  if (typeof window !== 'undefined') {
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('access_token='))
+      ?.split('=')[1];
+
+    if (token && !headers['Authorization']) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
 
   try {
     const response = await fetch(url.toString(), {

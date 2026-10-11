@@ -1,33 +1,32 @@
 # Quy định chung cho dự án (Project Rules)
 
-**QUY TRÌNH LÀM VIỆC BẮT BUỘC:**
-1. Phân tích yêu cầu và xác định tính năng thuộc Frontend, Backend hay Database.
-2. Dùng công cụ đọc file để đọc các policy tương ứng trong thư mục `.agents/skills/` trước khi lên kế hoạch implement.
+Đây là tài liệu gốc định hướng luồng làm việc. Agent bắt buộc tuân thủ cấu trúc sau:
 
-**Đọc và Cập nhật README.md trước khi Implement**
-1. Luôn đọc `README.md` trước khi bắt đầu công việc.
-2. Nếu yêu cầu thay đổi nằm ngoài scope hiện tại, BẮT BUỘC cập nhật lại `README.md`.
-3. Hành động tham chiếu: Bắt buộc đọc `.agents/skills/project-readme-policy/policy.md`.
+## 1. QUY TRÌNH LÀM VIỆC CỐT LÕI
+1. **Phân tích yêu cầu**: Xác định tính năng thuộc Frontend, Backend, hay Database.
+2. **Khảo sát skill**: Dùng công cụ đọc file để đọc các policy tương ứng trong `.agents/skills/` trước khi lên kế hoạch.
 
-**Quy chuẩn Database (Data Modeling)**
-- Mọi bảng/trường phải tuân thủ chuẩn Microservices: cấu trúc Master (`m_`) / Transaction (`t_`).
-- Khóa chính BẮT BUỘC dùng UUID.
-- Hành động tham chiếu: Bắt buộc đọc `.agents/skills/database-schema-policy/policy.md` trước khi tạo migration/schema.
+## 2. QUY CHUẨN KỸ THUẬT VÀ PHONG CÁCH CODE (General Policy)
+Tất cả các yêu cầu về:
+- Đọc và cập nhật `README.md`
+- Code TypeScript (Strictness, không dùng `any`)
+- Import đường dẫn tuyệt đối (`@/`)
+- Viết Document (`docs/`)
+**Hành động tham chiếu**: Bắt buộc đọc `.agents/skills/general-project-policy/SKILL.md` cho mọi task.
 
-**Quy chuẩn Kiến trúc Backend (NestJS)**
+## 3. QUY CHUẨN ĐẶT TÊN (Naming Convention)
+- Định nghĩa cách đặt tên cho file, biến, class, interface, bảng database,...
+**Hành động tham chiếu**: Kích hoạt `.agents/skills/naming-convention-policy/SKILL.md`.
+
+## 4. QUY CHUẨN DATABASE (Data Modeling)
+- Kiến trúc Microservices, bảng Master (`m_`) / Transaction (`t_`), khóa chính dùng UUID.
+**Hành động tham chiếu**: Đọc `.agents/skills/database-schema-policy/SKILL.md`.
+
+## 5. QUY CHUẨN BACKEND (NestJS)
 - Tuân thủ kiến trúc Modular, Thin Controller (chỉ parse request), Service xử lý logic, DTO validate chặt chẽ.
-- Hành động tham chiếu: Bắt buộc đọc `.agents/skills/nestjs-patterns/policy.md`.
+**Hành động tham chiếu**: Đọc `.agents/skills/nestjs-patterns/SKILL.md`.
 
-**Quy chuẩn Kiến trúc Frontend (Next.js)**
-- Tuân thủ App Router và Feature-Based Design.
-- Hành động tham chiếu: Bắt buộc đọc `.agents/skills/nextjs-patterns/policy.md`.
-
-**Quy chuẩn Đặt tên & Import (Naming & Imports)**
-- Đặt tên đồng nhất. Hành động tham chiếu: Đọc `.agents/skills/naming-convention-policy/policy.md`.
-- QUAN TRỌNG: Luôn sử dụng đường dẫn tuyệt đối với alias `@/` (trỏ tới `src/`) thay vì tương đối (`./`, `../`). 
-
-**Quy chuẩn UI/UX**
-- Bắt buộc đọc `.agents/skills/ui-ux-pro-max/policy.md` trước khi gen code cho các component giao diện.
-
-**Quy chuẩn Viết Tài liệu (Documentation)**
-- Luôn tạo hoặc cập nhật file markdown trong `docs/` để giải thích luồng hoạt động và API endpoint cho feature mới.
+## 6. QUY CHUẨN FRONTEND & UI/UX (Next.js)
+- Kiến trúc App Router, Feature-Based Design.
+- Giao diện cao cấp, UX/UI animation hiện đại.
+**Hành động tham chiếu**: Đọc `.agents/skills/nextjs-patterns/SKILL.md` và `.agents/skills/ui-ux-pro-max/SKILL.md`.
