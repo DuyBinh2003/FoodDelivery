@@ -29,7 +29,7 @@
             "label": "Dev: Infra Up",
             "detail": "Khởi động Infrastructure (PostgreSQL, Redis, ES, LocalStack)",
             "type": "shell",
-            "command": "docker compose -f docker-compose.dev.yml up -d",
+            "command": "docker compose -f docker-compose.yml up -d db redis elasticsearch localstack",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
@@ -40,7 +40,7 @@
             "label": "Dev: Infra Down",
             "detail": "Tắt toàn bộ Infrastructure containers",
             "type": "shell",
-            "command": "docker compose -f docker-compose.dev.yml down",
+            "command": "docker compose -f docker-compose.yml down",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
@@ -51,7 +51,7 @@
             "label": "Dev: Backend",
             "detail": "Chạy NestJS Backend local (hot reload)",
             "type": "shell",
-            "command": "npm run start:dev:local",
+            "command": "npm run start:all",
             "options": {
                 "cwd": "${workspaceFolder}/backend"
             },
@@ -107,14 +107,13 @@
             "label": "Dev: Infra Restart",
             "detail": "Restart toàn bộ Infrastructure containers",
             "type": "shell",
-            "command": "docker compose -f docker-compose.dev.yml restart",
+            "command": "docker compose -f docker-compose.yml restart db redis elasticsearch localstack",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
             },
             "problemMatcher": []
         },
-
         // ============================================================
         //  🐳 Docker: Full Stack (cho CI/CD, Demo, Onboarding)
         // ============================================================
@@ -155,7 +154,6 @@
             },
             "problemMatcher": []
         },
-
         // ============================================================
         //  🗄️ DB: Database Management
         // ============================================================
@@ -187,7 +185,6 @@
             },
             "problemMatcher": []
         },
-
         // ============================================================
         //  ✅ CI: Quality Checks (Lint & Test)
         // ============================================================
@@ -244,7 +241,6 @@
                 "panel": "new"
             }
         },
-
         // ============================================================
         //  🔧 Git & GitHub
         // ============================================================

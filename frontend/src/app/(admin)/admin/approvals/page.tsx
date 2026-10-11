@@ -1,67 +1,88 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
-import { CheckCircle2, XCircle } from 'lucide-react';
-
-interface PendingApproval {
-  id: string;
-  name: string;
-  type: 'RESTAURANT' | 'DRIVER';
-  createdAt: string;
-}
+import { CheckCircle2, XCircle, Eye, Store, Car } from 'lucide-react';
+import toast from 'react-hot-toast';
+import {
+  ApprovalDetailModal,
+  PendingApprovalItem,
+} from '@/app/(admin)/admin/approvals/components/approval-detail-modal';
 
 export default function AdminApprovalsPage() {
-  const [approvals, setApprovals] = useState<PendingApproval[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<PendingApprovalItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const loadApprovals = async () => {
-    setLoading(true);
-    try {
+  const { data: approvals = [], isLoading: loading, refetch } = useQuery<PendingApprovalItem[]>({
+    queryKey: ['admin', 'approvals'],
+    queryFn: async () => {
       const data = await apiClient<{
-        restaurants?: Record<string, unknown>[];
-        drivers?: Record<string, unknown>[];
+        restaurants?: PendingApprovalItem[];
+        drivers?: PendingApprovalItem[];
       }>('/admin/approvals/pending');
-      const mappedRestaurants = (data.restaurants || []).map((r: Record<string, unknown>): PendingApproval => ({
-        id: r.id as string,
-        name: r.name as string,
-        type: 'RESTAURANT',
-        createdAt: r.created_at as string,
+
+      const mappedRestaurants = (data.restaurants || []).map((r) => ({
+        id: r.id,
+        userId: r.userId || '',
+        userEmail: r.userEmail || '',
+        name: r.name || 'Unknown',
+        type: 'RESTAURANT' as const,
+        payload: r.payload || {},
+        status: r.status || 'PENDING',
+        createdAt: r.createdAt || r.created_at || new Date().toISOString(),
       }));
-      const mappedDrivers = (data.drivers || []).map((d: Record<string, unknown>): PendingApproval => ({
-        id: d.id as string,
-        name: d.user_id as string,
-        type: 'DRIVER',
-        createdAt: d.created_at as string,
+
+      const mappedDrivers = (data.drivers || []).map((d) => ({
+        id: d.id,
+        userId: d.userId || '',
+        userEmail: d.userEmail || '',
+        name: d.name || 'Unknown',
+        type: 'DRIVER' as const,
+        payload: d.payload || {},
+        status: d.status || 'PENDING',
+        createdAt: d.createdAt || d.created_at || new Date().toISOString(),
       }));
-      setApprovals([...mappedRestaurants, ...mappedDrivers].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
-    } catch (error) {
-      console.error('Failed to load approvals:', error);
+
+      return [...mappedRestaurants, ...mappedDrivers].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+    },
+  });
+
+  const handleReview = async (id: string, status: 'APPROVED' | 'REJECTED', reviewMessage?: string) => {
+    setIsSubmitting(true);
+    try {
+      await apiClient(`/admin/approvals/${id}/review`, {
+        method: 'POST',
+        body: {
+          status,
+          review_message: reviewMessage,
+        },
+      });
+
+      toast.success(status === 'APPROVED' ? 'Đã phê duyệt hồ sơ thành công!' : 'Đã từ chối hồ sơ.');
+      setIsModalOpen(false);
+      setSelectedItem(null);
+      await refetch();
+    } catch (error: unknown) {
+      console.error('Failed to review approval:', error);
+      toast.error('Lỗi khi xử lý hồ sơ: ' + ((error as Error)?.message || 'Vui lòng thử lại'));
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadApprovals();
-  }, []);
-
-  async function handleAction(id: string, type: string, action: 'approve' | 'reject') {
-    try {
-      const endpoint = `/admin/approvals/${type.toLowerCase()}/${id}/${action}`;
-      await apiClient(endpoint, { method: 'POST', body: {} });
-      await loadApprovals();
-    } catch (error) {
-      console.error(`Failed to ${action} ${type}:`, error);
-      alert(`Lỗi khi ${action} hồ sơ.`);
-    }
-  }
+  const openDetailModal = (app: PendingApprovalItem) => {
+    setSelectedItem(app);
+    setIsModalOpen(true);
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin"></div>
+        <div className="w-8 h-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -70,56 +91,101 @@ export default function AdminApprovalsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-white tracking-tight">Xét Duyệt Hồ Sơ</h1>
-        <p className="text-zinc-400 mt-1">Quản lý yêu cầu đăng ký mở quán và làm tài xế.</p>
+        <p className="text-zinc-400 mt-1">Quản lý và xét duyệt các yêu cầu đăng ký mở quán và đối tác tài xế.</p>
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl shadow-black/20">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-zinc-900 border-b border-zinc-800">
-                <th className="px-6 py-4 text-sm font-semibold text-zinc-300">Loại</th>
-                <th className="px-6 py-4 text-sm font-semibold text-zinc-300">Tên / User ID</th>
-                <th className="px-6 py-4 text-sm font-semibold text-zinc-300">Ngày Đăng Ký</th>
-                <th className="px-6 py-4 text-sm font-semibold text-zinc-300 text-right">Hành Động</th>
+              <tr className="bg-zinc-900/90 border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-400">
+                <th className="px-6 py-4 font-semibold">Loại hồ sơ</th>
+                <th className="px-6 py-4 font-semibold">Tên quán / Tài khoản</th>
+                <th className="px-6 py-4 font-semibold">Người nộp đơn</th>
+                <th className="px-6 py-4 font-semibold">Thời gian nộp</th>
+                <th className="px-6 py-4 font-semibold text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-zinc-800/60">
               {approvals.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-zinc-500 text-sm">
-                    Không có hồ sơ nào chờ duyệt.
+                  <td colSpan={5} className="px-6 py-16 text-center text-zinc-500 text-sm">
+                    Hiện không có hồ sơ nào đang chờ duyệt.
                   </td>
                 </tr>
               ) : (
                 approvals.map((app) => (
-                  <tr key={app.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20 transition-colors">
+                  <tr key={app.id} className="hover:bg-zinc-800/30 transition-colors">
+                    {/* Loại */}
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                        app.type === 'RESTAURANT' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                          app.type === 'RESTAURANT'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                        }`}
+                      >
+                        {app.type === 'RESTAURANT' ? <Store className="w-3.5 h-3.5" /> : <Car className="w-3.5 h-3.5" />}
                         {app.type === 'RESTAURANT' ? 'Nhà Hàng' : 'Tài Xế'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-white">{app.name}</td>
-                    <td className="px-6 py-4 text-sm text-zinc-400">
+
+                    {/* Tên */}
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-semibold text-white block">{app.name}</span>
+                      {app.type === 'RESTAURANT' && Boolean((app.payload as Record<string, unknown>)?.address) && (
+                        <span className="text-xs text-zinc-400 line-clamp-1 mt-0.5">
+                          {String((app.payload as Record<string, unknown>).address)}
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Email */}
+                    <td className="px-6 py-4 text-sm text-zinc-300">
+                      {app.userEmail || <span className="font-mono text-xs text-zinc-500">{app.userId}</span>}
+                    </td>
+
+                    {/* Ngày tạo */}
+                    <td className="px-6 py-4 text-xs text-zinc-400">
                       {new Date(app.createdAt).toLocaleString('vi-VN')}
                     </td>
-                    <td className="px-6 py-4 flex justify-end gap-3">
-                      <button 
-                        onClick={() => handleAction(app.id, app.type, 'approve')}
-                        className="p-2 text-zinc-400 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors tooltip"
-                        title="Duyệt"
-                      >
-                        <CheckCircle2 className="w-5 h-5" />
-                      </button>
-                      <button 
-                        onClick={() => handleAction(app.id, app.type, 'reject')}
-                        className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors tooltip"
-                        title="Từ chối"
-                      >
-                        <XCircle className="w-5 h-5" />
-                      </button>
+
+                    {/* Hành động */}
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {/* Nút Xem chi tiết */}
+                        <button
+                          type="button"
+                          onClick={() => openDetailModal(app)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700/80 rounded-lg transition-colors"
+                          title="Xem chi tiết hồ sơ"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-orange-400" />
+                          <span>Chi tiết</span>
+                        </button>
+
+                        {/* Nút Phê duyệt nhanh */}
+                        <button
+                          type="button"
+                          onClick={() => handleReview(app.id, 'APPROVED')}
+                          disabled={isSubmitting}
+                          className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors disabled:opacity-50"
+                          title="Phê duyệt ngay"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </button>
+
+                        {/* Nút Từ chối -> Mở modal để nhập lý do */}
+                        <button
+                          type="button"
+                          onClick={() => openDetailModal(app)}
+                          disabled={isSubmitting}
+                          className="p-1.5 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
+                          title="Từ chối hồ sơ (Yêu cầu nhập lý do)"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -128,6 +194,15 @@ export default function AdminApprovalsPage() {
           </table>
         </div>
       </div>
+
+      {/* Modal Popup Chi Tiết Hồ Sơ */}
+      <ApprovalDetailModal
+        item={selectedItem}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onReview={handleReview}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }

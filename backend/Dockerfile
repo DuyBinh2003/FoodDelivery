@@ -1,7 +1,32 @@
-FROM node:24-alpine
-WORKDIR /app
+FROM node:24-alpine AS builder
+
+WORKDIR /usr/src/app
+
 COPY package*.json ./
 RUN npm install
-COPY . .
-EXPOSE 3001
-CMD ["npm", "run", "start:dev"]
+
+COPY tsconfig.json ./
+COPY tsconfig.build.json ./
+COPY nest-cli.json ./
+COPY libs ./libs
+
+ARG APP_NAME
+ENV APP_NAME=${APP_NAME}
+
+COPY apps/${APP_NAME} ./apps/${APP_NAME}
+
+RUN npx nest build ${APP_NAME} && npx tsc-alias -p apps/${APP_NAME}/tsconfig.json
+
+FROM node:24-alpine AS runner
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+RUN npm install --only=production
+
+COPY --from=builder /usr/src/app/dist ./dist
+
+ARG APP_NAME
+ENV APP_NAME=${APP_NAME}
+
+CMD node dist/apps/${APP_NAME}/src/main.js
