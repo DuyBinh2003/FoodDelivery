@@ -15,6 +15,7 @@ import { UpdateDriverProfileUseCase } from '@/modules/users/usecases/update-driv
 import { RegistrationRequest } from '@/modules/users/entities/registration-request.entity.js';
 import { RegistrationWriteRepository } from '@/modules/users/repositories/registration.write.repository.js';
 import { SubmitRegistrationUseCase } from '@/modules/users/usecases/submit-registration.usecase.js';
+import { UserGateway } from '@/modules/users/gateways/user.gateway.js';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, CustomerProfile, DriverProfile, RegistrationRequest]), PassportModule.register({ defaultStrategy: 'jwt' })],
@@ -28,11 +29,13 @@ import { SubmitRegistrationUseCase } from '@/modules/users/usecases/submit-regis
     UpdateDriverProfileUseCase,
     RegistrationWriteRepository,
     SubmitRegistrationUseCase,
+    UserGateway,
   ],
   exports: [
     UserReadRepository,
     UserWriteRepository,
     RegistrationWriteRepository,
+    UserGateway,
   ],
 })
 export class UsersModule { }

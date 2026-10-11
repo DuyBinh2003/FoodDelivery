@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
@@ -96,5 +96,20 @@ export class RestaurantsInternalController {
       await this.restaurantRepo.save(restaurant);
     }
     return restaurant;
+  }
+
+  @Post('restaurants/from-registration')
+  async createFromRegistration(
+    @Body() body: { owner_id: string; name: string; address?: string },
+  ): Promise<Restaurant> {
+    const restaurant = this.restaurantRepo.create({
+      owner_id: body.owner_id,
+      name: body.name,
+      address: body.address || '',
+      is_active: true,
+      verification_status: 'APPROVED',
+      rating: 5,
+    });
+    return this.restaurantRepo.save(restaurant);
   }
 }

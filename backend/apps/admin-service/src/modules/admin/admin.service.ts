@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SystemConfig } from '@/modules/admin/entities/system-config.entity.js';
+import { ReviewApprovalDto, ApprovalStatus } from '@/modules/admin/dto/review-approval.dto.js';
 
 @Injectable()
 export class AdminService {
@@ -42,28 +43,45 @@ export class AdminService {
     return res.json().catch(() => ({ restaurants: [], drivers: [] }));
   }
 
-  async approveRestaurant(id: string) {
-    const res = await fetch(`${this.restaurantUrl}/internal/restaurants/${id}/approve`, { method: 'POST' });
-    if (!res.ok) throw new NotFoundException('Failed to approve restaurant');
+  async reviewApproval(id: string, dto: ReviewApprovalDto) {
+    const res = await fetch(`${this.userUrl}/internal/registrations/${id}/review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dto),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new BadRequestException(err.message || 'Failed to review registration');
+    }
     return res.json();
   }
 
-  async rejectRestaurant(id: string) {
-    const res = await fetch(`${this.restaurantUrl}/internal/restaurants/${id}/reject`, { method: 'POST' });
-    if (!res.ok) throw new NotFoundException('Failed to reject restaurant');
-    return res.json();
+  async approveRestaurant(id: string, reviewMessage?: string) {
+    return this.reviewApproval(id, {
+      status: ApprovalStatus.APPROVED,
+      review_message: reviewMessage,
+    });
   }
 
-  async approveDriver(id: string) {
-    const res = await fetch(`${this.userUrl}/internal/drivers/${id}/approve`, { method: 'POST' });
-    if (!res.ok) throw new NotFoundException('Failed to approve driver');
-    return res.json();
+  async rejectRestaurant(id: string, reviewMessage?: string) {
+    return this.reviewApproval(id, {
+      status: ApprovalStatus.REJECTED,
+      review_message: reviewMessage,
+    });
   }
 
-  async rejectDriver(id: string) {
-    const res = await fetch(`${this.userUrl}/internal/drivers/${id}/reject`, { method: 'POST' });
-    if (!res.ok) throw new NotFoundException('Failed to reject driver');
-    return res.json();
+  async approveDriver(id: string, reviewMessage?: string) {
+    return this.reviewApproval(id, {
+      status: ApprovalStatus.APPROVED,
+      review_message: reviewMessage,
+    });
+  }
+
+  async rejectDriver(id: string, reviewMessage?: string) {
+    return this.reviewApproval(id, {
+      status: ApprovalStatus.REJECTED,
+      review_message: reviewMessage,
+    });
   }
 
   async getConfigs() {

@@ -46,6 +46,7 @@ Bởi vì việc sinh ra yêu cầu đăng ký xuất phát từ User, dữ li�
 | `type` | `VARCHAR` | `NOT NULL` | Enum: `'DRIVER'`, `'RESTAURANT'` |
 | `payload` | `JSONB` | `NOT NULL` | Dữ liệu form linh hoạt (Tên quán, Biển số...) |
 | `status` | `VARCHAR` | `DEFAULT 'PENDING'` | `'PENDING'`, `'APPROVED'`, `'REJECTED'` |
+| `review_message` | `TEXT` | `NULL` | Lời nhắn hoặc lý do phản hồi của Admin |
 | `reviewed_by` | `UUID` | `NULL` | ID của Admin duyệt đơn (Logical Ref sang Admin) |
 | `created_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Ngày tạo request |
 | `updated_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Ngày cập nhật trạng thái cuối |
@@ -156,3 +157,89 @@ export function AdminSocketProvider({ children }) {
   return <>{children}</>;
 }
 ```
+
+---
+
+## 5. Luồng Phê Duyệt / Từ Chối của Admin & Phản Hồi Real-time Tới User
+
+### A. Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Admin (Browser)
+    participant AdminFE as Frontend (/admin/approvals)
+    participant AS as Admin Service (Port 3002)
+    participant US as User Service (Port 3001)
+    participant RS as Restaurant Service (Port 3003)
+    participant UWS as User WebSocket (namespace /user)
+    actor User as User (Browser)
+
+    Admin->>AdminFE: Bấm "Xem chi tiết" hồ sơ
+    AdminFE->>Admin: Mở ApprovalDetailModal (hiển thị Tên quán, Địa chỉ, Email...)
+    Admin->>AdminFE: Nhập lời nhắn/lý do & Bấm "Duyệt" hoặc "Từ chối"
+    AdminFE->>AS: POST /admin/approvals/:id/review { status: 'APPROVED' | 'REJECTED', review_message }
+    AS->>US: POST /internal/registrations/:id/review { status, review_message }
+
+    alt Trường hợp Phê duyệt (APPROVED)
+        US->>US: Cập nhật t_registration_request (status='APPROVED', review_message)
+        opt Nếu là hồ sơ RESTAURANT
+            US->>RS: POST /internal/restaurants/from-registration { owner_id, name, address }
+            RS-->>US: Tạo m_restaurant thành công (is_active=true, verification_status='APPROVED')
+        end
+        opt Nếu là hồ sơ DRIVER
+            US->>US: Cập nhật m_driver_profile (verification_status='APPROVED')
+        end
+    else Trường hợp Từ chối (REJECTED)
+        US->>US: Cập nhật t_registration_request (status='REJECTED', review_message)
+        opt Nếu là hồ sơ DRIVER
+            US->>US: Cập nhật m_driver_profile (verification_status='REJECTED')
+        end
+    end
+
+    US->>UWS: emit('registration_result', { id, type, status, message, name })
+    UWS->>User: Push Toast thông báo tức thời (Thành công 🎉 hoặc Từ chối kèm lý do ❌)
+    US-->>AS: Trả về 200 OK
+    AS-->>AdminFE: Trả về 200 OK
+    AdminFE->>AdminFE: Đóng Modal, hiển thị toast & Tự động refetch danh sách
+```
+
+### B. RESTful API Endpoints
+
+1. **Admin Review Endpoint (Public Admin API)**:
+   - `POST /admin/approvals/:id/review`
+   - Headers: `Authorization: Bearer <ADMIN_TOKEN>`
+   - Body:
+     ```json
+     {
+       "status": "APPROVED", // hoặc "REJECTED"
+       "review_message": "Chào mừng đối tác đã gia nhập hệ thống!"
+     }
+     ```
+
+2. **Internal Registration Review Endpoint (User Service)**:
+   - `POST /internal/registrations/:id/review`
+   - Nhận trạng thái duyệt, lưu `review_message` vào database, tự động kích hoạt tạo nhà hàng hoặc tài xế, và phát sự kiện WebSocket.
+
+3. **Internal Restaurant Creation Endpoint (Restaurant Service)**:
+   - `POST /internal/restaurants/from-registration`
+   - Body: `{ "owner_id": "...", "name": "...", "address": "..." }`
+   - Tạo mới bản ghi trong `schema_restaurant.m_restaurant` với `is_active: true`, `verification_status: 'APPROVED'`.
+
+### C. Real-time User WebSocket Gateway
+
+- **Namespace**: `/user` (trên `user-service` port 3001)
+- **Room**: `user_${userId}`
+- **Event**: `registration_result`
+- **Data format**:
+  ```json
+  {
+    "id": "uuid",
+    "type": "RESTAURANT", // hoặc "DRIVER"
+    "status": "APPROVED", // hoặc "REJECTED"
+    "message": "Lời nhắn hoặc lý do phản hồi của Admin",
+    "name": "Tên nhà hàng hoặc phương tiện"
+  }
+  ```
+- **Frontend Handler**: `UserSocketProvider` được gắn tại Root Layout (`frontend/src/app/layout.tsx`), lắng nghe sự kiện và hiển thị thông báo Toast với icon, nội dung và lý do rõ ràng.
+

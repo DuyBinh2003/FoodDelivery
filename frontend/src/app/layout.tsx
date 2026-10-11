@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { UserSocketProvider } from "@/components/providers/user-socket-provider";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
@@ -33,7 +34,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
         {/* Main content */}
         <QueryProvider>
-          {children}
+          <UserSocketProvider>
+            {children}
+          </UserSocketProvider>
           <Toaster position="top-right" />
         </QueryProvider>
       </body>

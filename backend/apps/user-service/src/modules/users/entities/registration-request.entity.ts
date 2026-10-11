@@ -34,6 +34,9 @@ export class RegistrationRequest {
   @Column({ name: 'reviewed_by', type: 'uuid', nullable: true })
   reviewedBy: string | null;
 
+  @Column({ name: 'review_message', type: 'text', nullable: true })
+  reviewMessage: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
