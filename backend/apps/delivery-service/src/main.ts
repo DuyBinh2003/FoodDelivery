@@ -11,7 +11,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(3004);
-  console.log('delivery-service is running on: http://localhost:3004');
+  await app.listen(3005);
+  console.log('delivery-service is running on: http://localhost:3005');
 }
 bootstrap();

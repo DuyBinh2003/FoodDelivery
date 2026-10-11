@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheModule } from '@nestjs/cache-manager';
 import { getDatabaseConfig } from '@/config/database.config.js';
+import { getRedisConfig } from '@/config/redis.config.js';
 import configuration from '@/config/configuration.js';
 import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
 
@@ -16,6 +18,7 @@ import { RestaurantsModule } from '@/modules/restaurants/restaurants.module.js';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => getDatabaseConfig(configService, 'schema_restaurant'),
     }),
+    CacheModule.registerAsync(getRedisConfig()),
     RestaurantsModule
   ],
 })

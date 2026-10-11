@@ -9,6 +9,9 @@ export class ElasticsearchRepository implements OnModuleInit {
 
   async onModuleInit() {
     await this.createIndices();
+    setTimeout(() => {
+      this.syncFromRestaurantServiceIfEmpty().catch(() => {});
+    }, 5000);
   }
 
   private async createIndices() {
@@ -33,6 +36,41 @@ export class ElasticsearchRepository implements OnModuleInit {
         }
       });
       console.log(`Index ${indexName} created successfully.`);
+    }
+  }
+
+  async syncAllRestaurants(): Promise<{ synced: number; error?: string }> {
+    try {
+      const url = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+      const res = await fetch(`${url}/restaurants`);
+      if (!res.ok) return { synced: 0, error: 'Restaurant service unavailable' };
+      const restaurants = (await res.json()) as Array<Record<string, unknown>>;
+      if (!Array.isArray(restaurants)) return { synced: 0 };
+
+      let syncedCount = 0;
+      for (const restaurant of restaurants) {
+        await this.indexRestaurant(restaurant);
+        syncedCount++;
+      }
+      return { synced: syncedCount };
+    } catch (e: unknown) {
+      const err = e as Error;
+      return { synced: 0, error: err.message };
+    }
+  }
+
+  async syncFromRestaurantServiceIfEmpty(): Promise<void> {
+    try {
+      const countRes = await this.elasticsearchService.count({ index: 'restaurants' });
+      if (countRes.count === 0) {
+        console.log('[SearchService] Elasticsearch index "restaurants" is empty. Auto-syncing from restaurant-service...');
+        const result = await this.syncAllRestaurants();
+        if (result.synced > 0) {
+          console.log(`[SearchService] Auto-sync finished: synced ${result.synced} restaurants into Elasticsearch.`);
+        }
+      }
+    } catch {
+      // Ignore if restaurant service is still starting up
     }
   }
 

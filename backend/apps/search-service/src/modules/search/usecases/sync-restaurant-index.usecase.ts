@@ -15,4 +15,8 @@ export class SyncRestaurantIndexUseCase {
   async removeRestaurant(id: string) {
     return this.elasticsearchRepo.removeRestaurant(id);
   }
+
+  async syncAll() {
+    return this.elasticsearchRepo.syncAllRestaurants();
+  }
 }

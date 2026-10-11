@@ -11,7 +11,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(3005);
-  console.log('admin-service is running on: http://localhost:3005');
+  await app.listen(3002);
+  console.log('admin-service is running on: http://localhost:3002');
 }
 bootstrap();

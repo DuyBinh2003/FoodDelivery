@@ -1,8 +1,9 @@
-import { Controller, Get, Query, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Query, ValidationPipe } from '@nestjs/common';
 import { SearchMenuUseCase } from '@/modules/search/usecases/search-menu.usecase.js';
 import { SearchRestaurantsUseCase } from '@/modules/search/usecases/search-restaurants.usecase.js';
 import { GetCategoriesUseCase } from '@/modules/search/usecases/get-categories.usecase.js';
 import { GetTagsUseCase } from '@/modules/search/usecases/get-tags.usecase.js';
+import { SyncRestaurantIndexUseCase } from '@/modules/search/usecases/sync-restaurant-index.usecase.js';
 
 @Controller('search')
 export class SearchController {
@@ -11,7 +12,13 @@ export class SearchController {
     private readonly searchRestaurantsUseCase: SearchRestaurantsUseCase,
     private readonly getCategoriesUseCase: GetCategoriesUseCase,
     private readonly getTagsUseCase: GetTagsUseCase,
+    private readonly syncRestaurantIndexUseCase: SyncRestaurantIndexUseCase,
   ) {}
+
+  @Post('sync')
+  syncRestaurants() {
+    return this.syncRestaurantIndexUseCase.syncAll();
+  }
 
   @Get('menu')
   searchMenu(@Query(new ValidationPipe({ transform: true })) query: any) {

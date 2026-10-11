@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SQSClient } from '@aws-sdk/client-sqs';
+import { SQSClient, CreateQueueCommand } from '@aws-sdk/client-sqs';
 import { Consumer } from 'sqs-consumer';
 import { OrderEventTypes, OrderCreatedEvent } from '@/events/index.js';
 
@@ -14,7 +14,7 @@ export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
     @Inject(ConfigService) private configService: ConfigService,
   ) { }
 
-  onModuleInit() {
+  async onModuleInit() {
     const region = this.configService.get<string>('aws.region')!;
     const endpoint = this.configService.get<string>('sqs.endpoint')!;
     const queueUrl = this.configService.get<string>('sqs.queueUrl')!;
@@ -27,6 +27,12 @@ export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
         secretAccessKey: this.configService.get<string>('aws.secretAccessKey')!,
       },
     });
+
+    try {
+      await sqsClient.send(new CreateQueueCommand({ QueueName: 'food-delivery-orders' }));
+    } catch {
+      // Queue already exists or created
+    }
 
     this.consumer = Consumer.create({
       queueUrl,
