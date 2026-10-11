@@ -111,6 +111,15 @@ export function Navbar() {
                       )}
 
                       <Link
+                        href="/partner/restaurant"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        <Store className="w-4 h-4 text-orange-400" />
+                        Quán của tôi (Kênh đối tác)
+                      </Link>
+
+                      <Link
                         href="/register/restaurant"
                         onClick={() => setIsDropdownOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"

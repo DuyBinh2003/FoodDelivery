@@ -77,7 +77,10 @@ export const up = (pgm) => {
   pgm.createTable({ schema, name: 'm_menu_item' }, {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
     restaurant_id: { type: 'uuid', references: { schema, name: 'm_restaurant' }, notNull: true, onDelete: 'RESTRICT' },
+    category_id: { type: 'uuid', references: { schema, name: 'm_category' }, nullable: true, onDelete: 'SET NULL' },
     name: { type: 'varchar(255)', notNull: true },
+    description: { type: 'text', nullable: true },
+    image_url: { type: 'text', nullable: true },
     price: { type: 'numeric(15,2)', notNull: true },
     is_available: { type: 'boolean', default: true },
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },

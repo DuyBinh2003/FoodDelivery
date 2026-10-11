@@ -23,3 +23,6 @@ export async function submitRestaurantRegistration(payload: Record<string, unkno
     },
   });
 }
+
+export * from './partner-api';
+

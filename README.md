@@ -82,6 +82,11 @@ Chúng ta đã hoàn tất việc chia tách dự án từ Monolith sang Microse
   - Triển khai full stack bằng Docker Network
 - **Phase 6: API Gateway** ✅
   - Triển khai NGINX làm Reverse Proxy (`gateway/nginx.conf`)
+- **Phase 7: Kênh Đối Tác / Quản Lý Nhà Hàng (Merchant Portal)** ✅
+  - Bật/tắt mở bán nhận đơn theo thời gian thực (`is_active`)
+  - Quản lý thực đơn: CRUD món ăn, điều chỉnh giá bán, bật/tắt còn món (`is_available`), phân loại danh mục (`m_category`) và gán nhãn tags (`m_tag`)
+  - Tích hợp bảo vệ giỏ hàng và đặt món tại `order-service` khi quán đóng cửa
+  - Giao diện quản lý chuyên nghiệp tại `/partner/restaurant`
 
 ---
 

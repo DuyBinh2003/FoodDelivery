@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, ManyToOne, JoinColumn, JoinTable } from 'typeorm';
 import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
+import { Category } from '@/modules/restaurants/entities/category.entity.js';
 
 @Entity('m_menu_item', { schema: 'schema_restaurant' })
 export class MenuItem {
@@ -9,8 +10,21 @@ export class MenuItem {
   @Column({ type: 'uuid' })
   restaurant_id: string;
 
+  @Column({ type: 'uuid', nullable: true })
+  category_id?: string;
+
+  @ManyToOne(() => Category, { nullable: true })
+  @JoinColumn({ name: 'category_id' })
+  category?: Category;
+
   @Column({ type: 'varchar', length: 255 })
   name: string;
+
+  @Column({ type: 'text', nullable: true })
+  description?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_url?: string;
 
   @Column({ type: 'numeric', precision: 15, scale: 2 })
   price: number;

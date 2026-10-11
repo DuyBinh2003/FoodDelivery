@@ -175,6 +175,7 @@ export default function LoginForm() {
           <div className="mt-2 w-full bg-orange-500/5 rounded-xl p-3 border border-orange-500/10">
             <p className="text-xs text-zinc-400 text-center font-mono">
               🔑 Demo: customer@fooddelivery.com / password123
+              🔑 Admin: admin@fooddelivery.com / password123
             </p>
           </div>
         </CardFooter>
