@@ -22,7 +22,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   pgm.createTable({ schema, name: 't_order_item' }, {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
@@ -33,7 +33,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
   pgm.createTable({ schema, name: 't_order_review' }, {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
     order_id: { type: 'uuid', references: { schema, name: 't_order' }, notNull: true, unique: true },
@@ -45,7 +45,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 };
 
 /**

@@ -20,7 +20,7 @@ export class RestaurantsInternalController {
 
   @Get('restaurants/:id/menu')
   async getMenu(@Param('id') id: string) {
-    return this.menuRepo.find({ where: { restaurant: { id } } });
+    return this.menuRepo.find({ where: { restaurant_id: id } });
   }
 
   @Post('restaurants/:id/approve')

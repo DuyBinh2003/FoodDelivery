@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, CheckSquare, Settings, LogOut } from 'lucide-react';

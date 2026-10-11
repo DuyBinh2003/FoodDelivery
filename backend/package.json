@@ -30,7 +30,8 @@
     "migrate:restaurant": "node-pg-migrate -m migrations/restaurant-service --schema schema_restaurant --migrations-schema schema_restaurant --migrations-table pgmigrations up",
     "migrate:order": "node-pg-migrate -m migrations/order-service --schema schema_order --migrations-schema schema_order --migrations-table pgmigrations up",
     "migrate:admin": "node-pg-migrate -m migrations/admin-service --schema schema_admin --migrations-schema schema_admin --migrations-table pgmigrations up",
-    "migrate:all": "npm run migrate:init && npm run migrate:user && npm run migrate:restaurant && npm run migrate:order && npm run migrate:admin"
+    "migrate:all": "npm run migrate:init && npm run migrate:user && npm run migrate:restaurant && npm run migrate:order && npm run migrate:admin",
+    "migrate:up": "npm run migrate:all"
   },
   "dependencies": {
     "@aws-sdk/client-sns": "^3.1147.0",

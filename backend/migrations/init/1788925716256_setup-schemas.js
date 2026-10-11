@@ -9,11 +9,11 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
-  pgm.createSchema('schema_user');
-  pgm.createSchema('schema_restaurant');
-  pgm.createSchema('schema_order');
-  pgm.createSchema('schema_delivery');
-  pgm.createSchema('schema_admin');
+  pgm.createSchema('schema_user', { ifNotExists: true });
+  pgm.createSchema('schema_restaurant', { ifNotExists: true });
+  pgm.createSchema('schema_order', { ifNotExists: true });
+  pgm.createSchema('schema_delivery', { ifNotExists: true });
+  pgm.createSchema('schema_admin', { ifNotExists: true });
   pgm.createExtension('uuid-ossp', { ifNotExists: true });
 };
 

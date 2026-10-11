@@ -29,7 +29,7 @@
             "label": "Dev: Infra Up",
             "detail": "Khởi động Infrastructure (PostgreSQL, Redis, ES, LocalStack)",
             "type": "shell",
-            "command": "docker compose -f docker-compose.yml up -d",
+            "command": "docker compose -f docker-compose.yml up -d db redis elasticsearch localstack",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
@@ -107,7 +107,7 @@
             "label": "Dev: Infra Restart",
             "detail": "Restart toàn bộ Infrastructure containers",
             "type": "shell",
-            "command": "docker compose -f docker-compose.yml restart",
+            "command": "docker compose -f docker-compose.yml restart db redis elasticsearch localstack",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"

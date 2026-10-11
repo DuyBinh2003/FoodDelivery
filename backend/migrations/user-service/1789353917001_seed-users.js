@@ -19,18 +19,21 @@ export const up = (pgm) => {
     ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'driver2@fooddelivery.com', '${passwordHash}', 'USER'),
     ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'owner@phobien.com', '${passwordHash}', 'USER'),
     ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'owner@bunbo.com', '${passwordHash}', 'USER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'admin@fooddelivery.com', '${passwordHash}', 'ADMIN');
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'admin@fooddelivery.com', '${passwordHash}', 'ADMIN')
+    ON CONFLICT (id) DO NOTHING;
   `);
 
   pgm.sql(`
     INSERT INTO schema_user.m_customer_profile (id, user_id, full_name, phone) VALUES
-    ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Nguyễn Văn An', '0901234567');
+    ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Nguyễn Văn An', '0901234567')
+    ON CONFLICT (id) DO NOTHING;
   `);
 
   pgm.sql(`
     INSERT INTO schema_user.m_driver_profile (id, user_id, status, current_location_lat, current_location_lng) VALUES
     ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'ONLINE', 10.7769, 106.7009),
-    ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'OFFLINE', 10.7800, 106.6950);
+    ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'OFFLINE', 10.7800, 106.6950)
+    ON CONFLICT (id) DO NOTHING;
   `);
 };
 

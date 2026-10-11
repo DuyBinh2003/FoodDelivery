@@ -20,12 +20,13 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   // Default config values
   pgm.sql(`
     INSERT INTO ${schema}.m_config (key, value, description) 
     VALUES ('freeship_distance_threshold', '2', 'Distance in km to apply free shipping')
+    ON CONFLICT (key) DO NOTHING
   `);
 
   // 2. Categories
@@ -36,7 +37,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   // 3. Tags
   pgm.createTable({ schema, name: 'm_tag' }, {
@@ -45,7 +46,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   // 4. Restaurants
   pgm.createTable({ schema, name: 'm_restaurant' }, {
@@ -60,7 +61,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   // 5. Restaurant Categories Mapping
   pgm.createTable({ schema, name: 'm_restaurant_category' }, {
@@ -70,7 +71,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   // 6. Menu Items
   pgm.createTable({ schema, name: 'm_menu_item' }, {
@@ -82,7 +83,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   // 7. Menu Item Tags Mapping
   pgm.createTable({ schema, name: 'm_menu_item_tag' }, {
@@ -92,7 +93,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 };
 
 /**

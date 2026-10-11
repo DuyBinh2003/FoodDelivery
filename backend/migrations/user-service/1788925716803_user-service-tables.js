@@ -19,7 +19,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   pgm.createTable({ schema, name: 'm_customer_profile' }, {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
@@ -29,7 +29,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   pgm.createTable({ schema, name: 'm_driver_profile' }, {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
@@ -40,7 +40,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 
   pgm.createTable({ schema, name: 't_registration_request' }, {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
@@ -52,7 +52,7 @@ export const up = (pgm) => {
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
-  });
+  }, { ifNotExists: true });
 };
 
 /**

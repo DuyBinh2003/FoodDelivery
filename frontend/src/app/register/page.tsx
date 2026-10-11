@@ -23,7 +23,7 @@ export default function RegistrationPage() {
   const type = watch('type');
 
   const mutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/users/registrations' || 'http://localhost:3001/users/registrations', {
         method: 'POST',
         headers: {
@@ -44,12 +44,12 @@ export default function RegistrationPage() {
       toast.success('Gửi yêu cầu đăng ký thành công!');
       router.push('/');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message);
     }
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: Record<string, unknown>) => {
     if (!user) {
       toast.error('Vui lòng đăng nhập trước khi đăng ký');
       return router.push('/login');

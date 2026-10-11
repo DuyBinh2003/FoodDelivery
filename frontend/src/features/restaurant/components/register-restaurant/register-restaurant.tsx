@@ -45,8 +45,9 @@ export function RegisterRestaurantForm() {
       setTimeout(() => {
         router.push('/');
       }, 3000);
-    } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Có lỗi xảy ra khi gửi đăng ký.';
+    } catch (err: unknown) {
+      const errorObj = err as { data?: { message?: string }; message?: string };
+      const errorMessage = errorObj.data?.message || errorObj.message || 'Có lỗi xảy ra khi gửi đăng ký.';
       setError(errorMessage);
     } finally {
       setLoading(false);

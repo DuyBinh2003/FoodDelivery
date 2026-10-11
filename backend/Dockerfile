@@ -6,6 +6,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY tsconfig.json ./
+COPY tsconfig.build.json ./
 COPY nest-cli.json ./
 COPY libs ./libs
 
@@ -14,7 +15,7 @@ ENV APP_NAME=${APP_NAME}
 
 COPY apps/${APP_NAME} ./apps/${APP_NAME}
 
-RUN npx nest build ${APP_NAME}
+RUN npx nest build ${APP_NAME} && npx tsc-alias -p apps/${APP_NAME}/tsconfig.json
 
 FROM node:24-alpine AS runner
 
