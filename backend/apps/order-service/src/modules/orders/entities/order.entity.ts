@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, OneToOne } from 'typeorm';
-import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
-import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
+import type { Relation } from 'typeorm';
+import type { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
+import type { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
@@ -43,9 +44,9 @@ export class Order {
   @Column({ type: 'boolean', default: false })
   is_deleted: boolean;
 
-  @OneToMany(() => OrderItem, item => item.order)
-  items: OrderItem[];
+  @OneToMany('OrderItem', 'order')
+  items: Relation<OrderItem[]>;
 
-  @OneToOne(() => OrderReview, review => review.order)
-  review: OrderReview;
+  @OneToOne('OrderReview', 'order')
+  review: Relation<OrderReview>;
 }

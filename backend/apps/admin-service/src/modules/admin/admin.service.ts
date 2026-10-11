@@ -16,27 +16,30 @@ export class AdminService {
 
   async getDashboardMetrics() {
     const [usersRes, restaurantsRes, ordersRes] = await Promise.all([
-      fetch(`${this.userUrl}/internal/users/metrics`).catch(() => ({ json: () => ({ totalUsers: 0, totalDrivers: 0 }) })),
-      fetch(`${this.restaurantUrl}/internal/restaurants/metrics`).catch(() => ({ json: () => ({ totalRestaurants: 0 }) })),
-      fetch(`${this.orderUrl}/internal/orders/metrics`).catch(() => ({ json: () => ({ totalOrders: 0, totalGmv: 0 }) })),
+      fetch(`${this.userUrl}/internal/users/metrics`).catch(() => null),
+      fetch(`${this.restaurantUrl}/internal/restaurants/metrics`).catch(() => null),
+      fetch(`${this.orderUrl}/internal/orders/metrics`).catch(() => null),
     ]);
 
-    const usersData = await usersRes.json();
-    const restaurantsData = await restaurantsRes.json();
-    const ordersData = await ordersRes.json();
+    const usersData = (usersRes && usersRes.ok) ? await usersRes.json().catch(() => ({})) : {};
+    const restaurantsData = (restaurantsRes && restaurantsRes.ok) ? await restaurantsRes.json().catch(() => ({})) : {};
+    const ordersData = (ordersRes && ordersRes.ok) ? await ordersRes.json().catch(() => ({})) : {};
 
     return {
-      totalUsers: usersData.totalUsers || 0,
-      totalRestaurants: restaurantsData.totalRestaurants || 0,
-      totalDrivers: usersData.totalDrivers || 0,
-      totalOrders: ordersData.totalOrders || 0,
-      totalGmv: ordersData.totalGmv || 0,
+      totalUsers: Number(usersData.totalUsers) || 0,
+      totalRestaurants: Number(restaurantsData.totalRestaurants) || 0,
+      totalDrivers: Number(usersData.totalDrivers) || 0,
+      totalOrders: Number(ordersData.totalOrders) || 0,
+      totalGmv: Number(ordersData.totalGmv) || 0,
     };
   }
 
   async getPendingApprovals() {
-    const res = await fetch(`${this.userUrl}/internal/users/pending-approvals`).catch(() => ({ json: () => ({ restaurants: [], drivers: [] }) }));
-    return res.json();
+    const res = await fetch(`${this.userUrl}/internal/users/pending-approvals`).catch(() => null);
+    if (!res || !res.ok) {
+      return { restaurants: [], drivers: [] };
+    }
+    return res.json().catch(() => ({ restaurants: [], drivers: [] }));
   }
 
   async approveRestaurant(id: string) {

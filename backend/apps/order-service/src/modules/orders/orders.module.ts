@@ -7,6 +7,7 @@ import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
+import { SqsService } from '@/common/messaging/sqs.service.js';
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
 import { GetOrderUseCase } from '@/modules/orders/usecases/get-order.usecase.js';
 import { GetOrderHistoryUseCase } from '@/modules/orders/usecases/get-order-history.usecase.js';
@@ -17,11 +18,12 @@ import { ValidateCartUseCase } from '@/modules/orders/usecases/validate-cart.use
 @Module({
   imports: [
     TypeOrmModule.forFeature([Order, OrderItem, OrderReview]),
-      ],
+  ],
   controllers: [OrdersController, OrdersInternalController],
   providers: [
     OrderReadRepository,
     OrderWriteRepository,
+    SqsService,
     CreateOrderUseCase,
     GetOrderUseCase,
     GetOrderHistoryUseCase,
@@ -32,6 +34,7 @@ import { ValidateCartUseCase } from '@/modules/orders/usecases/validate-cart.use
   exports: [
     OrderReadRepository,
     OrderWriteRepository,
+    SqsService,
     CreateOrderUseCase,
     GetOrderUseCase,
     GetOrderHistoryUseCase,
@@ -41,5 +44,3 @@ import { ValidateCartUseCase } from '@/modules/orders/usecases/validate-cart.use
   ],
 })
 export class OrdersModule {}
-
-

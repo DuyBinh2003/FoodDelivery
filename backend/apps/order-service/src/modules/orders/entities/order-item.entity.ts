@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
-
-import { Order } from '@/modules/orders/entities/order.entity.js';
+import type { Relation } from 'typeorm';
+import type { Order } from '@/modules/orders/entities/order.entity.js';
 
 @Entity('t_order_item', { schema: 'schema_order' })
 export class OrderItem {
@@ -28,7 +28,7 @@ export class OrderItem {
   @Column({ type: 'boolean', default: false })
   is_deleted: boolean;
 
-  @ManyToOne(() => Order, order => order.items)
+  @ManyToOne('Order', 'items')
   @JoinColumn({ name: 'order_id' })
-  order: Order;
+  order: Relation<Order>;
 }

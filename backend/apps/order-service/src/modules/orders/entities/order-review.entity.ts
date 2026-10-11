@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
-import { Order } from '@/modules/orders/entities/order.entity.js';
+import type { Relation } from 'typeorm';
+import type { Order } from '@/modules/orders/entities/order.entity.js';
 
 @Entity('t_order_review', { schema: 'schema_order' })
 export class OrderReview {
@@ -33,7 +34,7 @@ export class OrderReview {
   @Column({ type: 'boolean', default: false })
   is_deleted: boolean;
 
-  @OneToOne(() => Order, order => order.review)
+  @OneToOne('Order', 'review')
   @JoinColumn({ name: 'order_id' })
-  order: Order;
+  order: Relation<Order>;
 }

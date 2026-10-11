@@ -79,9 +79,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="h-16 flex items-center justify-end px-8 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-orange-500/20">
-              {user.name.charAt(0).toUpperCase()}
+              {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
             </div>
-            <span className="text-sm font-medium text-zinc-300">{user.name}</span>
+            <span className="text-sm font-medium text-zinc-300">{user?.name || user?.email}</span>
           </div>
         </header>
         <div className="flex-1 overflow-y-auto p-8">
