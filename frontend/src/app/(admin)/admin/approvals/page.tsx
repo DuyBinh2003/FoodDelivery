@@ -31,7 +31,7 @@ export default function AdminApprovalsPage() {
         type: 'RESTAURANT' as const,
         payload: r.payload || {},
         status: r.status || 'PENDING',
-        createdAt: r.created_at || (r as unknown as { createdAt: string }).createdAt || new Date().toISOString(),
+        createdAt: r.createdAt || r.created_at || new Date().toISOString(),
       }));
 
       const mappedDrivers = (data.drivers || []).map((d) => ({
@@ -42,7 +42,7 @@ export default function AdminApprovalsPage() {
         type: 'DRIVER' as const,
         payload: d.payload || {},
         status: d.status || 'PENDING',
-        createdAt: d.created_at || (d as unknown as { createdAt: string }).createdAt || new Date().toISOString(),
+        createdAt: d.createdAt || d.created_at || new Date().toISOString(),
       }));
 
       return [...mappedRestaurants, ...mappedDrivers].sort(

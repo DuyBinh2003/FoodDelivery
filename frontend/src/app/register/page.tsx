@@ -5,10 +5,11 @@ import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { apiClient } from '@/lib/api-client';
 import { useRouter } from 'next/navigation';
 
 export default function RegistrationPage() {
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
   const router = useRouter();
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
@@ -24,21 +25,10 @@ export default function RegistrationPage() {
 
   const mutation = useMutation({
     mutationFn: async (data: Record<string, unknown>) => {
-      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/users/registrations' || 'http://localhost:3001/users/registrations', {
+      return apiClient('/users/registrations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
+        body: data,
       });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || 'Lỗi khi gửi yêu cầu đăng ký');
-      }
-
-      return response.json();
     },
     onSuccess: () => {
       toast.success('Gửi yêu cầu đăng ký thành công!');

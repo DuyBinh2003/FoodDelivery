@@ -12,6 +12,7 @@ export interface PendingApprovalItem {
   payload: Record<string, unknown>;
   status: string;
   createdAt: string;
+  created_at?: string;
 }
 
 interface ApprovalDetailModalProps {
