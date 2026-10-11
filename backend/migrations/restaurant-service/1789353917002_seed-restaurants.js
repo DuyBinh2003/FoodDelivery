@@ -47,17 +47,17 @@ export const up = (pgm) => {
 
   // Insert Menu Items
   pgm.sql(`
-    INSERT INTO schema_restaurant.m_menu_item (id, restaurant_id, name, price, is_available) VALUES
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Phở Bò Tái', 55000.00, true),
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Phở Bò Chín', 55000.00, true),
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Phở Gà', 50000.00, true),
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Gỏi Cuốn Tôm Thịt', 35000.00, true),
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Nước Chanh Dây', 25000.00, true),
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Bún Bò Đặc Biệt', 65000.00, true),
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Bún Bò Giò Heo', 70000.00, true),
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Bún Bò Chả Cua', 75000.00, true),
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a19', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Chả Lụa Huế', 30000.00, true),
-    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a20', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Trà Đá', 5000.00, true)
+    INSERT INTO schema_restaurant.m_menu_item (id, restaurant_id, category_id, name, description, image_url, price, is_available) VALUES
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Phở Bò Tái', 'Thịt bò tươi thái mỏng chần tái, nước dùng thơm ngọt đậm đà', 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=600&q=80', 55000.00, true),
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Phở Bò Chín', 'Bò chín mềm nhừ cùng thảo quả hồi quế truyền thống', 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=600&q=80', 55000.00, true),
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Phở Gà', 'Thịt gà ta thả vườn dai ngọt xé phay giòn da', 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=600&q=80', 50000.00, true),
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', NULL, 'Gỏi Cuốn Tôm Thịt', 'Tôm sú tươi kèm thịt ba chỉ chấm sốt tương đen béo ngậy', 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=80', 35000.00, true),
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'Nước Chanh Dây', 'Nước chanh dây tươi chua ngọt mát lạnh giải nhiệt', 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80', 25000.00, true),
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Bún Bò Đặc Biệt', 'Tô bún bò thập cẩm đầy đặn nạm gầu chả cua giò heo', 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=600&q=80', 65000.00, true),
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a17', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Bún Bò Giò Heo', 'Giò heo giòn sần sật ninh vừa tới ngấm vị cay nồng', 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=600&q=80', 70000.00, true),
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Bún Bò Chả Cua', 'Chả cua biển xứ Huế thơm nức mũi mềm béo', 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=600&q=80', 75000.00, true),
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a19', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', NULL, 'Chả Lụa Huế', 'Chả lụa lá chuối tiêu thơm nồng giòn dai sần sật', 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=80', 30000.00, true),
+    ('e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a20', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'Trà Đá', 'Trà lài ướp lạnh truyền thống thanh mát', 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80', 5000.00, true)
     ON CONFLICT (id) DO NOTHING;
   `);
 

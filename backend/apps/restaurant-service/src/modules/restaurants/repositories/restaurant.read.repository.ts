@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
 import { MenuItem } from '@/modules/restaurants/entities/menu-item.entity.js';
+import { Category } from '@/modules/restaurants/entities/category.entity.js';
+import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
 
 @Injectable()
 export class RestaurantReadRepository {
@@ -11,6 +13,10 @@ export class RestaurantReadRepository {
     private readonly restaurantRepo: Repository<Restaurant>,
     @InjectRepository(MenuItem)
     private readonly menuItemRepo: Repository<MenuItem>,
+    @InjectRepository(Category)
+    private readonly categoryRepo: Repository<Category>,
+    @InjectRepository(Tag)
+    private readonly tagRepo: Repository<Tag>,
   ) {}
 
   async findAll(): Promise<Restaurant[]> {
@@ -23,12 +29,21 @@ export class RestaurantReadRepository {
   async findById(id: string): Promise<Restaurant | null> {
     return this.restaurantRepo.findOne({
       where: { id, is_deleted: false },
+      relations: { categories: true },
+    });
+  }
+
+  async findByOwnerId(ownerId: string): Promise<Restaurant | null> {
+    return this.restaurantRepo.findOne({
+      where: { owner_id: ownerId, is_deleted: false },
+      relations: { categories: true },
     });
   }
 
   async findMenuItems(restaurantId: string): Promise<MenuItem[]> {
     return this.menuItemRepo.find({
       where: { restaurant_id: restaurantId, is_deleted: false },
+      relations: { tags: true, category: true },
       order: { created_at: 'DESC' }
     });
   }
@@ -36,6 +51,21 @@ export class RestaurantReadRepository {
   async findMenuItemById(itemId: string, restaurantId: string): Promise<MenuItem | null> {
     return this.menuItemRepo.findOne({
       where: { id: itemId, restaurant_id: restaurantId, is_deleted: false },
+      relations: { tags: true, category: true },
+    });
+  }
+
+  async findAllCategories(): Promise<Category[]> {
+    return this.categoryRepo.find({
+      where: { is_deleted: false },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async findAllTags(): Promise<Tag[]> {
+    return this.tagRepo.find({
+      where: { is_deleted: false },
+      order: { name: 'ASC' },
     });
   }
 }

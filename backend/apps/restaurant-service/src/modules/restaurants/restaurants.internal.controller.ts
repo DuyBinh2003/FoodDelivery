@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
@@ -96,6 +96,22 @@ export class RestaurantsInternalController {
       await this.restaurantRepo.save(restaurant);
     }
     return restaurant;
+  }
+
+  @Get('restaurants/:id/status')
+  async getRestaurantStatus(
+    @Param('id') id: string,
+  ): Promise<{ id: string; name: string; is_active: boolean; verification_status: string }> {
+    const restaurant = await this.restaurantRepo.findOne({ where: { id, is_deleted: false } });
+    if (!restaurant) {
+      throw new NotFoundException('Restaurant not found');
+    }
+    return {
+      id: restaurant.id,
+      name: restaurant.name,
+      is_active: restaurant.is_active,
+      verification_status: restaurant.verification_status,
+    };
   }
 
   @Post('restaurants/from-registration')
