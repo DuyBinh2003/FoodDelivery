@@ -24,4 +24,13 @@ export class OrderReadRepository {
       order: { created_at: 'DESC' },
     });
   }
+
+  async findTripsByDriverId(driverId: string): Promise<Order[]> {
+    return this.orderRepo.find({
+      where: { driver_id: driverId, is_deleted: false },
+      relations: { items: true, review: true },
+      order: { created_at: 'DESC' },
+    });
+  }
 }
+

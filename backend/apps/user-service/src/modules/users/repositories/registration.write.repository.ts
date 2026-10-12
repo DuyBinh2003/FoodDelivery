@@ -36,4 +36,16 @@ export class RegistrationWriteRepository {
       order: { createdAt: 'DESC' },
     });
   }
+
+  async findLatestByUserIdAndType(userId: string, type: string): Promise<RegistrationRequest | null> {
+    return this.repo.findOne({
+      where: {
+        userId,
+        type,
+        isDeleted: false,
+      },
+      order: { createdAt: 'DESC' },
+    });
+  }
 }
+

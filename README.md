@@ -93,6 +93,14 @@ Chúng ta đã hoàn tất việc chia tách dự án từ Monolith sang Microse
   - Chặn đăng ký lần 2 báo lỗi HTTP 409 Conflict (1 User tối đa 1 Nhà hàng và 1 Tài xế, cho phép nộp lại khi bị từ chối)
   - Chuẩn hóa quan hệ 1-1: Thiết lập ràng buộc `UNIQUE` trên `m_restaurant.owner_id` và `m_driver_profile.user_id`
   - Tích hợp xét duyệt tài xế và kích hoạt hồ sơ tự động tại Admin Portal (`/admin/approvals`)
+- **Phase 9: Quản Lý Navbar Thông Minh & Cổng Thông Tin Tài Xế (Driver Portal)** ✅
+  - Ẩn/hiện thông minh các nút Đăng ký tài xế / Đăng ký nhà hàng dựa theo hồ sơ thực tế và trạng thái xét duyệt
+  - Cung cấp Cổng thông tin tài xế chuyên biệt tại `/driver/dashboard`:
+    - Bật/tắt trạng thái hoạt động (Trực tuyến / Ngoại tuyến - Online/Offline) với animation xung nhịp hiện đại
+    - Thống kê tổng quan thu nhập, cuốc xe hoàn thành, đánh giá sao và cuốc xe trong ngày
+    - Lịch sử chuyến đi chi tiết: Điểm đón (Quán ăn) ➡️ Điểm đến (Khách hàng), tiền nhận được (+VNĐ), danh sách món ăn, và trạng thái cuốc xe
+    - Xem đánh giá của khách hàng: Điểm rating 1 - 5 sao, thanh phân bổ sao và nhận xét chi tiết
+
 
 ---
 

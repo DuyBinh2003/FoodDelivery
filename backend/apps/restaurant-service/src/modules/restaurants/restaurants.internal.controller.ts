@@ -114,6 +114,24 @@ export class RestaurantsInternalController {
     };
   }
 
+  @Get('restaurants/by-owner/:ownerId')
+  async getRestaurantByOwner(
+    @Param('ownerId') ownerId: string,
+  ): Promise<Restaurant | null> {
+    return this.restaurantRepo.findOne({
+      where: { owner_id: ownerId, is_deleted: false },
+    });
+  }
+
+  @Get('restaurants/:id/details')
+  async getRestaurantDetails(
+    @Param('id') id: string,
+  ): Promise<Restaurant | null> {
+    return this.restaurantRepo.findOne({
+      where: { id, is_deleted: false },
+    });
+  }
+
   @Post('restaurants/from-registration')
   async createFromRegistration(
     @Body() body: { owner_id: string; name: string; address?: string },
@@ -129,3 +147,4 @@ export class RestaurantsInternalController {
     return this.restaurantRepo.save(restaurant);
   }
 }
+

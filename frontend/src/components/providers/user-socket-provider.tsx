@@ -31,8 +31,11 @@ export function UserSocketProvider({ children }: { children: React.ReactNode }) 
       console.log('✅ User WebSocket connected to:', wsUrl, 'Socket ID:', socket.id);
     });
 
-    socket.on('registration_result', (data: RegistrationResultEvent) => {
+    socket.on('registration_result', async (data: RegistrationResultEvent) => {
       console.log('🔔 Received registration_result event:', data);
+
+      // Auto-sync profile to update driver/restaurant roles and navbar
+      await useAuthStore.getState().refreshProfile();
 
       if (data.status === 'APPROVED') {
         toast.success(

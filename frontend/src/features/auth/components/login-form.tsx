@@ -34,16 +34,21 @@ export default function LoginForm() {
       document.cookie = `access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}`;
 
       // 3. Fetch full user profile using the token
-      const profile = await apiClient('/users/profile', {
+      const profile = (await apiClient('/users/profile', {
         headers: {
-          Authorization: `Bearer ${data.access_token}`
-        }
-      }) as {
+          Authorization: `Bearer ${data.access_token}`,
+        },
+      })) as {
         id: string;
         email: string;
         role: 'USER' | 'ADMIN';
         customerProfile?: Record<string, unknown>;
-        driverProfile?: Record<string, unknown>
+        driverProfile?: any;
+        restaurant?: any;
+        hasDriver?: boolean;
+        hasRestaurant?: boolean;
+        driverRegistrationStatus?: any;
+        restaurantRegistrationStatus?: any;
       };
 
       // 4. Update auth store
@@ -54,6 +59,11 @@ export default function LoginForm() {
         role: profile.role,
         customerProfile: profile.customerProfile,
         driverProfile: profile.driverProfile,
+        restaurant: profile.restaurant,
+        hasDriver: profile.hasDriver,
+        hasRestaurant: profile.hasRestaurant,
+        driverRegistrationStatus: profile.driverRegistrationStatus,
+        restaurantRegistrationStatus: profile.restaurantRegistrationStatus,
       });
 
       if (profile.role === 'ADMIN') {

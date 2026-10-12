@@ -8,7 +8,7 @@ export interface GetCustomerProfileQuery {
 
 @Injectable()
 export class GetCustomerProfileUseCase {
-  constructor(@Inject(UserReadRepository) private readonly userReadRepo: UserReadRepository) {}
+  constructor(@Inject(UserReadRepository) private readonly userReadRepo: UserReadRepository) { }
 
   async execute(query: GetCustomerProfileQuery): Promise<CustomerProfile> {
     const profile = await this.userReadRepo.getCustomerProfile(query.userId);

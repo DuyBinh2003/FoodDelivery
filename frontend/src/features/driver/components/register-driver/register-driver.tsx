@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitDriverRegistration } from '@/features/driver/api';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +44,7 @@ export function RegisterDriverForm() {
 
     try {
       await submitDriverRegistration(formData);
+      await useAuthStore.getState().refreshProfile();
       setIsSuccess(true);
       setTimeout(() => {
         router.push('/');

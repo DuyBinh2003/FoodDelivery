@@ -1,3 +1,5 @@
+export * from './driver-api';
+
 import { apiClient } from '@/lib/api-client';
 
 export interface DriverRegistrationPayload {

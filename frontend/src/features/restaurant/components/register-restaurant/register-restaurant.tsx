@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitRestaurantRegistration } from '@/features/restaurant/api';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,6 +42,7 @@ export function RegisterRestaurantForm() {
 
     try {
       await submitRestaurantRegistration(formData);
+      await useAuthStore.getState().refreshProfile();
       setIsSuccess(true);
       setTimeout(() => {
         router.push('/');
