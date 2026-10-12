@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   Bike,
   Star,
@@ -33,7 +32,6 @@ import { DriverTripsList } from './driver-trips-list';
 import { DriverReviewsTab } from './driver-reviews-tab';
 
 export function DriverDashboard() {
-  const router = useRouter();
   const { user, setDriverStatus, refreshProfile } = useAuthStore();
 
   const [trips, setTrips] = useState<DriverTrip[]>([]);
@@ -64,7 +62,7 @@ export function DriverDashboard() {
       setTrips(tripsRes);
       setSummary(summaryRes);
       setReviewsData(reviewsRes);
-    } catch (_err) {
+    } catch {
       showToast('error', 'Có lỗi khi tải dữ liệu đối tác tài xế');
     } finally {
       setLoading(false);
@@ -72,8 +70,35 @@ export function DriverDashboard() {
   };
 
   useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let isMounted = true;
+    const fetchInitialData = async () => {
+      try {
+        const [tripsRes, summaryRes, reviewsRes] = await Promise.all([
+          getDriverTrips().catch(() => []),
+          getDriverSummary().catch(() => null),
+          getDriverReviews().catch(() => null),
+        ]);
+
+        if (!isMounted) return;
+        setTrips(tripsRes);
+        setSummary(summaryRes);
+        setReviewsData(reviewsRes);
+      } catch {
+        if (isMounted) {
+          showToast('error', 'Có lỗi khi tải dữ liệu đối tác tài xế');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchInitialData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleToggleStatus = async (newStatus: DriverStatus) => {
@@ -99,7 +124,7 @@ export function DriverDashboard() {
       await updateDriverTripStatus(orderId, 'COMPLETED');
       showToast('success', 'Đã xác nhận hoàn thành cuốc xe thành công!');
       await loadData();
-    } catch (_err) {
+    } catch {
       showToast('error', 'Lỗi khi cập nhật trạng thái cuốc xe');
     }
   };

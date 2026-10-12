@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Search, Bike, Filter, Inbox } from 'lucide-react';
+import { Search, Inbox } from 'lucide-react';
 import type { DriverTrip } from '@/features/driver/types/driver.types';
 import { DriverTripCard } from './driver-trip-card';
 

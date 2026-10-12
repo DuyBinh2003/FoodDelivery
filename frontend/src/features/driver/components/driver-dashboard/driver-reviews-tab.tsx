@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Star, MessageSquare, User, Clock, MapPin, ThumbsUp } from 'lucide-react';
+import { Star, MessageSquare, User, Clock, MapPin } from 'lucide-react';
 import type { DriverReviewsResponse } from '@/features/driver/types/driver.types';
 
 interface DriverReviewsTabProps {

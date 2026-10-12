@@ -78,7 +78,7 @@ export const useAuthStore = create<AuthState>()(
             return updatedUser;
           }
           return null;
-        } catch (_err) {
+        } catch {
           return null;
         }
       },
