@@ -51,7 +51,7 @@ export const up = (pgm) => {
   // 4. Restaurants
   pgm.createTable({ schema, name: 'm_restaurant' }, {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
-    owner_id: { type: 'uuid', notNull: true }, // Logical FK to schema_user.m_user
+    owner_id: { type: 'uuid', notNull: true, unique: true }, // Logical FK to schema_user.m_user (1-to-1)
     name: { type: 'varchar(255)', notNull: true },
     address: { type: 'text' },
     lat: { type: 'numeric(10,8)' },

@@ -87,6 +87,12 @@ Chúng ta đã hoàn tất việc chia tách dự án từ Monolith sang Microse
   - Quản lý thực đơn: CRUD món ăn, điều chỉnh giá bán, bật/tắt còn món (`is_available`), phân loại danh mục (`m_category`) và gán nhãn tags (`m_tag`)
   - Tích hợp bảo vệ giỏ hàng và đặt món tại `order-service` khi quán đóng cửa
   - Giao diện quản lý chuyên nghiệp tại `/partner/restaurant`
+- **Phase 8: Đối Tác Tài Xế & Chuẩn Hóa Quan Hệ DB 1-1 (Issue #49)** ✅
+  - Hỗ trợ luồng đăng ký tài xế chuyên biệt tại `/register/driver` và Cổng đối tác tại `/register`
+  - Tái sử dụng trọn vẹn hạ tầng Event-Driven (SNS/SQS) và WebSockets realtime từ luồng nhà hàng
+  - Chặn đăng ký lần 2 báo lỗi HTTP 409 Conflict (1 User tối đa 1 Nhà hàng và 1 Tài xế, cho phép nộp lại khi bị từ chối)
+  - Chuẩn hóa quan hệ 1-1: Thiết lập ràng buộc `UNIQUE` trên `m_restaurant.owner_id` và `m_driver_profile.user_id`
+  - Tích hợp xét duyệt tài xế và kích hoạt hồ sơ tự động tại Admin Portal (`/admin/approvals`)
 
 ---
 

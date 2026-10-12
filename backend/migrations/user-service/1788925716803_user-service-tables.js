@@ -33,8 +33,11 @@ export const up = (pgm) => {
 
   pgm.createTable({ schema, name: 'm_driver_profile' }, {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('uuid_generate_v4()') },
-    user_id: { type: 'uuid', references: { schema, name: 'm_user' }, notNull: true, onDelete: 'RESTRICT' },
+    user_id: { type: 'uuid', references: { schema, name: 'm_user' }, notNull: true, unique: true, onDelete: 'RESTRICT' },
     status: { type: 'varchar(20)', notNull: true, default: "'OFFLINE'" },
+    verification_status: { type: 'varchar(50)', notNull: true, default: "'PENDING'" },
+    vehicle_plate: { type: 'varchar(50)' },
+    vehicle_type: { type: 'varchar(50)' },
     current_location_lat: { type: 'numeric' },
     current_location_lng: { type: 'numeric' },
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
@@ -54,6 +57,13 @@ export const up = (pgm) => {
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
   }, { ifNotExists: true });
+
+  pgm.createIndex({ schema, name: 't_registration_request' }, ['user_id', 'type'], {
+    name: 'idx_unique_user_reg_active',
+    where: "status IN ('PENDING', 'APPROVED') AND is_deleted = false",
+    unique: true,
+    ifNotExists: true,
+  });
 };
 
 /**
@@ -63,6 +73,7 @@ export const up = (pgm) => {
  */
 export const down = (pgm) => {
   const schema = 'schema_user';
+  pgm.dropIndex({ schema, name: 't_registration_request' }, ['user_id', 'type'], { name: 'idx_unique_user_reg_active', ifExists: true });
   pgm.dropTable({ schema, name: 't_registration_request' }, { ifExists: true });
   pgm.dropTable({ schema, name: 'm_driver_profile' });
   pgm.dropTable({ schema, name: 'm_customer_profile' });

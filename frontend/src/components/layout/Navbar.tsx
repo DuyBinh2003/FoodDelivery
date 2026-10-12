@@ -128,6 +128,15 @@ export function Navbar() {
                         Đăng ký mở quán
                       </Link>
 
+                      <Link
+                        href="/register/driver"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        <Bike className="w-4 h-4 text-amber-400" />
+                        Đăng ký làm tài xế
+                      </Link>
+
                       <div className="h-px bg-white/10 my-1"></div>
                       <button
                         onClick={() => {
