@@ -52,6 +52,11 @@ function ApprovalDetailDialogContent({
   const restaurantName = (item.payload?.restaurant_name as string) || (item.payload?.name as string) || item.name;
   const address = (item.payload?.address as string) || 'Chưa cung cấp địa chỉ';
   const vehiclePlate = (item.payload?.vehicle_plate as string) || 'Chưa cung cấp';
+  const driverName = (item.payload?.full_name as string) || item.name;
+  const driverPhone = (item.payload?.phone as string) || 'Chưa cung cấp';
+  const vehicleType = (item.payload?.vehicle_type as string) || 'Xe máy (2 bánh)';
+  const licenseNumber = (item.payload?.license_number as string) || '';
+  const notes = (item.payload?.notes as string) || '';
 
   const handleAction = async (status: 'APPROVED' | 'REJECTED') => {
     setErrorMessage('');
@@ -170,9 +175,35 @@ function ApprovalDetailDialogContent({
               </div>
             ) : (
               <div className="space-y-3 text-sm">
-                <div>
-                  <span className="text-zinc-500 text-xs block">Biển số xe:</span>
-                  <span className="text-lg font-bold text-white block mt-0.5 font-mono">{vehiclePlate}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-zinc-500 text-xs block">Họ và tên tài xế:</span>
+                    <span className="text-base font-bold text-white block mt-0.5">{driverName}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 text-xs block">Số điện thoại:</span>
+                    <span className="text-zinc-200 font-medium block mt-0.5">{driverPhone}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 text-xs block">Biển số xe:</span>
+                    <span className="text-base font-bold text-amber-400 block mt-0.5 font-mono">{vehiclePlate}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 text-xs block">Loại phương tiện:</span>
+                    <span className="text-zinc-300 block mt-0.5">{vehicleType}</span>
+                  </div>
+                  {licenseNumber && (
+                    <div className="sm:col-span-2">
+                      <span className="text-zinc-500 text-xs block">Số CCCD / GPLX:</span>
+                      <span className="text-zinc-300 font-mono text-xs block mt-0.5">{licenseNumber}</span>
+                    </div>
+                  )}
+                  {notes && (
+                    <div className="sm:col-span-2 bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800">
+                      <span className="text-zinc-500 text-xs block">Khu vực hoạt động & Ghi chú:</span>
+                      <span className="text-zinc-300 text-xs block mt-0.5 whitespace-pre-wrap">{notes}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

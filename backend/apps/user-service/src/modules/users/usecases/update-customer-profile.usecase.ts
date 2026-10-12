@@ -14,14 +14,14 @@ export class UpdateCustomerProfileUseCase {
   constructor(
     @Inject(UserReadRepository) private readonly userReadRepo: UserReadRepository,
     @Inject(UserWriteRepository) private readonly userWriteRepo: UserWriteRepository,
-  ) {}
+  ) { }
 
   async execute(command: UpdateCustomerProfileCommand): Promise<CustomerProfile> {
     const profile = await this.userReadRepo.getCustomerProfile(command.userId);
     if (!profile) {
       throw new NotFoundException('Customer profile not found');
     }
-    
+
     Object.assign(profile, command.dto);
     return this.userWriteRepo.saveCustomerProfile(profile);
   }

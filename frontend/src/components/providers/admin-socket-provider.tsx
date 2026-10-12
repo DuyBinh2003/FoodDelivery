@@ -39,11 +39,30 @@ export function AdminSocketProvider({ children }: { children: React.ReactNode })
       console.warn('⚠️ Admin WebSocket connect error:', error.message);
     });
 
-    socket.on('new_registration', (data: { type?: string }) => {
+    socket.on('new_registration', (data: { type?: 'RESTAURANT' | 'DRIVER'; payload?: Record<string, unknown> }) => {
       console.log('🔔 Admin received new_registration event:', data);
-      toast.success(`Yêu cầu đăng ký mới: ${data?.type || 'Đối tác'}`);
-      // Invalidate queries to refresh the list of pending approvals
+      const isRestaurant = data?.type === 'RESTAURANT';
+      const entityName = isRestaurant
+        ? (data?.payload?.restaurant_name as string) || (data?.payload?.name as string) || 'Nhà hàng mới'
+        : (data?.payload?.full_name as string) || (data?.payload?.name as string) || 'Tài xế mới';
+
+      toast.success(
+        () => (
+          <div className="flex flex-col gap-1 py-1">
+            <div className="font-semibold text-emerald-400 flex items-center gap-1.5">
+              <span>🔔</span> Có yêu cầu đăng ký {isRestaurant ? 'nhà hàng' : 'tài xế'} mới!
+            </div>
+            <div className="text-xs text-zinc-300">
+              Đối tác <strong className="text-white">&ldquo;{entityName}&rdquo;</strong> vừa nộp hồ sơ xét duyệt.
+            </div>
+          </div>
+        ),
+        { duration: 6000 }
+      );
+
+      // Invalidate and immediately refetch pending approvals
       queryClient.invalidateQueries({ queryKey: ['admin', 'approvals'] });
+      queryClient.refetchQueries({ queryKey: ['admin', 'approvals'] });
     });
 
     return () => {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { RegistrationRequest } from '@/modules/users/entities/registration-request.entity.js';
 import { CreateRegistrationDto } from '@/modules/users/dto/create-registration.dto.js';
 
@@ -22,6 +22,30 @@ export class RegistrationWriteRepository {
   }
 
   async findPendingByUserId(userId: string): Promise<RegistrationRequest | null> {
-    return this.repo.findOne({ where: { userId, status: 'PENDING' } });
+    return this.repo.findOne({ where: { userId, status: 'PENDING', isDeleted: false } });
+  }
+
+  async findActiveByUserIdAndType(userId: string, type: string): Promise<RegistrationRequest | null> {
+    return this.repo.findOne({
+      where: {
+        userId,
+        type,
+        status: In(['PENDING', 'APPROVED']),
+        isDeleted: false,
+      },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findLatestByUserIdAndType(userId: string, type: string): Promise<RegistrationRequest | null> {
+    return this.repo.findOne({
+      where: {
+        userId,
+        type,
+        isDeleted: false,
+      },
+      order: { createdAt: 'DESC' },
+    });
   }
 }
+

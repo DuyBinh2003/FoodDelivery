@@ -2,7 +2,7 @@ import { Controller, Get, Post, Param, Body, NotFoundException, Inject } from '@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@/modules/users/entities/user.entity.js';
-import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js';
+import { DriverProfile, DriverStatus } from '@/modules/users/entities/driver-profile.entity.js';
 import { RegistrationRequest } from '@/modules/users/entities/registration-request.entity.js';
 import { ReviewRegistrationDto, RegistrationStatus } from '@/modules/users/dto/review-registration.dto.js';
 import { UserGateway } from '@/modules/users/gateways/user.gateway.js';
@@ -36,29 +36,35 @@ export class UsersInternalController {
     
     const restaurants = pendingRequests
       .filter((r) => r.type === 'RESTAURANT')
-      .map((r) => ({
-        id: r.id,
-        userId: r.userId,
-        userEmail: r.user?.email || 'Unknown',
-        name: (r.payload as Record<string, unknown>)?.restaurant_name || (r.payload as Record<string, unknown>)?.name || r.user?.email || 'Unknown',
-        type: 'RESTAURANT' as const,
-        payload: r.payload,
-        status: r.status,
-        created_at: r.createdAt,
-      }));
+      .map((r) => {
+        const payload = r.payload as Record<string, unknown>;
+        return {
+          id: r.id,
+          userId: r.userId,
+          userEmail: r.user?.email || 'Unknown',
+          name: (payload?.restaurant_name as string) || (payload?.name as string) || r.user?.email || 'Unknown',
+          type: 'RESTAURANT' as const,
+          payload: r.payload,
+          status: r.status,
+          created_at: r.createdAt,
+        };
+      });
 
     const drivers = pendingRequests
       .filter((r) => r.type === 'DRIVER')
-      .map((r) => ({
-        id: r.id,
-        userId: r.userId,
-        userEmail: r.user?.email || 'Unknown',
-        name: r.user?.email || r.userId,
-        type: 'DRIVER' as const,
-        payload: r.payload,
-        status: r.status,
-        created_at: r.createdAt,
-      }));
+      .map((r) => {
+        const payload = r.payload as Record<string, unknown>;
+        return {
+          id: r.id,
+          userId: r.userId,
+          userEmail: r.user?.email || 'Unknown',
+          name: (payload?.full_name as string) || (payload?.name as string) || r.user?.email || r.userId,
+          type: 'DRIVER' as const,
+          payload: r.payload,
+          status: r.status,
+          created_at: r.createdAt,
+        };
+      });
 
     return { restaurants, drivers };
   }
@@ -103,11 +109,22 @@ export class UsersInternalController {
           console.error('[UsersInternalController] Failed to connect to restaurant-service:', err);
         }
       } else if (reg.type === 'DRIVER') {
-        const driver = await this.driverRepo.findOne({ where: { user_id: reg.userId } });
-        if (driver) {
+        const payload = reg.payload as Record<string, unknown>;
+        let driver = await this.driverRepo.findOne({ where: { user_id: reg.userId } });
+        if (!driver) {
+          driver = this.driverRepo.create({
+            user_id: reg.userId,
+            status: DriverStatus.OFFLINE,
+            verification_status: 'APPROVED',
+            vehicle_plate: (payload?.vehicle_plate as string) || null,
+            vehicle_type: (payload?.vehicle_type as string) || 'Xe máy',
+          });
+        } else {
           driver.verification_status = 'APPROVED';
-          await this.driverRepo.save(driver);
+          if (payload?.vehicle_plate) driver.vehicle_plate = payload.vehicle_plate as string;
+          if (payload?.vehicle_type) driver.vehicle_type = payload.vehicle_type as string;
         }
+        await this.driverRepo.save(driver);
       }
     } else if (dto.status === RegistrationStatus.REJECTED) {
       if (reg.type === 'DRIVER') {
@@ -121,7 +138,11 @@ export class UsersInternalController {
 
     // Emit Real-time Notification via UserGateway
     const payloadObj = reg.payload as Record<string, unknown>;
-    const entityName = (payloadObj?.restaurant_name as string) || (payloadObj?.name as string) || (reg.type === 'RESTAURANT' ? 'Nhà hàng' : 'Tài xế');
+    const entityName =
+      (payloadObj?.restaurant_name as string) ||
+      (payloadObj?.full_name as string) ||
+      (payloadObj?.name as string) ||
+      (reg.type === 'RESTAURANT' ? 'Nhà hàng' : 'Tài xế');
 
     this.userGateway.sendToUser(reg.userId, 'registration_result', {
       id: reg.id,

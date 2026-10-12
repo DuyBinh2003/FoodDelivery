@@ -13,7 +13,7 @@ const NAV_ITEMS = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { isAuthenticated, user, logout } = useAuthStore();
+  const { isAuthenticated, user, logout, refreshProfile } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -21,6 +21,10 @@ export function Navbar() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+
+    if (isAuthenticated) {
+      refreshProfile().catch(() => {});
+    }
 
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -30,7 +34,7 @@ export function Navbar() {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isAuthenticated, refreshProfile]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl">
@@ -90,43 +94,112 @@ export function Navbar() {
                         Lịch sử mua hàng
                       </Link>
 
-                      {user?.driverProfile ? (
-                        <Link
-                          href="/driver/dashboard"
-                          onClick={() => setIsDropdownOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
-                        >
-                          <Bike className="w-4 h-4 text-zinc-400" />
-                          Trung tâm giao hàng
-                        </Link>
-                      ) : (
-                        <Link
-                          href="/driver/register"
-                          onClick={() => setIsDropdownOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
-                        >
-                          <Bike className="w-4 h-4 text-zinc-400" />
-                          Đăng ký làm tài xế
-                        </Link>
-                      )}
+                      <div className="h-px bg-white/10 my-1"></div>
 
-                      <Link
-                        href="/partner/restaurant"
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
-                      >
-                        <Store className="w-4 h-4 text-orange-400" />
-                        Quán của tôi (Kênh đối tác)
-                      </Link>
+                      {/* Driver Section */}
+                      {(() => {
+                        const isApprovedDriver = Boolean(user?.hasDriver || user?.driverProfile?.verification_status === 'APPROVED');
+                        const isPendingDriver = !isApprovedDriver && user?.driverRegistrationStatus === 'PENDING';
+                        const canRegisterDriver = !isApprovedDriver && !isPendingDriver;
 
-                      <Link
-                        href="/register/restaurant"
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
-                      >
-                        <Store className="w-4 h-4 text-zinc-400" />
-                        Đăng ký mở quán
-                      </Link>
+                        if (isApprovedDriver) {
+                          const isOnline = user?.driverProfile?.status === 'ONLINE';
+                          return (
+                            <Link
+                              href="/driver/dashboard"
+                              onClick={() => setIsDropdownOpen(false)}
+                              className="flex items-center justify-between px-4 py-3 text-sm text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors"
+                            >
+                              <div className="flex items-center gap-3">
+                                <Bike className="w-4 h-4 text-emerald-400" />
+                                <span className="font-medium">Trung tâm tài xế</span>
+                              </div>
+                              <span className="flex items-center gap-1.5 text-xs text-zinc-400">
+                                <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-600'}`} />
+                                <span className="text-[11px]">{isOnline ? 'Online' : 'Offline'}</span>
+                              </span>
+                            </Link>
+                          );
+                        }
+
+                        if (isPendingDriver) {
+                          return (
+                            <div className="flex items-center justify-between px-4 py-2.5 text-sm text-amber-400/90 bg-amber-500/5 cursor-default">
+                              <div className="flex items-center gap-3">
+                                <Bike className="w-4 h-4 text-amber-400" />
+                                <span>Hồ sơ tài xế</span>
+                              </div>
+                              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                Đang duyệt
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        if (canRegisterDriver) {
+                          return (
+                            <Link
+                              href="/register/driver"
+                              onClick={() => setIsDropdownOpen(false)}
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              <Bike className="w-4 h-4 text-amber-400" />
+                              Đăng ký làm tài xế
+                            </Link>
+                          );
+                        }
+
+                        return null;
+                      })()}
+
+                      {/* Restaurant Section */}
+                      {(() => {
+                        const isApprovedRestaurant = Boolean(user?.hasRestaurant || user?.restaurant || user?.restaurantRegistrationStatus === 'APPROVED');
+                        const isPendingRestaurant = !isApprovedRestaurant && user?.restaurantRegistrationStatus === 'PENDING';
+                        const canRegisterRestaurant = !isApprovedRestaurant && !isPendingRestaurant;
+
+                        if (isApprovedRestaurant) {
+                          return (
+                            <Link
+                              href="/partner/restaurant"
+                              onClick={() => setIsDropdownOpen(false)}
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors font-medium"
+                            >
+                              <Store className="w-4 h-4 text-orange-400" />
+                              Quán của tôi (Đối tác)
+                            </Link>
+                          );
+                        }
+
+                        if (isPendingRestaurant) {
+                          return (
+                            <div className="flex items-center justify-between px-4 py-2.5 text-sm text-amber-400/90 bg-amber-500/5 cursor-default">
+                              <div className="flex items-center gap-3">
+                                <Store className="w-4 h-4 text-amber-400" />
+                                <span>Hồ sơ mở quán</span>
+                              </div>
+                              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                Đang duyệt
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        if (canRegisterRestaurant) {
+                          return (
+                            <Link
+                              href="/register/restaurant"
+                              onClick={() => setIsDropdownOpen(false)}
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              <Store className="w-4 h-4 text-zinc-400" />
+                              Đăng ký mở quán
+                            </Link>
+                          );
+                        }
+
+                        return null;
+                      })()}
 
                       <div className="h-px bg-white/10 my-1"></div>
                       <button

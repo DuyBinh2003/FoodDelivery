@@ -10,7 +10,7 @@ export class DriverProfile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', unique: true })
   user_id: string;
 
   @Column({ type: 'varchar', length: 20, default: DriverStatus.OFFLINE })
@@ -18,6 +18,12 @@ export class DriverProfile {
 
   @Column({ type: 'varchar', length: 50, default: 'PENDING' })
   verification_status: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  vehicle_plate: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  vehicle_type: string | null;
 
   @Column({ type: 'numeric', nullable: true })
   current_location_lat: number;

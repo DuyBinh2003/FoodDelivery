@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { useAuthStore, type User } from '@/features/auth/store/useAuthStore';
 import { Eye, EyeOff, Mail, Lock, UtensilsCrossed } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,17 +34,11 @@ export default function LoginForm() {
       document.cookie = `access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}`;
 
       // 3. Fetch full user profile using the token
-      const profile = await apiClient('/users/profile', {
+      const profile = await apiClient<User>('/users/profile', {
         headers: {
-          Authorization: `Bearer ${data.access_token}`
-        }
-      }) as {
-        id: string;
-        email: string;
-        role: 'USER' | 'ADMIN';
-        customerProfile?: Record<string, unknown>;
-        driverProfile?: Record<string, unknown>
-      };
+          Authorization: `Bearer ${data.access_token}`,
+        },
+      });
 
       // 4. Update auth store
       useAuthStore.getState().login({
@@ -54,6 +48,11 @@ export default function LoginForm() {
         role: profile.role,
         customerProfile: profile.customerProfile,
         driverProfile: profile.driverProfile,
+        restaurant: profile.restaurant,
+        hasDriver: profile.hasDriver,
+        hasRestaurant: profile.hasRestaurant,
+        driverRegistrationStatus: profile.driverRegistrationStatus,
+        restaurantRegistrationStatus: profile.restaurantRegistrationStatus,
       });
 
       if (profile.role === 'ADMIN') {
