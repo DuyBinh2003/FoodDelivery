@@ -1,10 +1,6 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch: # Cho phép chạy thủ công trên GitHub nếu cần
 
 jobs:
@@ -25,9 +21,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: './backend/package-lock.json'
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "./backend/package-lock.json"
 
       - name: Install Dependencies
         run: npm install
@@ -58,9 +54,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: './frontend/package-lock.json' # package-lock.json might not exist yet if you haven't run npm install in frontend
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "./frontend/package-lock.json" # package-lock.json might not exist yet if you haven't run npm install in frontend
 
       - name: Install Dependencies
         run: npm install # Dùng npm install thay vì npm ci để tránh lỗi nếu chưa có package-lock.json
