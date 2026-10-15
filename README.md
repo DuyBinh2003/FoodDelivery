@@ -30,6 +30,7 @@ graph TD
         OS["🛒 Order Service :3004"]
         DS["🛵 Delivery Service :3005"]
         SS["🔍 Search Service :3006"]
+        PS["💳 Payment Service :3007"]
     end
 
     subgraph "Messaging (LocalStack)"
@@ -44,12 +45,13 @@ graph TD
     end
 
     FE --> GW
-    GW --> US & AS & RS & OS & DS & SS
+    GW --> US & AS & RS & OS & DS & SS & PS
 
     US -.->|"schema_user"| DB
     AS -.->|"public"| DB
     RS -.->|"schema_restaurant"| DB
     OS -.->|"schema_order"| DB
+    PS -.->|"schema_payment"| DB
 
     US -->|"Publish Registration"| SNS --> SQS
     OS -->|"Publish Order"| SNS
@@ -100,7 +102,13 @@ Chúng ta đã hoàn tất việc chia tách dự án từ Monolith sang Microse
     - Thống kê tổng quan thu nhập, cuốc xe hoàn thành, đánh giá sao và cuốc xe trong ngày
     - Lịch sử chuyến đi chi tiết: Điểm đón (Quán ăn) ➡️ Điểm đến (Khách hàng), tiền nhận được (+VNĐ), danh sách món ăn, và trạng thái cuốc xe
     - Xem đánh giá của khách hàng: Điểm rating 1 - 5 sao, thanh phân bổ sao và nhận xét chi tiết
-
+- **Phase 10: Dịch Vụ Thanh Toán & Sổ Cái Cốt Lõi (Core Payment & Ledger System - Sprint 1)** ✅
+  - Triển khai Microservice độc lập `payment-service` (:3007) và Schema PostgreSQL riêng biệt `schema_payment`
+  - Thiết kế sổ cái kế toán kép (**Double-Entry Bookkeeping**) chuẩn FinTech, lưu trữ **Append-Only** (`t_ledger_transaction`, `t_ledger_entry`)
+  - Quản lý tài khoản ví 4 chủ thể: Khách hàng, Tài xế, Nhà hàng, Nền tảng (`m_wallet_account`, `m_wallet_balance`)
+  - Bảo đảm bất biến tuyệt đối `sum(DEBIT) == sum(CREDIT)` bằng `Decimal.js` và khóa bi quan (`SELECT FOR UPDATE`)
+  - Cơ chế cấn trừ đơn COD và xử lý số dư âm tạm thời của Tài xế (tự động gắn cờ `isDriverInactive` bảo vệ nền tảng)
+  - 100% kiểm thử tự động với Vitest và tài liệu chi tiết tại [`docs/services/payment-service.md`](./docs/services/payment-service.md)
 
 ---
 

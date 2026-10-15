@@ -1,2 +1,2 @@
-export * from './order.events.js';
-export * from './registration.events.js';
+export * from '@/events/order.events.js';
+export * from '@/events/registration.events.js';

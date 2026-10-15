@@ -1,4 +1,4 @@
-import { RestaurantsInternalController } from './restaurants.internal.controller.js';
+import { RestaurantsInternalController } from '@/modules/restaurants/restaurants.internal.controller.js';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';

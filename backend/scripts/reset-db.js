@@ -24,6 +24,7 @@ async function resetDb() {
       DROP SCHEMA IF EXISTS schema_order CASCADE;
       DROP SCHEMA IF EXISTS schema_delivery CASCADE;
       DROP SCHEMA IF EXISTS schema_admin CASCADE;
+      DROP SCHEMA IF EXISTS schema_payment CASCADE;
       DROP TABLE IF EXISTS public.m_system_config CASCADE;
       DROP TABLE IF EXISTS public.pgmigrations_init CASCADE;
       CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA pg_catalog;

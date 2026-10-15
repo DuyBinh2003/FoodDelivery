@@ -61,6 +61,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/search-service/tsconfig.json"
       }
+    },
+    "payment-service": {
+      "type": "application",
+      "root": "apps/payment-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/payment-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/payment-service/tsconfig.json"
+      }
     }
   }
 }

@@ -14,6 +14,7 @@ export const up = (pgm) => {
   pgm.createSchema('schema_order', { ifNotExists: true });
   pgm.createSchema('schema_delivery', { ifNotExists: true });
   pgm.createSchema('schema_admin', { ifNotExists: true });
+  pgm.createSchema('schema_payment', { ifNotExists: true });
   pgm.sql('CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA pg_catalog;');
 };
 
@@ -23,6 +24,7 @@ export const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 export const down = (pgm) => {
+  pgm.dropSchema('schema_payment', { cascade: true });
   pgm.dropSchema('schema_order', { cascade: true });
   pgm.dropSchema('schema_delivery', { cascade: true });
   pgm.dropSchema('schema_admin', { cascade: true });
