@@ -18,8 +18,11 @@ import { RecordLedgerTransactionUseCase } from './usecases/record-ledger-transac
 import { GetWalletBalanceUseCase } from './usecases/get-wallet-balance.usecase.js';
 import { TopupWalletUseCase } from './usecases/topup-wallet.usecase.js';
 
+import { ProcessPaymentUseCase } from './usecases/process-payment.usecase.js';
+
 import { WalletController } from './wallet.controller.js';
 import { LedgerController } from './ledger.controller.js';
+import { PaymentController } from './payment.controller.js';
 
 @Module({
   imports: [
@@ -33,7 +36,7 @@ import { LedgerController } from './ledger.controller.js';
       Outbox,
     ]),
   ],
-  controllers: [WalletController, LedgerController],
+  controllers: [WalletController, LedgerController, PaymentController],
   providers: [
     WalletReadRepository,
     WalletWriteRepository,
@@ -43,6 +46,7 @@ import { LedgerController } from './ledger.controller.js';
     RecordLedgerTransactionUseCase,
     GetWalletBalanceUseCase,
     TopupWalletUseCase,
+    ProcessPaymentUseCase,
   ],
   exports: [
     WalletReadRepository,
@@ -53,6 +57,7 @@ import { LedgerController } from './ledger.controller.js';
     RecordLedgerTransactionUseCase,
     GetWalletBalanceUseCase,
     TopupWalletUseCase,
+    ProcessPaymentUseCase,
   ],
 })
 export class LedgerModule {}

@@ -44,6 +44,11 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
     case 'search':
       baseUrl = process.env.NEXT_PUBLIC_SEARCH_SERVICE_URL || 'http://localhost:3006';
       break;
+    case 'wallets':
+    case 'payment':
+    case 'ledger':
+      baseUrl = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || 'http://localhost:3007';
+      break;
     default:
       if (typeof window !== 'undefined') {
         baseUrl = window.location.origin;

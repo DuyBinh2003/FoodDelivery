@@ -5,10 +5,12 @@ export class CreateOrderItemDto {
   @IsUUID()
   menu_item_id: string;
 
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   quantity: number;
   
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   unit_price: number;

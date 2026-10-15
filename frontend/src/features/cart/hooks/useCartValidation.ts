@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useCartStore } from '@/features/cart/store/useCartStore';
 import { validateCartApi } from '@/features/cart/api/cart-api';
 
@@ -12,7 +12,7 @@ export function useCartValidation() {
   const items = useCartStore((state) => state.items);
   const restaurantId = useCartStore((state) => state.restaurantId);
 
-  const validateCart = async (): Promise<ValidationResult> => {
+  const validateCart = useCallback(async (): Promise<ValidationResult> => {
     if (!restaurantId || items.length === 0) {
       return { isValid: false, message: 'Giỏ hàng trống' };
     }
@@ -28,13 +28,11 @@ export function useCartValidation() {
         }))
       });
       
-      // Check if any item has is_available = false
-      const hasUnavailableItems = data.items && data.items.some((i: { is_available: boolean }) => !i.is_available);
-      
-      if (hasUnavailableItems) {
+      if (!data.isValid || (data.invalidItems && data.invalidItems.length > 0)) {
+        const errorReason = data.reason || data.invalidItems?.[0]?.reason || 'Một số món ăn trong giỏ hàng hiện đã hết hoặc không khả dụng. Vui lòng kiểm tra lại.';
         return {
           isValid: false,
-          message: 'Một số món ăn trong giỏ hàng hiện đã hết hoặc không khả dụng. Vui lòng kiểm tra lại.'
+          message: errorReason,
         };
       }
 
@@ -48,7 +46,7 @@ export function useCartValidation() {
     } finally {
       setIsValidating(false);
     }
-  };
+  }, [restaurantId, items]);
 
   return {
     validateCart,

@@ -1,9 +1,11 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { WalletReadRepository } from '../repositories/wallet.read.repository.js';
+import { WalletWriteRepository } from '../repositories/wallet.write.repository.js';
 import { LedgerReadRepository } from '../repositories/ledger.read.repository.js';
 import { WalletAccount } from '../entities/wallet-account.entity.js';
 import { WalletBalance } from '../entities/wallet-balance.entity.js';
 import { LedgerEntry } from '../entities/ledger-entry.entity.js';
+import { AccountCategory, OwnerType } from '../constants/ledger.enums.js';
 
 export interface WalletDetailsResponse {
   wallet: WalletAccount;
@@ -17,6 +19,8 @@ export class GetWalletBalanceUseCase {
   constructor(
     @Inject(WalletReadRepository)
     private readonly walletReadRepo: WalletReadRepository,
+    @Inject(WalletWriteRepository)
+    private readonly walletWriteRepo: WalletWriteRepository,
     @Inject(LedgerReadRepository)
     private readonly ledgerReadRepo: LedgerReadRepository,
   ) {}
@@ -43,4 +47,23 @@ export class GetWalletBalanceUseCase {
       isDriverInactive: wallet.owner_type === 'DRIVER' && isNegative,
     };
   }
+
+  async executeByOwner(ownerId: string, ownerType: OwnerType = OwnerType.CUSTOMER): Promise<WalletDetailsResponse> {
+    let wallet = await this.walletReadRepo.getWalletByOwner(ownerId, ownerType);
+    if (!wallet) {
+      // Lazy auto-create wallet account
+      const accountCode = `WALLET_${ownerType}_${ownerId}`;
+      const created = await this.walletWriteRepo.createWalletWithBalance({
+        ownerId,
+        ownerType,
+        accountCategory: AccountCategory.LIABILITY,
+        accountCode,
+        currency: 'VND',
+      });
+      wallet = created.wallet;
+    }
+
+    return this.execute(wallet.id);
+  }
 }
+

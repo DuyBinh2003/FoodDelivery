@@ -12,14 +12,21 @@ export interface ValidateCartPayload {
 }
 
 export interface ValidateCartResponse {
-  items: Array<{
-    is_available: boolean;
-    error?: string;
+  isValid: boolean;
+  totalAmount: number;
+  validatedItems?: Array<{
     item_id: string;
     quantity: number;
-    price?: number;
-    options?: string[];
+    price: number;
+    name: string;
   }>;
+  invalidItems?: Array<{
+    item_id?: string;
+    reason: string;
+    name?: string;
+    price?: number;
+  }>;
+  reason?: string;
 }
 
 /**
