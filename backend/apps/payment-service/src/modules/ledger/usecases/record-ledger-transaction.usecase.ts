@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { LedgerWriteRepository, PostLedgerResult } from '../repositories/ledger.write.repository.js';
-import { RecordLedgerTransactionDto } from '../dto/record-ledger-transaction.dto.js';
+import { LedgerWriteRepository, PostLedgerResult } from '@/modules/ledger/repositories/ledger.write.repository.js';
+import { RecordLedgerTransactionDto } from '@/modules/ledger/dto/record-ledger-transaction.dto.js';
 
 @Injectable()
 export class RecordLedgerTransactionUseCase {

@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, Param } from '@nestjs/common';
-import { RecordLedgerTransactionUseCase } from './usecases/record-ledger-transaction.usecase.js';
-import { LedgerReadRepository } from './repositories/ledger.read.repository.js';
-import { RecordLedgerTransactionDto } from './dto/record-ledger-transaction.dto.js';
+import { RecordLedgerTransactionUseCase } from '@/modules/ledger/usecases/record-ledger-transaction.usecase.js';
+import { LedgerReadRepository } from '@/modules/ledger/repositories/ledger.read.repository.js';
+import { RecordLedgerTransactionDto } from '@/modules/ledger/dto/record-ledger-transaction.dto.js';
 
 @Controller('ledger')
 export class LedgerController {

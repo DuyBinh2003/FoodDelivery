@@ -1,11 +1,11 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { WalletReadRepository } from '../repositories/wallet.read.repository.js';
-import { WalletWriteRepository } from '../repositories/wallet.write.repository.js';
-import { LedgerReadRepository } from '../repositories/ledger.read.repository.js';
-import { WalletAccount } from '../entities/wallet-account.entity.js';
-import { WalletBalance } from '../entities/wallet-balance.entity.js';
-import { LedgerEntry } from '../entities/ledger-entry.entity.js';
-import { AccountCategory, OwnerType } from '../constants/ledger.enums.js';
+import { WalletReadRepository } from '@/modules/ledger/repositories/wallet.read.repository.js';
+import { WalletWriteRepository } from '@/modules/ledger/repositories/wallet.write.repository.js';
+import { LedgerReadRepository } from '@/modules/ledger/repositories/ledger.read.repository.js';
+import { WalletAccount } from '@/modules/ledger/entities/wallet-account.entity.js';
+import { WalletBalance } from '@/modules/ledger/entities/wallet-balance.entity.js';
+import { LedgerEntry } from '@/modules/ledger/entities/ledger-entry.entity.js';
+import { AccountCategory, OwnerType } from '@/modules/ledger/constants/ledger.enums.js';
 
 export interface WalletDetailsResponse {
   wallet: WalletAccount;

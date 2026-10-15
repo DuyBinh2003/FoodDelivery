@@ -1,11 +1,11 @@
 import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Decimal } from 'decimal.js';
-import { LedgerTransaction } from '../entities/ledger-transaction.entity.js';
-import { LedgerEntry } from '../entities/ledger-entry.entity.js';
-import { WalletAccount } from '../entities/wallet-account.entity.js';
-import { WalletBalance } from '../entities/wallet-balance.entity.js';
-import { EntryType, AccountCategory, OwnerType, TransactionStatus, ReferenceType } from '../constants/ledger.enums.js';
+import { LedgerTransaction } from '@/modules/ledger/entities/ledger-transaction.entity.js';
+import { LedgerEntry } from '@/modules/ledger/entities/ledger-entry.entity.js';
+import { WalletAccount } from '@/modules/ledger/entities/wallet-account.entity.js';
+import { WalletBalance } from '@/modules/ledger/entities/wallet-balance.entity.js';
+import { EntryType, AccountCategory, OwnerType, TransactionStatus, ReferenceType } from '@/modules/ledger/constants/ledger.enums.js';
 
 export interface PostLedgerEntryParam {
   walletAccountId: string;

@@ -1,6 +1,6 @@
 import { IsArray, IsEnum, IsNotEmpty, IsString, IsUUID, ValidateNested, ArrayMinSize } from 'class-validator';
 import { Type } from 'class-transformer';
-import { EntryType, ReferenceType } from '../constants/ledger.enums.js';
+import { EntryType, ReferenceType } from '@/modules/ledger/constants/ledger.enums.js';
 
 export class LedgerEntryItemDto {
   @IsUUID()

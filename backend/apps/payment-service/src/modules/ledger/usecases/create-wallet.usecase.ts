@@ -1,9 +1,9 @@
 import { Injectable, Inject, ConflictException } from '@nestjs/common';
-import { WalletWriteRepository } from '../repositories/wallet.write.repository.js';
-import { WalletReadRepository } from '../repositories/wallet.read.repository.js';
-import { CreateWalletDto } from '../dto/create-wallet.dto.js';
-import { WalletAccount } from '../entities/wallet-account.entity.js';
-import { WalletBalance } from '../entities/wallet-balance.entity.js';
+import { WalletWriteRepository } from '@/modules/ledger/repositories/wallet.write.repository.js';
+import { WalletReadRepository } from '@/modules/ledger/repositories/wallet.read.repository.js';
+import { CreateWalletDto } from '@/modules/ledger/dto/create-wallet.dto.js';
+import { WalletAccount } from '@/modules/ledger/entities/wallet-account.entity.js';
+import { WalletBalance } from '@/modules/ledger/entities/wallet-balance.entity.js';
 
 @Injectable()
 export class CreateWalletUseCase {

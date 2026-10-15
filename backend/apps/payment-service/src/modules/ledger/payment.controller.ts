@@ -1,10 +1,10 @@
 import { Controller, Post, Get, Body, Param, ParseUUIDPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ProcessPaymentUseCase } from './usecases/process-payment.usecase.js';
-import { LedgerReadRepository } from './repositories/ledger.read.repository.js';
-import { PaymentIntent } from './entities/payment-intent.entity.js';
-import { ProcessPaymentDto } from './dto/process-payment.dto.js';
+import { ProcessPaymentUseCase } from '@/modules/ledger/usecases/process-payment.usecase.js';
+import { LedgerReadRepository } from '@/modules/ledger/repositories/ledger.read.repository.js';
+import { PaymentIntent } from '@/modules/ledger/entities/payment-intent.entity.js';
+import { ProcessPaymentDto } from '@/modules/ledger/dto/process-payment.dto.js';
 
 @Controller('payment')
 export class PaymentController {

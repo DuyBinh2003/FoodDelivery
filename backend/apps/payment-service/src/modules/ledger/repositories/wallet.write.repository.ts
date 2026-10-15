@@ -1,8 +1,8 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { WalletAccount } from '../entities/wallet-account.entity.js';
-import { WalletBalance } from '../entities/wallet-balance.entity.js';
-import { AccountCategory, OwnerType, WalletStatus } from '../constants/ledger.enums.js';
+import { WalletAccount } from '@/modules/ledger/entities/wallet-account.entity.js';
+import { WalletBalance } from '@/modules/ledger/entities/wallet-balance.entity.js';
+import { AccountCategory, OwnerType, WalletStatus } from '@/modules/ledger/constants/ledger.enums.js';
 
 export interface CreateWalletParams {
   ownerId: string;

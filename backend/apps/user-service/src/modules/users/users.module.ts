@@ -1,4 +1,4 @@
-import { UsersInternalController } from './users.internal.controller.js';
+import { UsersInternalController } from '@/modules/users/users.internal.controller.js';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from '@/modules/users/users.controller.js';

@@ -1,10 +1,10 @@
 import { Controller, Post, Get, Body, Param, Query, ParseUUIDPipe } from '@nestjs/common';
-import { CreateWalletUseCase } from './usecases/create-wallet.usecase.js';
-import { GetWalletBalanceUseCase } from './usecases/get-wallet-balance.usecase.js';
-import { TopupWalletUseCase } from './usecases/topup-wallet.usecase.js';
-import { CreateWalletDto } from './dto/create-wallet.dto.js';
-import { TopupWalletDto } from './dto/topup-wallet.dto.js';
-import { OwnerType } from './constants/ledger.enums.js';
+import { CreateWalletUseCase } from '@/modules/ledger/usecases/create-wallet.usecase.js';
+import { GetWalletBalanceUseCase } from '@/modules/ledger/usecases/get-wallet-balance.usecase.js';
+import { TopupWalletUseCase } from '@/modules/ledger/usecases/topup-wallet.usecase.js';
+import { CreateWalletDto } from '@/modules/ledger/dto/create-wallet.dto.js';
+import { TopupWalletDto } from '@/modules/ledger/dto/topup-wallet.dto.js';
+import { OwnerType } from '@/modules/ledger/constants/ledger.enums.js';
 
 @Controller('wallets')
 export class WalletController {

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { LedgerTransaction } from '../entities/ledger-transaction.entity.js';
-import { LedgerEntry } from '../entities/ledger-entry.entity.js';
+import { LedgerTransaction } from '@/modules/ledger/entities/ledger-transaction.entity.js';
+import { LedgerEntry } from '@/modules/ledger/entities/ledger-entry.entity.js';
 
 @Injectable()
 export class LedgerReadRepository {

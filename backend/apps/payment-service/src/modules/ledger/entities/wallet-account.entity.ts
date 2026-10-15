@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { AccountCategory, OwnerType, WalletStatus } from '../constants/ledger.enums.js';
+import { AccountCategory, OwnerType, WalletStatus } from '@/modules/ledger/constants/ledger.enums.js';
 
 @Entity('m_wallet_account', { schema: 'schema_payment' })
 export class WalletAccount {

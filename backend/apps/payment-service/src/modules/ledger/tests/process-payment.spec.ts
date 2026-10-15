@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ProcessPaymentUseCase } from '../usecases/process-payment.usecase.js';
-import { PaymentMethodType } from '../dto/process-payment.dto.js';
+import { ProcessPaymentUseCase } from '@/modules/ledger/usecases/process-payment.usecase.js';
+import { PaymentMethodType } from '@/modules/ledger/dto/process-payment.dto.js';
 
 describe('ProcessPaymentUseCase', () => {
   let useCase: ProcessPaymentUseCase;

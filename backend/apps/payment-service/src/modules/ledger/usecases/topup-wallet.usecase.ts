@@ -1,9 +1,9 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { WalletReadRepository } from '../repositories/wallet.read.repository.js';
-import { WalletWriteRepository } from '../repositories/wallet.write.repository.js';
-import { LedgerWriteRepository, PostLedgerResult } from '../repositories/ledger.write.repository.js';
-import { TopupWalletDto } from '../dto/topup-wallet.dto.js';
-import { AccountCategory, EntryType, ReferenceType } from '../constants/ledger.enums.js';
+import { WalletReadRepository } from '@/modules/ledger/repositories/wallet.read.repository.js';
+import { WalletWriteRepository } from '@/modules/ledger/repositories/wallet.write.repository.js';
+import { LedgerWriteRepository, PostLedgerResult } from '@/modules/ledger/repositories/ledger.write.repository.js';
+import { TopupWalletDto } from '@/modules/ledger/dto/topup-wallet.dto.js';
+import { AccountCategory, EntryType, ReferenceType } from '@/modules/ledger/constants/ledger.enums.js';
 
 @Injectable()
 export class TopupWalletUseCase {

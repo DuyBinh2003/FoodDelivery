@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { WalletAccount } from '../entities/wallet-account.entity.js';
-import { WalletBalance } from '../entities/wallet-balance.entity.js';
-import { OwnerType } from '../constants/ledger.enums.js';
+import { WalletAccount } from '@/modules/ledger/entities/wallet-account.entity.js';
+import { WalletBalance } from '@/modules/ledger/entities/wallet-balance.entity.js';
+import { OwnerType } from '@/modules/ledger/constants/ledger.enums.js';
 
 @Injectable()
 export class WalletReadRepository {

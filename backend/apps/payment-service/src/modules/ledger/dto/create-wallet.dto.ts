@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { AccountCategory, OwnerType } from '../constants/ledger.enums.js';
+import { AccountCategory, OwnerType } from '@/modules/ledger/constants/ledger.enums.js';
 
 export class CreateWalletDto {
   @IsUUID()

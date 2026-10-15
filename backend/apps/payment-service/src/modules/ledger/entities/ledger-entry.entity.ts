@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { EntryType } from '../constants/ledger.enums.js';
+import { EntryType } from '@/modules/ledger/constants/ledger.enums.js';
 
 @Entity('t_ledger_entry', { schema: 'schema_payment' })
 export class LedgerEntry {

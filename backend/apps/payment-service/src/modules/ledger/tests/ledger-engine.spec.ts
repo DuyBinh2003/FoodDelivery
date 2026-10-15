@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BadRequestException } from '@nestjs/common';
-import { LedgerWriteRepository, PostLedgerTransactionCommand } from '../repositories/ledger.write.repository.js';
-import { EntryType, AccountCategory, OwnerType, ReferenceType } from '../constants/ledger.enums.js';
+import { LedgerWriteRepository, PostLedgerTransactionCommand } from '@/modules/ledger/repositories/ledger.write.repository.js';
+import { EntryType, AccountCategory, OwnerType, ReferenceType } from '@/modules/ledger/constants/ledger.enums.js';
 import { DataSource } from 'typeorm';
 
 describe('Core Ledger Engine (Double-Entry Bookkeeping)', () => {

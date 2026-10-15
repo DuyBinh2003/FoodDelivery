@@ -1,12 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { WalletReadRepository } from '../repositories/wallet.read.repository.js';
-import { WalletWriteRepository } from '../repositories/wallet.write.repository.js';
-import { LedgerWriteRepository } from '../repositories/ledger.write.repository.js';
-import { PaymentIntent } from '../entities/payment-intent.entity.js';
-import { ProcessPaymentDto, PaymentMethodType } from '../dto/process-payment.dto.js';
-import { AccountCategory, EntryType, OwnerType, ReferenceType } from '../constants/ledger.enums.js';
+import { WalletReadRepository } from '@/modules/ledger/repositories/wallet.read.repository.js';
+import { WalletWriteRepository } from '@/modules/ledger/repositories/wallet.write.repository.js';
+import { LedgerWriteRepository } from '@/modules/ledger/repositories/ledger.write.repository.js';
+import { PaymentIntent } from '@/modules/ledger/entities/payment-intent.entity.js';
+import { ProcessPaymentDto, PaymentMethodType } from '@/modules/ledger/dto/process-payment.dto.js';
+import { AccountCategory, EntryType, OwnerType, ReferenceType } from '@/modules/ledger/constants/ledger.enums.js';
 
 @Injectable()
 export class ProcessPaymentUseCase {
