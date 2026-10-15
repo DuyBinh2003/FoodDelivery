@@ -17,7 +17,8 @@
     "start:delivery": "nest start delivery-service --watch --exec \"tsc-alias -p apps/delivery-service/tsconfig.json && node\"",
     "start:admin": "nest start admin-service --watch --exec \"tsc-alias -p apps/admin-service/tsconfig.json && node\"",
     "start:search": "nest start search-service --watch --exec \"tsc-alias -p apps/search-service/tsconfig.json && node\"",
-    "start:all": "concurrently \"npm run start:user\" \"npm run start:admin\" \"npm run start:restaurant\" \"npm run start:order\" \"npm run start:delivery\" \"npm run start:search\"",
+    "start:payment": "nest start payment-service --watch --exec \"tsc-alias -p apps/payment-service/tsconfig.json && node\"",
+    "start:all": "concurrently \"npm run start:user\" \"npm run start:admin\" \"npm run start:restaurant\" \"npm run start:order\" \"npm run start:delivery\" \"npm run start:search\" \"npm run start:payment\"",
     "start:prod": "node dist/main",
     "lint": "oxlint apps/ libs/ test/ && node scripts/check-imports.js",
     "test": "vitest run",
@@ -30,7 +31,8 @@
     "migrate:restaurant": "node-pg-migrate -m migrations/restaurant-service --schema schema_restaurant --migrations-schema schema_restaurant --migrations-table pgmigrations up",
     "migrate:order": "node-pg-migrate -m migrations/order-service --schema schema_order --migrations-schema schema_order --migrations-table pgmigrations up",
     "migrate:admin": "node-pg-migrate -m migrations/admin-service --schema schema_admin --migrations-schema schema_admin --migrations-table pgmigrations up",
-    "migrate:all": "npm run migrate:init && npm run migrate:user && npm run migrate:restaurant && npm run migrate:order && npm run migrate:admin",
+    "migrate:payment": "node-pg-migrate -m migrations/payment-service --schema schema_payment --migrations-schema schema_payment --migrations-table pgmigrations up",
+    "migrate:all": "npm run migrate:init && npm run migrate:user && npm run migrate:restaurant && npm run migrate:order && npm run migrate:admin && npm run migrate:payment",
     "migrate:up": "npm run migrate:all",
     "migrate:reset": "node scripts/reset-db.js && npm run migrate:all"
   },
@@ -56,6 +58,7 @@
     "cache-manager-redis-yet": "^5.1.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "decimal.js": "^10.6.0",
     "dotenv": "^17.4.2",
     "node-pg-migrate": "^9.0.0",
     "passport": "^0.7.0",
@@ -93,4 +96,3 @@
     "vitest": "^4.1.2"
   }
 }
-

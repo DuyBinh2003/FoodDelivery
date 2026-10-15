@@ -1,0 +1,40 @@
+export enum AccountCategory {
+  ASSET = 'ASSET',
+  LIABILITY = 'LIABILITY',
+  EQUITY = 'EQUITY',
+  REVENUE = 'REVENUE',
+  EXPENSE = 'EXPENSE',
+}
+
+export enum OwnerType {
+  CUSTOMER = 'CUSTOMER',
+  DRIVER = 'DRIVER',
+  RESTAURANT = 'RESTAURANT',
+  PLATFORM = 'PLATFORM',
+}
+
+export enum EntryType {
+  DEBIT = 'DEBIT',
+  CREDIT = 'CREDIT',
+}
+
+export enum TransactionStatus {
+  POSTED = 'POSTED',
+  PENDING = 'PENDING',
+  VOIDED = 'VOIDED',
+}
+
+export enum ReferenceType {
+  ORDER_SETTLEMENT = 'ORDER_SETTLEMENT',
+  WALLET_TOPUP = 'WALLET_TOPUP',
+  WITHDRAWAL = 'WITHDRAWAL',
+  REFUND = 'REFUND',
+  COD_DEDUCTION = 'COD_DEDUCTION',
+  COMMISSION_FEE = 'COMMISSION_FEE',
+}
+
+export enum WalletStatus {
+  ACTIVE = 'ACTIVE',
+  FROZEN = 'FROZEN',
+  CLOSED = 'CLOSED',
+}
