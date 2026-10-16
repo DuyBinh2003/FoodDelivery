@@ -35,6 +35,15 @@ export class Order {
   @Column({ type: 'text' })
   delivery_address: string;
 
+  @Column({ type: 'text', nullable: true })
+  note: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  estimated_delivery_time: Date | null;
+
+  @Column({ type: 'varchar', length: 50, default: 'CASH' })
+  payment_method: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 

@@ -1,5 +1,23 @@
-import { IsUUID, IsArray, ValidateNested, IsInt, Min, IsNumber, IsString, IsNotEmpty } from 'class-validator';
+import {
+  IsUUID,
+  IsArray,
+  ValidateNested,
+  IsInt,
+  Min,
+  IsNumber,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  MaxLength,
+} from 'class-validator';
 import { Type } from 'class-transformer';
+
+export enum PaymentMethod {
+  CASH = 'CASH',
+  MOMO = 'MOMO',
+  VNPAY = 'VNPAY',
+}
 
 export class CreateOrderItemDto {
   @IsUUID()
@@ -9,7 +27,7 @@ export class CreateOrderItemDto {
   @IsInt()
   @Min(1)
   quantity: number;
-  
+
   @Type(() => Number)
   @IsNumber()
   @Min(0)
@@ -18,17 +36,24 @@ export class CreateOrderItemDto {
 
 export class CreateOrderDto {
   @IsUUID()
-  customer_id: string;
-
-  @IsUUID()
   restaurant_id: string;
 
   @IsString()
   @IsNotEmpty()
   delivery_address: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  payment_method?: PaymentMethod;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)
   items: CreateOrderItemDto[];
 }
+

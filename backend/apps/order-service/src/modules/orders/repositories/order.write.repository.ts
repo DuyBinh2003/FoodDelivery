@@ -4,7 +4,7 @@ import { Repository, DataSource } from 'typeorm';
 import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
 import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
-import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
+import { CreateOrderCommand } from '@/modules/orders/usecases/create-order.usecase.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
 import { OrderEventTypes } from '@/events/index.js';
 
@@ -21,7 +21,7 @@ export class OrderWriteRepository {
     @Inject(SqsService) private readonly sqsService: SqsService,
   ) {}
 
-  async createOrderWithItems(createOrderDto: CreateOrderDto): Promise<Order> {
+  async createOrderWithItems(createOrderDto: CreateOrderCommand): Promise<Order> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -36,6 +36,8 @@ export class OrderWriteRepository {
         customer_id: createOrderDto.customer_id,
         restaurant_id: createOrderDto.restaurant_id,
         delivery_address: createOrderDto.delivery_address,
+        note: createOrderDto.note ?? null,
+        payment_method: createOrderDto.payment_method ?? 'CASH',
         total_amount: totalAmount,
         status: OrderStatus.PENDING,
       });

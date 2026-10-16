@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getDatabaseConfig } from '@/config/database.config.js';
 import configuration from '@/config/configuration.js';
+import { validate } from '@/config/validation.js';
 import { OrdersModule } from '@/modules/orders/orders.module.js';
 
 @Module({
@@ -10,6 +11,7 @@ import { OrdersModule } from '@/modules/orders/orders.module.js';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
+      validate,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -20,4 +22,5 @@ import { OrdersModule } from '@/modules/orders/orders.module.js';
   ],
 })
 export class AppModule {}
+
 

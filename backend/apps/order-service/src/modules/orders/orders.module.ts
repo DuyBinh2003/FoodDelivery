@@ -20,6 +20,7 @@ import { GetDriverTripsUseCase } from '@/modules/orders/usecases/get-driver-trip
 import { GetDriverSummaryUseCase } from '@/modules/orders/usecases/get-driver-summary.usecase.js';
 import { GetDriverReviewsUseCase } from '@/modules/orders/usecases/get-driver-reviews.usecase.js';
 import { UpdateDriverTripStatusUseCase } from '@/modules/orders/usecases/update-driver-trip-status.usecase.js';
+import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admin.usecase.js';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { UpdateDriverTripStatusUseCase } from '@/modules/orders/usecases/update-
     GetDriverSummaryUseCase,
     GetDriverReviewsUseCase,
     UpdateDriverTripStatusUseCase,
+    GetOrdersAdminUseCase,
   ],
   exports: [
     OrderReadRepository,
@@ -57,6 +59,7 @@ import { UpdateDriverTripStatusUseCase } from '@/modules/orders/usecases/update-
     GetDriverSummaryUseCase,
     GetDriverReviewsUseCase,
     UpdateDriverTripStatusUseCase,
+    GetOrdersAdminUseCase,
   ],
 })
 export class OrdersModule {}

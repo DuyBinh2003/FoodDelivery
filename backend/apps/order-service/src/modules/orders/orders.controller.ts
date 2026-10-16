@@ -1,6 +1,18 @@
-import { Controller, Post, Body, Patch, Param, ParseUUIDPipe, Get, Inject, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  Param,
+  ParseUUIDPipe,
+  Get,
+  Inject,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from '@/modules/orders/dto/update-order-status.dto.js';
+import { QueryOrdersDto } from '@/modules/orders/dto/query-orders.dto.js';
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
 import { GetOrderUseCase } from '@/modules/orders/usecases/get-order.usecase.js';
 import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
@@ -9,6 +21,7 @@ import { ValidateCartDto } from '@/modules/orders/dto/validate-cart.dto.js';
 import { GetOrderHistoryUseCase } from '@/modules/orders/usecases/get-order-history.usecase.js';
 import { CreateOrderReviewUseCase } from '@/modules/orders/usecases/create-order-review.usecase.js';
 import { CreateOrderReviewDto } from '@/modules/orders/dto/create-order-review.dto.js';
+import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admin.usecase.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
 import type { JwtPayload } from '@/common/guards/jwt.strategy.js';
@@ -31,6 +44,8 @@ export class OrdersController {
     private readonly getOrderHistoryUseCase: GetOrderHistoryUseCase,
     @Inject(CreateOrderReviewUseCase)
     private readonly createOrderReviewUseCase: CreateOrderReviewUseCase,
+    @Inject(GetOrdersAdminUseCase)
+    private readonly getOrdersAdminUseCase: GetOrdersAdminUseCase,
     @Inject(GetDriverTripsUseCase)
     private readonly getDriverTripsUseCase: GetDriverTripsUseCase,
     @Inject(GetDriverSummaryUseCase)
@@ -41,41 +56,58 @@ export class OrdersController {
     private readonly updateDriverTripStatusUseCase: UpdateDriverTripStatusUseCase,
   ) {}
 
+  // --- Validate Cart (public — không cần auth) ---
+
   @Post('validate-cart')
   async validateCart(@Body() dto: ValidateCartDto) {
-    try {
-      return await this.validateCartUseCase.execute(dto);
-    } catch (error: any) {
-      return { message: error.message, stack: error.stack, error: 'Debug Error' };
-    }
+    return this.validateCartUseCase.execute(dto);
   }
 
+  // --- Customer Endpoints ---
+
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.createOrderUseCase.execute(createOrderDto);
+  @UseGuards(JwtAuthGuard)
+  create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() user: JwtPayload) {
+    return this.createOrderUseCase.execute({
+      ...createOrderDto,
+      customer_id: user.id,
+    });
+  }
+
+  @Get('history/me')
+  @UseGuards(JwtAuthGuard)
+  getOrderHistory(@CurrentUser() user: JwtPayload) {
+    return this.getOrderHistoryUseCase.execute({ customerId: user.id });
+  }
+
+  @Post(':id/reviews')
+  @UseGuards(JwtAuthGuard)
+  createReview(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateOrderReviewDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.createOrderReviewUseCase.execute({ orderId: id, customerId: user.id, dto });
   }
 
   // --- Driver Endpoints ---
 
   @Get('driver/trips')
   @UseGuards(JwtAuthGuard)
-  getDriverTrips(@CurrentUser() user: JwtPayload, @Query('driverId') queryDriverId?: string) {
-    const driverId = user?.id || queryDriverId || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
-    return this.getDriverTripsUseCase.execute({ driverId });
+  getDriverTrips(@CurrentUser() user: JwtPayload) {
+    return this.getDriverTripsUseCase.execute({ driverId: user.id });
   }
 
   @Get('driver/summary')
   @UseGuards(JwtAuthGuard)
-  getDriverSummary(@CurrentUser() user: JwtPayload, @Query('driverId') queryDriverId?: string) {
-    const driverId = user?.id || queryDriverId || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
-    return this.getDriverSummaryUseCase.execute({ driverId });
+  getDriverSummary(@CurrentUser() user: JwtPayload) {
+    return this.getDriverSummaryUseCase.execute({ driverId: user.id });
   }
 
   @Get('driver/reviews')
   @UseGuards(JwtAuthGuard)
-  getDriverReviews(@CurrentUser() user: JwtPayload, @Query('driverId') queryDriverId?: string) {
-    const driverId = user?.id || queryDriverId || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
-    return this.getDriverReviewsUseCase.execute({ driverId });
+  getDriverReviews(@CurrentUser() user: JwtPayload) {
+    return this.getDriverReviewsUseCase.execute({ driverId: user.id });
   }
 
   @Patch('driver/trips/:id/status')
@@ -85,9 +117,8 @@ export class OrdersController {
     @CurrentUser() user: JwtPayload,
     @Body() body: { status: OrderStatus },
   ) {
-    const driverId = user?.id || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
     return this.updateDriverTripStatusUseCase.execute({
-      driverId,
+      driverId: user.id,
       orderId: id,
       status: body.status,
     });
@@ -95,32 +126,27 @@ export class OrdersController {
 
   // --- General Order Endpoints ---
 
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  getOrders(@Query() query: QueryOrdersDto) {
+    return this.getOrdersAdminUseCase.execute(query);
+  }
+
   @Patch(':id/status')
+  @UseGuards(JwtAuthGuard)
   updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDto: UpdateOrderStatusDto,
+    @CurrentUser() user: JwtPayload,
   ) {
-    return this.updateOrderStatusUseCase.execute({ orderId: id, dto: updateDto });
-  }
-
-  @Get('history/me')
-  async getOrderHistory(@Body() _body: any) {
-    const customerId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'; // hardcoded to user 1 for dev
-    return this.getOrderHistoryUseCase.execute({ customerId });
+    return this.updateOrderStatusUseCase.execute({ orderId: id, dto: updateDto, changedBy: user.id });
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.getOrderUseCase.execute({ orderId: id });
   }
-
-  @Post(':id/reviews')
-  createReview(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: CreateOrderReviewDto,
-  ) {
-    const customerId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'; // hardcoded to user 1 for dev
-    return this.createOrderReviewUseCase.execute({ orderId: id, customerId, dto });
-  }
 }
+
 

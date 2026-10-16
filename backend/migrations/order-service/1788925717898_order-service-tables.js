@@ -19,6 +19,9 @@ export const up = (pgm) => {
     total_amount: { type: 'numeric(15,2)', notNull: true },
     status: { type: 'varchar(50)', notNull: true, default: "'PENDING'" },
     delivery_address: { type: 'text', notNull: true },
+    note: { type: 'text' },
+    estimated_delivery_time: { type: 'timestamptz' },
+    payment_method: { type: 'varchar(50)', notNull: true, default: "'CASH'" },
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
