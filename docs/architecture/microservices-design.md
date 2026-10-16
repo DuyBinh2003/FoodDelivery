@@ -16,11 +16,12 @@ Dự án phân chia các service dựa trên Domain-Driven Design (DDD):
 | Service | Port Local | Nhiệm vụ chính | Database Schema |
 |:---|:---|:---|:---|
 | **User Service** | `3001` | Authentication (JWT), Quản lý profile Customer/Driver, Xử lý yêu cầu đăng ký (Registration). | `schema_user` |
-| **Restaurant Service** | `3002` | Thông tin quán ăn, thực đơn, danh mục, tagging. Cung cấp API nội bộ để validate đơn giá món ăn. | `schema_restaurant` |
-| **Order Service** | `3003` | Quản lý vòng đời đơn hàng, kiểm tra giỏ hàng, lịch sử đơn, đánh giá (reviews). | `schema_order` |
-| **Search Service** | `3004` | Đồng bộ dữ liệu nhà hàng/món ăn từ Postgres sang Elasticsearch. Xử lý logic tìm kiếm full-text. | (Dùng Elasticsearch) |
-| **Delivery Service** (Tương lai) | `3005` | (Trước đây là Drivers consumer) Quản lý tọa độ, theo dõi vị trí tài xế, thuật toán dispatch (matching) đơn hàng cho tài xế. | `schema_delivery` |
-| **Admin Service** (BFF) | `3006` | Tổng hợp dữ liệu từ các service khác (Aggregation) để hiển thị lên Dashboard. Duyệt/từ chối đăng ký. Giao tiếp WebSocket với Admin Frontend. | `schema_admin` (chỉ lưu config) |
+| **Admin Service** (BFF) | `3002` | Tổng hợp dữ liệu từ các service (Aggregation), Dashboard, Duyệt hồ sơ, WebSocket Admin. | `public` / `schema_admin` |
+| **Restaurant Service** | `3003` | Thông tin quán ăn, thực đơn, danh mục, tagging. Cung cấp API nội bộ kiểm tra món ăn. | `schema_restaurant` |
+| **Order Service** | `3004` | Quản lý vòng đời đơn hàng, kiểm tra giỏ hàng, cuốc xe tài xế, đánh giá (reviews). | `schema_order` |
+| **Driver Service** | `3005` | Quản lý tọa độ, theo dõi vị trí tài xế, phân phối cuốc xe. | `schema_driver` |
+| **Search Service** | `3006` | Đồng bộ dữ liệu sang Elasticsearch, xử lý tìm kiếm full-text & fuzzy search. | (Dùng Elasticsearch) |
+| **Payment Service** | `3007` | Quản lý ví, sổ cái kế toán kép (Double-entry), kiểm soát thấu chi COD của tài xế. | `schema_payment` |
 
 *(Lưu ý: API Gateway hiện tại sử dụng NGINX proxy pass request từ `/api/v1/[service]/*`)*
 
