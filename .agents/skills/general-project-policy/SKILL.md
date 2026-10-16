@@ -23,4 +23,6 @@ Kỹ năng này tập hợp các quy định bắt buộc cho toàn bộ dự á
 
 ## 4. Quy chuẩn Viết Tài Liệu (Documentation)
 - **Tạo/Cập nhật Docs**: Khi hoàn thành một tính năng mới hoặc API mới, Agent phải cập nhật (hoặc tạo) file markdown tương ứng trong thư mục `docs/`.
-- Tài liệu cần giải thích ngắn gọn luồng hoạt động hoặc các endpoint API được thêm.
+- **Cấu trúc phân cấp chuẩn**: Tuân thủ tuyệt đối cấu trúc phân cấp tại `docs/` (`architecture/`, `services/`, `business/`, `features/<actor>/`, `frontend/`).
+- **Templates & Checklist**: Bắt buộc đọc và tuân thủ `.agents/skills/documentation-policy/SKILL.md` để áp dụng đúng template chuẩn, bảng API, schema database và đồng bộ các file `README.md` mục lục.
+

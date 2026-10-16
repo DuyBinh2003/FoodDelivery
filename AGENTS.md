@@ -30,3 +30,9 @@ Tất cả các yêu cầu về:
 - Kiến trúc App Router, Feature-Based Design.
 - Giao diện cao cấp, UX/UI animation hiện đại.
 **Hành động tham chiếu**: Đọc `.agents/skills/nextjs-patterns/SKILL.md` và `.agents/skills/ui-ux-pro-max/SKILL.md`.
+
+## 7. QUY CHUẨN TÀI LIỆU DỰ ÁN (Documentation Policy)
+- Cấu trúc phân cấp nghiêm ngặt trong `docs/`: `architecture/`, `services/`, `business/`, `features/<actor>/`, `frontend/`.
+- Tài liệu song hành cùng mã nguồn (Docs-as-Code), cập nhật đồng bộ các file mục lục `README.md`.
+- Bắt buộc dùng Mermaid cho sơ đồ luồng và tuân thủ templates chuẩn.
+**Hành động tham chiếu**: Bắt buộc đọc `.agents/skills/documentation-policy/SKILL.md` khi tạo mới, cập nhật, hoặc tái cấu trúc tài liệu.
