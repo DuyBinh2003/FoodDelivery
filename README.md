@@ -63,8 +63,8 @@ graph TD
 ```
 
 > 📖 **Xem kiến trúc chi tiết:** [`docs/architecture/system-architecture.md`](./docs/architecture/system-architecture.md)
+> 📚 **Trung tâm tài liệu toàn dự án:** [`docs/README.md`](./docs/README.md)
 
----
 
 ## 🛣️ Lộ Trình Phát Triển (Đã Hoàn Thành Migration)
 
@@ -141,24 +141,32 @@ npx nest start admin-service --watch
 
 ```
 FoodDelivery/
-├── frontend/               # Next.js App
+├── frontend/               # Next.js App (App Router, Tailwind CSS)
 ├── backend/                # NestJS Monorepo
 │   ├── apps/               # Các Microservices độc lập
 │   │   ├── admin-service/
 │   │   ├── delivery-service/
 │   │   ├── order-service/
+│   │   ├── payment-service/
 │   │   ├── restaurant-service/
 │   │   ├── search-service/
 │   │   └── user-service/
 │   ├── libs/               # Thư viện dùng chung
 │   │   ├── common/         # Decorators, Guards, Enums, Messaging SQS/SNS
 │   │   ├── config/         # Cấu hình TypeORM, AWS
-│   │   └── events/         # (Phase 4) Event Contracts, Types
+│   │   └── events/         # Event Contracts, Types
 │   ├── Dockerfile          # Generic Dockerfile cho mọi service
 │   └── nest-cli.json
+├── docs/                   # Trung tâm tài liệu chuẩn hóa
+│   ├── architecture/       # Kiến trúc & Hạ tầng hệ thống
+│   ├── services/           # Đặc tả 7 Microservices & API Contracts
+│   ├── business/           # Chiến lược & Lộ trình sản phẩm
+│   ├── features/           # Đặc tả tính năng (Customer, Partner, Driver)
+│   └── frontend/           # Quy chuẩn kiến trúc & UI/UX Next.js
 ├── gateway/
 │   └── nginx.conf          # NGINX API Gateway Config
 ├── scripts/
 │   └── localstack-init.sh  # Tự động tạo SNS Topics + SQS Queues
-└── docker-compose.yml      # Hạ tầng & Toàn bộ 6 Microservices + Gateway
+└── docker-compose.yml      # Hạ tầng & Toàn bộ Microservices + Gateway
 ```
+
