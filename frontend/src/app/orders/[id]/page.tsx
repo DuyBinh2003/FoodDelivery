@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import OrderTracker from '@/features/orders/components/order-tracker';
 import type { Order } from '@/features/orders/types';
 import { getOrderById } from '@/features/orders/api/order-api';
@@ -9,9 +10,9 @@ export const metadata: Metadata = {
   description: 'Theo dõi trạng thái đơn hàng của bạn theo thời gian thực.',
 };
 
-async function getOrder(id: string): Promise<Order> {
+async function getOrder(id: string, authHeaders?: Record<string, string>): Promise<Order> {
   try {
-    const realOrder = await getOrderById(id);
+    const realOrder = await getOrderById(id, { headers: authHeaders });
     if (realOrder) {
       return {
         ...realOrder,
@@ -42,9 +43,13 @@ async function getOrder(id: string): Promise<Order> {
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : undefined;
+
   const [order, paymentDetails] = await Promise.all([
-    getOrder(id),
-    getOrderPaymentDetails(id),
+    getOrder(id, authHeaders),
+    getOrderPaymentDetails(id, { headers: authHeaders }),
   ]);
 
   return (

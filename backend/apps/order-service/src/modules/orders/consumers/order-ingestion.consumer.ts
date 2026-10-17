@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { SQSClient, CreateQueueCommand } from '@aws-sdk/client-sqs';
 import { Consumer } from 'sqs-consumer';
 import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
-import { OrderStatus } from '@/modules/orders/entities/order.entity.js';
 
 @Injectable()
 export class OrderIngestionConsumer implements OnModuleInit, OnModuleDestroy {

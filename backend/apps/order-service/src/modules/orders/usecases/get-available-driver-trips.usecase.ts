@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
+import { OrderRedisRepository, InflightOrderData } from '@/modules/orders/repositories/order.redis.repository.js';
 import type { DriverTripDto } from '@/modules/orders/usecases/get-driver-trips.usecase.js';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class GetAvailableDriverTripsUseCase {
     const restaurantCache = new Map<string, { name: string; address: string }>();
 
     const trips: DriverTripDto[] = await Promise.all(
-      availableOrders.map(async (order) => {
+      availableOrders.map(async (order: InflightOrderData) => {
         let restaurantInfo = restaurantCache.get(order.restaurant_id);
 
         if (!restaurantInfo && order.restaurant_id) {
@@ -61,7 +61,7 @@ export class GetAvailableDriverTripsUseCase {
           dropoff_address: order.delivery_address,
           created_at: new Date(order.created_at),
           updated_at: new Date(order.updated_at),
-          items: (order.items || []).map((item) => ({
+          items: (order.items || []).map((item: InflightOrderData['items'][number]) => ({
             id: item.id ?? item.menu_item_id,
             menu_item_id: item.menu_item_id,
             quantity: item.quantity,

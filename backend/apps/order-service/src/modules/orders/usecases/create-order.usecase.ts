@@ -5,6 +5,7 @@ import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
 import { OrderRedisRepository, InflightOrderData } from '@/modules/orders/repositories/order.redis.repository.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
+import { OrderEventTypes } from '@/events/index.js';
 
 export interface CreateOrderCommand extends CreateOrderDto {
   /** customer_id lấy từ JWT payload, không nhận từ body */

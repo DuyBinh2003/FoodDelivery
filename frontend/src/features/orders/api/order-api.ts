@@ -20,9 +20,13 @@ export const createOrder = async (payload: CreateOrderPayload): Promise<Order> =
   });
 };
 
-export const getOrderById = async (orderId: string): Promise<Order> => {
+export const getOrderById = async (
+  orderId: string,
+  options?: { headers?: Record<string, string> },
+): Promise<Order> => {
   return apiClient<Order>(`/orders/${orderId}`, {
     method: 'GET',
+    headers: options?.headers,
   });
 };
 

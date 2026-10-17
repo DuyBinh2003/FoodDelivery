@@ -1,7 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
-import { Order } from '@/modules/orders/entities/order.entity.js';
 
 export interface RestaurantOrderDto {
   id: string;

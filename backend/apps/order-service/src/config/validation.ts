@@ -2,7 +2,6 @@ import { plainToInstance } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
-  IsOptional,
   validateSync,
 } from 'class-validator';
 

@@ -1,5 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
+import { OrderRedisRepository, InflightOrderData } from '@/modules/orders/repositories/order.redis.repository.js';
 
 export interface DriverTripDto {
   id: string;
@@ -47,7 +49,7 @@ export class GetDriverTripsUseCase {
     // 2. Lấy đơn lịch sử từ DB
     const dbOrders = await this.orderReadRepo.findTripsByDriverId(params.driverId);
 
-    const inflightIds = new Set(inflightOrders.map((o) => o.id));
+    const inflightIds = new Set(inflightOrders.map((o: InflightOrderData) => o.id));
     const filteredDbOrders = dbOrders.filter((o) => !inflightIds.has(o.id));
 
     // Cache restaurant lookups
@@ -55,7 +57,7 @@ export class GetDriverTripsUseCase {
 
     // Map inflight trips
     const inflightTrips: DriverTripDto[] = await Promise.all(
-      inflightOrders.map(async (order) => {
+      inflightOrders.map(async (order: InflightOrderData) => {
         let restaurantInfo = restaurantCache.get(order.restaurant_id);
         if (!restaurantInfo && order.restaurant_id) {
           try {
@@ -91,7 +93,7 @@ export class GetDriverTripsUseCase {
           dropoff_address: order.delivery_address,
           created_at: new Date(order.created_at),
           updated_at: new Date(order.updated_at),
-          items: (order.items || []).map((item) => ({
+          items: (order.items || []).map((item: InflightOrderData['items'][number]) => ({
             id: item.id ?? item.menu_item_id,
             menu_item_id: item.menu_item_id,
             quantity: item.quantity,
