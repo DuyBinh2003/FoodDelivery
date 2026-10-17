@@ -5,6 +5,8 @@ export interface MenuItem {
   price: number;
   is_available: boolean;
   restaurant_name?: string;
+  image_url?: string;
+  description?: string;
 }
 
 export interface Restaurant {

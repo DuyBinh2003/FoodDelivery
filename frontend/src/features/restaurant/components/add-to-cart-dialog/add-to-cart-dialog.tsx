@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Minus, Plus, ShoppingCart, X } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
@@ -35,12 +36,25 @@ export function AddToCartDialog({ item, restaurantId, isOpen, onClose }: AddToCa
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="relative w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 pb-4 border-b border-white/10 flex items-start justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white line-clamp-2">{item.name}</h2>
-            <p className="text-orange-400 font-semibold mt-1">
-              {formatCurrency(item.price)}
-            </p>
+        <div className="p-6 pb-4 border-b border-white/10 flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3.5">
+            {item.image_url && (
+              <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-zinc-800 shrink-0 border border-white/10 shadow-inner">
+                <Image
+                  src={item.image_url}
+                  alt={item.name}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <div>
+              <h2 className="text-xl font-bold text-white line-clamp-2">{item.name}</h2>
+              <p className="text-orange-400 font-semibold mt-1">
+                {formatCurrency(item.price)}
+              </p>
+            </div>
           </div>
           <button 
             onClick={handleClose}

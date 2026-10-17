@@ -8,7 +8,15 @@ export class ElasticsearchRepository implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.createIndices();
+    try {
+      await this.createIndices();
+    } catch (e: unknown) {
+      const err = e as Error;
+      console.warn(`[SearchService] Elasticsearch initial index check failed: ${err.message}. Retrying index setup in 5s...`);
+      setTimeout(() => {
+        this.createIndices().catch(() => {});
+      }, 5000);
+    }
     setTimeout(() => {
       this.syncFromRestaurantServiceIfEmpty().catch(() => {});
     }, 5000);

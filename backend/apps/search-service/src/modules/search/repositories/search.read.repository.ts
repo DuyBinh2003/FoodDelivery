@@ -15,6 +15,8 @@ export interface MenuItemData {
   id: string;
   restaurant_id: string;
   name: string;
+  description?: string;
+  image_url?: string;
   price: number;
   is_available: boolean;
   tags?: TagItem[];

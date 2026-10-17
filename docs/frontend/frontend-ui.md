@@ -16,9 +16,8 @@ Tài liệu mô tả các trang giao diện người dùng (UI) đã triển kha
 
 ### 3. Trang Thực đơn (`/menu`)
 - **Loại:** Server Component (SSR).
-- **Chức năng:** Hiển thị danh sách món ăn theo từng nhà hàng dưới dạng Grid. Có thanh tìm kiếm (decorative). Mỗi món ăn hiển thị tên, giá tiền (VND), trạng thái có sẵn, và nút "Thêm vào giỏ".
-- **Pattern kết nối:** Sử dụng **React Server Components (RSC) Fetching** (Pattern A). Hiện tại dùng mock data trùng UUID với dữ liệu seed trong Database.
-- **Khi kết nối thật:** Thay thế hàm `getMenuItems()` bằng `fetch('http://backend:3001/restaurants/menu')`.
+- **Chức năng:** Hiển thị danh sách món ăn theo từng nhà hàng dưới dạng Grid. Tích hợp bộ lọc đa tiêu chí (Categories, Tags, Từ khóa tìm kiếm). Mỗi thẻ món ăn (`FoodCard`) hiển thị hình ảnh món ăn thực tế (Next.js `<Image>`), tên món, giá tiền (VND), trạng thái còn hàng/hết hàng, tên nhà hàng, mô tả, và nút điều hướng xem chi tiết/thêm vào giỏ. Hỗ trợ gradient fallback khi món ăn chưa có ảnh.
+- **Pattern kết nối:** Sử dụng **React Server Components (RSC) Fetching** gọi tới Search Service (`/api/search/menu` -> `http://localhost:3006/search/menu`) tổng hợp dữ liệu từ Elasticsearch và Restaurant Service.
 
 ### 4. Trang Theo dõi Đơn hàng (`/orders/[id]`)
 - **Loại:** Hybrid (Server Component fetch data + Client Component cho real-time tracking).
