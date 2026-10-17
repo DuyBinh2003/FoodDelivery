@@ -13,7 +13,8 @@ docs/features/
 ├── README.md                          # Mục lục tính năng (Bạn đang ở đây)
 │
 ├── customer/                          # 🛒 Phân hệ Khách Hàng (Customer App)
-│   └── advanced-cart.md               # Hệ thống giỏ hàng: chính sách 1 nhà hàng, auto revalidation, toppings
+│   ├── advanced-cart.md               # Hệ thống giỏ hàng: chính sách 1 nhà hàng, auto revalidation, toppings
+│   └── restaurant-detail-and-product-modal.md # Trang chi tiết nhà hàng (/restaurant/:id) & popup xem sản phẩm
 │
 ├── partner/                           # 🏪 Phân hệ Đối Tác Nhà Hàng (Merchant Portal)
 │   ├── merchant-partner-portal.md     # Quản lý quán ăn: mở/đóng cửa thời gian thực, quản lý menu & danh mục
@@ -32,6 +33,7 @@ docs/features/
 | Tính năng | Đường dẫn ứng dụng | Mô tả cốt lõi | Tài liệu |
 | :--- | :--- | :--- | :--- |
 | **Giỏ hàng nâng cao (Advanced Cart)** | `/cart`, `/checkout` | Lưu giỏ hàng offline-first, tự động cập nhật giá và kiểm tra mở/đóng cửa khi thanh toán, bắt buộc 1 nhà hàng duy nhất. | [`advanced-cart.md`](./customer/advanced-cart.md) |
+| **Trang Quán & Popup Thêm Món** | `/restaurant/[id]` | Hero banner nhà hàng cao cấp, tìm kiếm trong quán, lọc danh mục sticky, popup xem chi tiết món 16:9 với chip ghi chú nhanh và stepper số lượng. | [`restaurant-detail-and-product-modal.md`](./customer/restaurant-detail-and-product-modal.md) |
 
 ### 2. Phân hệ Đối tác Nhà hàng (`partner/`)
 | Tính năng | Đường dẫn ứng dụng | Mô tả cốt lõi | Tài liệu |
