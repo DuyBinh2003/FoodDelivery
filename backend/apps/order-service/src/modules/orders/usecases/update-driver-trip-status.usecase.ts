@@ -2,6 +2,8 @@ import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nest
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
+import { SqsService } from '@/common/messaging/sqs.service.js';
+import { OrderEventTypes } from '@/events/index.js';
 import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
 
 @Injectable()
@@ -13,6 +15,8 @@ export class UpdateDriverTripStatusUseCase {
     private readonly orderReadRepo: OrderReadRepository,
     @Inject(OrderWriteRepository)
     private readonly orderWriteRepo: OrderWriteRepository,
+    @Inject(SqsService)
+    private readonly sqsService: SqsService,
   ) {}
 
   async execute(params: {
@@ -27,21 +31,40 @@ export class UpdateDriverTripStatusUseCase {
         throw new ForbiddenException('You are not authorized to update this trip');
       }
 
-      // Khi tài xế bấm COMPLETED: Ghi toàn bộ dữ liệu vào PostgreSQL
+      // Cập nhật trạng thái và tài xế trong Redis trước
+      const updatedInflight = await this.orderRedisRepo.updateStatus(params.orderId, params.status, {
+        driver_id: params.driverId,
+      });
+
+      // Khi tài xế bấm COMPLETED: Ghi toàn bộ dữ liệu vào PostgreSQL (Deferred Persistence)
       if (params.status === OrderStatus.COMPLETED) {
         const savedOrder = await this.orderWriteRepo.persistCompletedOrder({
-          ...inflight,
+          ...(updatedInflight || inflight),
           driver_id: params.driverId,
           status: OrderStatus.COMPLETED,
         });
         await this.orderRedisRepo.publishOrderEvent(params.orderId, savedOrder);
         await this.orderRedisRepo.setTtl(params.orderId, 1800);
+
+        // Phát sự kiện ORDER_STATUS_CHANGED vào SQS để các bên theo dõi
+        await this.sqsService.publishEvent(OrderEventTypes.ORDER_STATUS_CHANGED, {
+          orderId: params.orderId,
+          previousStatus: inflight.status,
+          newStatus: OrderStatus.COMPLETED,
+          changedAt: new Date().toISOString(),
+          changedBy: `driver:${params.driverId}`,
+        });
+
         return savedOrder;
       }
 
-      // Cập nhật trạng thái và tài xế trong Redis
-      await this.orderRedisRepo.updateStatus(params.orderId, params.status, {
-        driver_id: params.driverId,
+      // Phát sự kiện ORDER_STATUS_CHANGED vào SQS
+      await this.sqsService.publishEvent(OrderEventTypes.ORDER_STATUS_CHANGED, {
+        orderId: params.orderId,
+        previousStatus: inflight.status,
+        newStatus: params.status,
+        changedAt: new Date().toISOString(),
+        changedBy: `driver:${params.driverId}`,
       });
 
       return {
@@ -58,7 +81,7 @@ export class UpdateDriverTripStatusUseCase {
         created_at: new Date(inflight.created_at),
         updated_at: new Date(),
         is_deleted: false,
-        items: inflight.items as any,
+        items: inflight.items as unknown as Order['items'],
       } as unknown as Order;
     }
 
@@ -72,8 +95,19 @@ export class UpdateDriverTripStatusUseCase {
       throw new ForbiddenException('You are not authorized to update this trip');
     }
 
+    const previousStatus = order.status;
     order.status = params.status;
     order.driver_id = params.driverId;
-    return this.orderWriteRepo.save(order);
+    const saved = await this.orderWriteRepo.save(order);
+
+    await this.sqsService.publishEvent(OrderEventTypes.ORDER_STATUS_CHANGED, {
+      orderId: params.orderId,
+      previousStatus,
+      newStatus: params.status,
+      changedAt: new Date().toISOString(),
+      changedBy: `driver:${params.driverId}`,
+    });
+
+    return saved;
   }
 }

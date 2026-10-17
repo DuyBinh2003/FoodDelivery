@@ -140,7 +140,11 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
         if (raw) {
           try {
             const parsed = JSON.parse(raw) as InflightOrderData;
-            if (parsed.customer_id === customerId) {
+            if (
+              parsed.customer_id === customerId &&
+              parsed.status !== OrderStatus.COMPLETED &&
+              parsed.status !== OrderStatus.CANCELLED
+            ) {
               orders.push(parsed);
             }
           } catch {
@@ -167,7 +171,11 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
         if (raw) {
           try {
             const parsed = JSON.parse(raw) as InflightOrderData;
-            if (parsed.restaurant_id === restaurantId) {
+            if (
+              parsed.restaurant_id === restaurantId &&
+              parsed.status !== OrderStatus.COMPLETED &&
+              parsed.status !== OrderStatus.CANCELLED
+            ) {
               orders.push(parsed);
             }
           } catch {
@@ -194,7 +202,11 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
         if (raw) {
           try {
             const parsed = JSON.parse(raw) as InflightOrderData;
-            if (parsed.driver_id === driverId) {
+            if (
+              parsed.driver_id === driverId &&
+              parsed.status !== OrderStatus.COMPLETED &&
+              parsed.status !== OrderStatus.CANCELLED
+            ) {
               orders.push(parsed);
             }
           } catch {
@@ -256,7 +268,8 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
         return 'NOT_FOUND'
       end
       local order = cjson.decode(data)
-      if (order.status == 'READY_FOR_PICKUP' or order.status == 'ACCEPTED') and (not order.driver_id or order.driver_id == '') then
+      local isDriverUnassigned = (order.driver_id == nil or order.driver_id == cjson.null or order.driver_id == '')
+      if (order.status == 'READY_FOR_PICKUP' or order.status == 'ACCEPTED') and isDriverUnassigned then
         order.driver_id = driverId
         order.status = 'DELIVERING'
         order.updated_at = now
@@ -268,6 +281,8 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
           redis.call('SET', key, updatedData)
         end
         return updatedData
+      elseif order.driver_id == driverId then
+        return cjson.encode(order)
       else
         return 'CONFLICT'
       end
