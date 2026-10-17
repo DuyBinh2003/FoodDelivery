@@ -1,14 +1,86 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
-import { Order } from '@/modules/orders/entities/order.entity.js';
+import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'node:crypto';
+import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
+import { OrderRedisRepository, InflightOrderData } from '@/modules/orders/repositories/order.redis.repository.js';
+import { SqsService } from '@/common/messaging/sqs.service.js';
+
+export interface CreateOrderCommand extends CreateOrderDto {
+  /** customer_id lấy từ JWT payload, không nhận từ body */
+  customer_id: string;
+}
 
 @Injectable()
 export class CreateOrderUseCase {
-  constructor(@Inject(OrderWriteRepository) private readonly orderWriteRepo: OrderWriteRepository) {}
+  constructor(
+    @Inject(OrderRedisRepository) private readonly orderRedisRepo: OrderRedisRepository,
+    @Inject(SqsService) private readonly sqsService: SqsService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {}
 
-  async execute(dto: CreateOrderDto): Promise<Order> {
-    // Business validation could go here
-    return this.orderWriteRepo.createOrderWithItems(dto);
+  async execute(command: CreateOrderCommand): Promise<Order> {
+    const orderId = randomUUID();
+    const totalAmount = command.items.reduce(
+      (sum, item) => sum + item.quantity * item.unit_price,
+      0,
+    );
+
+    const now = new Date().toISOString();
+    const orderData: InflightOrderData = {
+      id: orderId,
+      customer_id: command.customer_id,
+      restaurant_id: command.restaurant_id,
+      driver_id: null,
+      status: OrderStatus.PENDING,
+      delivery_address: command.delivery_address,
+      note: command.note ?? null,
+      payment_method: command.payment_method ?? 'CASH',
+      total_amount: totalAmount,
+      items: command.items.map((item) => ({
+        id: randomUUID(),
+        menu_item_id: item.menu_item_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+      })),
+      created_at: now,
+      updated_at: now,
+    };
+
+    // 1. Lưu snapshot trạng thái ban đầu vào Redis In-flight Cache
+    await this.orderRedisRepo.saveInflightOrder(orderId, orderData);
+
+    // 2. Đẩy message vào SQS FIFO Queue (Load-Leveling Ingestion Buffer, chống nghẽn DB)
+    const fifoQueueUrl =
+      this.configService.get<string>('sqs.orderProcessingFifoUrl') ||
+      'http://localhost:4566/000000000000/orders-processing.fifo';
+
+    await this.sqsService.publishFifoEvent(
+      fifoQueueUrl,
+      'ORDER_CREATION_JOB',
+      orderData,
+      {
+        messageGroupId: command.restaurant_id,
+        messageDeduplicationId: orderId,
+      },
+    );
+
+    // 3. Trả về ngay lập tức cho Client (Non-blocking, không chạm DB PostgreSQL)
+    return {
+      id: orderId,
+      customer_id: orderData.customer_id,
+      restaurant_id: orderData.restaurant_id,
+      driver_id: null,
+      total_amount: totalAmount,
+      status: OrderStatus.PENDING,
+      delivery_address: orderData.delivery_address,
+      note: orderData.note,
+      estimated_delivery_time: null,
+      payment_method: orderData.payment_method,
+      created_at: new Date(now),
+      updated_at: new Date(now),
+      is_deleted: false,
+      items: orderData.items,
+    } as unknown as Order;
   }
 }

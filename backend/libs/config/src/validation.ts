@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsString, IsNotEmpty, IsNumberString, validateSync } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumberString, IsOptional, validateSync } from 'class-validator';
 
 class EnvironmentVariables {
   @IsString()
@@ -49,6 +49,22 @@ class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   SQS_QUEUE_URL: string;
+
+  @IsString()
+  @IsOptional()
+  SQS_ORDER_PROCESSING_FIFO_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  SQS_DRIVER_DISPATCH_QUEUE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  SNS_ENDPOINT?: string;
+
+  @IsString()
+  @IsOptional()
+  SNS_ORDER_DRIVER_DISPATCH_TOPIC?: string;
 }
 
 export function validate(config: Record<string, unknown>) {

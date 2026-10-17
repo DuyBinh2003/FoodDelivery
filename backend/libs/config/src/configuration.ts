@@ -22,5 +22,11 @@ export default () => ({
   sqs: {
     endpoint: process.env.SQS_ENDPOINT,
     queueUrl: process.env.SQS_QUEUE_URL,
+    orderProcessingFifoUrl: process.env.SQS_ORDER_PROCESSING_FIFO_URL,
+    driverDispatchQueueUrl: process.env.SQS_DRIVER_DISPATCH_QUEUE_URL,
+  },
+  sns: {
+    endpoint: process.env.SNS_ENDPOINT,
+    orderDriverDispatchTopic: process.env.SNS_ORDER_DRIVER_DISPATCH_TOPIC,
   },
 });

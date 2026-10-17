@@ -105,7 +105,7 @@ PostgreSQL (food_delivery database)
 ├── public                    → Admin: m_system_config
 ├── schema_user               → User Service: m_user, m_customer_profile, m_driver_profile, t_registration_request
 ├── schema_restaurant         → Restaurant Service: m_restaurant, m_menu_item, m_category
-└── schema_order              → Order Service: t_order, t_order_item, t_review
+└── schema_order              → Order Service: t_order, t_order_item, t_order_review
 ```
 
 > **Nguyên tắc Cross-service Data:** Không dùng FK hoặc JOIN qua schema. Chỉ lưu `UUID` của entity bên kia (Logical Reference). Để lấy data của service khác, phải gọi HTTP nội bộ hoặc nhận qua Event.

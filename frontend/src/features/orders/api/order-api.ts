@@ -2,9 +2,10 @@ import { apiClient } from '@/lib/api-client';
 import type { Order, CreateOrderReviewDto } from '@/features/orders/types';
 
 export interface CreateOrderPayload {
-  customer_id: string;
   restaurant_id: string;
   delivery_address: string;
+  note?: string;
+  payment_method?: 'CASH' | 'MOMO' | 'VNPAY';
   items: Array<{
     menu_item_id: string;
     quantity: number;

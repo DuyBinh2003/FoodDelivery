@@ -50,7 +50,7 @@ Trong `backend/package.json`, các script sẽ được chia ra:
 ## 3. Quy chuẩn đặt tên bảng
 Áp dụng tiêu chuẩn tiền tố:
 - `m_` (Master Data): Dữ liệu tĩnh, ít thay đổi (VD: `m_user`, `m_restaurant`, `m_category`).
-- `t_` (Transaction Data): Dữ liệu phát sinh liên tục (VD: `t_order`, `t_order_item`, `t_review`).
+- `t_` (Transaction Data): Dữ liệu phát sinh liên tục (VD: `t_order`, `t_order_item`, `t_order_review`).
 
 ## 4. UUID làm Khóa Chính
 Toàn bộ khóa chính trong hệ thống phải sử dụng `UUID (v4)`. Điều này vô cùng quan trọng trong Microservices vì:
