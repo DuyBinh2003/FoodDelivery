@@ -10,8 +10,6 @@ import {
   RotateCcw,
   Loader2,
   CheckCircle2,
-  AlertCircle,
-  Package,
 } from 'lucide-react';
 import type { DriverTrip } from '@/features/driver/types/driver.types';
 

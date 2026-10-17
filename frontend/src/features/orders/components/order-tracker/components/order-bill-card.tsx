@@ -3,13 +3,11 @@
 import React, { useState } from 'react';
 import {
   Receipt,
-  Wallet,
   Banknote,
   CheckCircle2,
   Copy,
   Check,
   ShieldCheck,
-  Utensils,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';

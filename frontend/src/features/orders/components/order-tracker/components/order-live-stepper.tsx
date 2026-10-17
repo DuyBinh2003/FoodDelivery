@@ -67,7 +67,6 @@ export function OrderLiveStepper({ currentStatus }: OrderLiveStepperProps) {
   }
 
   const currentIndex = getStatusIndex(currentStatus);
-  const progressPercent = (currentIndex / (STEPS.length - 1)) * 100;
 
   return (
     <div className="w-full py-4 sm:py-6">

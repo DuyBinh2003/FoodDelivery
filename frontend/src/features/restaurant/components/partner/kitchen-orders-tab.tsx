@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  ChefHat,
   Clock,
   MapPin,
   CheckCircle2,
@@ -11,7 +10,6 @@ import {
   Bike,
   UtensilsCrossed,
   Flame,
-  ArrowRight,
   PackageCheck,
   Loader2,
 } from 'lucide-react';
@@ -49,26 +47,44 @@ export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabPr
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'COOKING' | 'READY_FOR_PICKUP' | 'COMPLETED'>('ALL');
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
-      setLoading(true);
       const data = await getRestaurantOrders(restaurantId);
       setOrders(data);
     } catch {
       showToast('error', 'Không thể tải danh sách đơn hàng của quán');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [restaurantId, showToast]);
 
   useEffect(() => {
-    void fetchOrders();
+    let ignore = false;
+    const loadInitial = async () => {
+      try {
+        const data = await getRestaurantOrders(restaurantId);
+        if (!ignore) {
+          setOrders(data);
+          setLoading(false);
+        }
+      } catch {
+        if (!ignore) {
+          showToast('error', 'Không thể tải danh sách đơn hàng của quán');
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadInitial();
+
     // Tự động kiểm tra đơn mới mỗi 15 giây
     const interval = setInterval(() => {
       void fetchOrders();
     }, 15000);
-    return () => clearInterval(interval);
-  }, [restaurantId]);
+
+    return () => {
+      ignore = true;
+      clearInterval(interval);
+    };
+  }, [restaurantId, fetchOrders, showToast]);
 
   const handleUpdateStatus = async (orderId: string, nextStatus: 'COOKING' | 'READY_FOR_PICKUP') => {
     try {

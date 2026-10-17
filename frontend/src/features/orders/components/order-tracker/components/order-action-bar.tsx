@@ -8,7 +8,6 @@ import type { OrderActionBarProps } from '../types';
 
 export function OrderActionBar({
   status,
-  orderId,
   onCancel,
   isCancelling,
   onOpenReview,
