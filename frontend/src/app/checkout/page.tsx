@@ -100,7 +100,6 @@ export default function CheckoutPage() {
       // 1. Create order in order-service
       const targetRestaurantId = restaurantId || FALLBACK_RESTAURANT_ID;
       const orderPayload = {
-        customer_id: customerId,
         restaurant_id: targetRestaurantId,
         delivery_address: 'Tòa nhà Landmark 81, 720A Điện Biên Phủ, Phường 22, Bình Thạnh, TP.HCM',
         items: items.map((item) => ({

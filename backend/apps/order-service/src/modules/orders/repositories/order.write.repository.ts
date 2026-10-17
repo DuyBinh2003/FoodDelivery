@@ -21,29 +21,29 @@ export class OrderWriteRepository {
     @Inject(SqsService) private readonly sqsService: SqsService,
   ) {}
 
-  async createOrderWithItems(createOrderDto: CreateOrderCommand): Promise<Order> {
+  async createOrderWithItems(command: CreateOrderCommand): Promise<Order> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const totalAmount = createOrderDto.items.reduce(
+      const totalAmount = command.items.reduce(
         (sum, item) => sum + item.quantity * item.unit_price,
         0,
       );
 
       const order = queryRunner.manager.create(Order, {
-        customer_id: createOrderDto.customer_id,
-        restaurant_id: createOrderDto.restaurant_id,
-        delivery_address: createOrderDto.delivery_address,
-        note: createOrderDto.note ?? null,
-        payment_method: createOrderDto.payment_method ?? 'CASH',
+        customer_id: command.customer_id,
+        restaurant_id: command.restaurant_id,
+        delivery_address: command.delivery_address,
+        note: command.note ?? null,
+        payment_method: command.payment_method ?? 'CASH',
         total_amount: totalAmount,
         status: OrderStatus.PENDING,
       });
       const savedOrder = await queryRunner.manager.save(order);
 
-      const orderItems = createOrderDto.items.map((item) => {
+      const orderItems = command.items.map((item) => {
         return queryRunner.manager.create(OrderItem, {
           order_id: savedOrder.id,
           menu_item_id: item.menu_item_id,

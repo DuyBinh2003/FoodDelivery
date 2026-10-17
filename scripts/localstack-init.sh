@@ -7,7 +7,7 @@ ACCOUNT_ID="000000000000"
 
 # Create SQS Queues
 echo "Creating SQS queues..."
-awslocal sqs create-queue --queue-name food-delivery-orders --region "$REGION"
+awslocal sqs create-queue --queue-name food-delivery-orders --region "$REGION" --attributes MessageRetentionPeriod=300
 awslocal sqs create-queue --queue-name admin-registration-queue --region "$REGION"
 
 # Create SNS Topic

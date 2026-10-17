@@ -29,7 +29,12 @@ export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
     });
 
     try {
-      await sqsClient.send(new CreateQueueCommand({ QueueName: 'food-delivery-orders' }));
+      await sqsClient.send(new CreateQueueCommand({
+        QueueName: 'food-delivery-orders',
+        Attributes: {
+          MessageRetentionPeriod: '300', // 5 minutes TTL in seconds
+        },
+      }));
     } catch {
       // Queue already exists or created
     }
