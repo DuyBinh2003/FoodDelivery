@@ -95,6 +95,7 @@ graph TD
 | `/orders/history/me` | `GET` | `JwtAuthGuard` | Xem lịch sử đơn hàng (Hợp nhất đơn đang chạy từ Redis & quá khứ từ DB) | Không | `200`, `401` |
 | `/orders/restaurant/:restaurantId` | `GET` | `JwtAuthGuard` | Lấy danh sách đơn của quán (In-flight từ Redis + lịch sử từ DB) | Param `restaurantId: UUID` | `200`, `401` |
 | `/orders/:id` | `GET` | `JwtAuthGuard` | Tra cứu chi tiết đơn hàng (Tra cứu lai: Redis ➔ PostgreSQL) | Param `id: UUID` | `200`, `401`, `404` |
+| `/orders/:id/events` | `GET (SSE)` | `JwtAuthGuard` | Luồng sự kiện Server-Sent Events (SSE) theo dõi trạng thái đơn hàng thời gian thực qua Redis Pub/Sub (`order:events:{id}`) | Param `id: UUID`, Query `?token=...` hoặc Cookie | `200 (text/event-stream)`, `401`, `403`, `404` |
 | `/orders/:id/status` | `PATCH` | `JwtAuthGuard` | Cập nhật trạng thái chế biến (`COOKING`, `READY_FOR_PICKUP`) | `UpdateOrderStatusDto` | `200`, `400`, `401` |
 | `/orders/driver/available` | `GET` | `JwtAuthGuard` | Lấy danh sách chuyến xe broadcast đang tìm tài xế | Không | `200`, `401` |
 | `/orders/:id/driver-claim` | `POST` | `JwtAuthGuard` | Tài xế nhận cuốc xe với Redis Atomic Lock (chống race condition) | Param `id: UUID` | `200`, `401`, `409` |
@@ -129,7 +130,8 @@ Order Service đóng vai trò là một **Event Publisher & Ingestion Manager**:
 | **SQS Queue** | `ORDER_CREATED` | Khi khách hàng gửi `POST /orders` | `{ orderId, restaurantId, customerId, items, totalAmount, deliveryAddress }` |
 | **SNS Topic** | `ORDER_READY_FOR_PICKUP` | Khi nhà hàng xong món cần tài xế | `{ orderId, restaurantId, restaurantName, customerId, items, deliveryAddress, totalAmount }` |
 | **SQS Queue** | `ORDER_STATUS_CHANGED` | Khi đơn chuyển trạng thái bất kỳ | `{ orderId, previousStatus, newStatus, changedAt, changedBy }` |
-| **PostgreSQL** | `DATABASE_PERSISTED` | Khi tài xế xác nhận `COMPLETED` | Ghi transaction toàn bộ `t_order` và `t_order_item` |lient `@aws-sdk/client-sqs` cấu hình trỏ vào LocalStack endpoint `http://localhost:4566`.
+| **Redis Pub/Sub** | `order:events:{id}` | Phát tức thì khi trạng thái đơn thay đổi cho luồng SSE client (`text/event-stream`) | `InflightOrderData` / Snapshot đơn hàng mới |
+| **PostgreSQL** | `DATABASE_PERSISTED` | Khi tài xế xác nhận `COMPLETED` | Ghi transaction toàn bộ `t_order` và `t_order_item` |
 
 ### Danh Mục Sự Kiện Phát Ra
 

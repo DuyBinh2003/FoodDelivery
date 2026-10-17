@@ -34,6 +34,7 @@ export class UpdateDriverTripStatusUseCase {
           driver_id: params.driverId,
           status: OrderStatus.COMPLETED,
         });
+        await this.orderRedisRepo.publishOrderEvent(params.orderId, savedOrder);
         await this.orderRedisRepo.setTtl(params.orderId, 1800);
         return savedOrder;
       }

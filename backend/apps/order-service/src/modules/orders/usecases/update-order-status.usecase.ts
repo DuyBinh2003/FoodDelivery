@@ -117,6 +117,8 @@ export class UpdateOrderStatusUseCase {
     order.status = newStatus;
     const saved = await this.orderWriteRepo.save(order);
 
+    await this.orderRedisRepo.publishOrderEvent(saved.id, saved);
+
     await this.sqsService.publishEvent(OrderEventTypes.ORDER_STATUS_CHANGED, {
       orderId: saved.id,
       previousStatus,

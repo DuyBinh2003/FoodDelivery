@@ -16,7 +16,7 @@ import type { OrderTrackerProps } from './types';
 export default function OrderTracker({ order: initialOrder, paymentDetails }: OrderTrackerProps) {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
-  // Hook kết nối Smart Polling (3s) vào Redis In-flight Cache & hỗ trợ cancel
+  // Hook kết nối Server-Sent Events (SSE) thời gian thực & hỗ trợ cancel
   const {
     order,
     isFetching,

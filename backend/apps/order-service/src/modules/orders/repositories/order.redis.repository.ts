@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, RedisClientType } from 'redis';
+import { Observable } from 'rxjs';
 import { OrderStatus } from '@/modules/orders/entities/order.entity.js';
 
 export interface InflightOrderItem {
@@ -30,6 +31,7 @@ export interface InflightOrderData {
 @Injectable()
 export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
   private client: RedisClientType;
+  private subClient: RedisClientType;
   private readonly logger = new Logger(OrderRedisRepository.name);
   private readonly KEY_PREFIX = 'order:inflight:';
   private readonly DEFAULT_TTL = 86400; // 24 hours
@@ -37,18 +39,26 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
   constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
     const host = this.configService.getOrThrow<string>('redis.host');
     const port = this.configService.getOrThrow<number>('redis.port');
-    this.client = createClient({ url: `redis://${host}:${port}` }) as RedisClientType;
+    const redisUrl = `redis://${host}:${port}`;
+    this.client = createClient({ url: redisUrl }) as RedisClientType;
+    this.subClient = createClient({ url: redisUrl }) as RedisClientType;
 
     this.client.on('error', (err: unknown) => {
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Redis connection error: ${msg}`);
+      this.logger.error(`Redis client connection error: ${msg}`);
+    });
+
+    this.subClient.on('error', (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Redis subClient connection error: ${msg}`);
     });
   }
 
   async onModuleInit() {
     try {
       await this.client.connect();
-      this.logger.log('OrderRedisRepository connected to Redis successfully.');
+      await this.subClient.connect();
+      this.logger.log('OrderRedisRepository connected to Redis (client & subClient) successfully.');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`Failed to connect to Redis: ${msg}`);
@@ -57,7 +67,10 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy() {
     try {
-      if (this.client.isOpen) {
+      if (this.subClient && this.subClient.isOpen) {
+        await this.subClient.disconnect();
+      }
+      if (this.client && this.client.isOpen) {
         await this.client.disconnect();
       }
     } catch (err: unknown) {
@@ -102,6 +115,7 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
     };
 
     await this.saveInflightOrder(orderId, updated);
+    await this.publishOrderEvent(orderId, updated);
     return updated;
   }
 
@@ -273,7 +287,9 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
       }
 
       if (typeof result === 'string') {
-        return { success: true, order: JSON.parse(result) as InflightOrderData };
+        const claimedOrder = JSON.parse(result) as InflightOrderData;
+        await this.publishOrderEvent(orderId, claimedOrder);
+        return { success: true, order: claimedOrder };
       }
       return { success: false, error: 'CONFLICT' };
     } catch (err: unknown) {
@@ -281,5 +297,46 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
       this.logger.error(`Error executing claimOrder lua script: ${msg}`);
       throw err;
     }
+  }
+
+  async publishOrderEvent(orderId: string, eventData: unknown): Promise<void> {
+    try {
+      const channel = `order:events:${orderId}`;
+      await this.client.publish(channel, JSON.stringify(eventData));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Failed to publish order event for ${orderId}: ${msg}`);
+    }
+  }
+
+  subscribeOrderEvents(orderId: string): Observable<InflightOrderData> {
+    return new Observable<InflightOrderData>((subscriber) => {
+      const channel = `order:events:${orderId}`;
+      let isSubscribed = false;
+
+      const messageHandler = (message: string) => {
+        try {
+          const parsed = JSON.parse(message) as InflightOrderData;
+          subscriber.next(parsed);
+        } catch {
+          // ignore invalid json
+        }
+      };
+
+      this.subClient
+        .subscribe(channel, messageHandler)
+        .then(() => {
+          isSubscribed = true;
+        })
+        .catch((err) => {
+          subscriber.error(err);
+        });
+
+      return () => {
+        if (isSubscribed && this.subClient.isOpen) {
+          this.subClient.unsubscribe(channel, messageHandler).catch(() => {});
+        }
+      };
+    });
   }
 }

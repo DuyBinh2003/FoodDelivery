@@ -27,6 +27,7 @@ import { GetRestaurantOrdersUseCase } from '@/modules/orders/usecases/get-restau
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { SnsService } from '@/common/messaging/sns.service.js';
 import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingestion.consumer.js';
+import { OrderEventsService } from '@/modules/orders/services/order-events.service.js';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingesti
     OrderWriteRepository,
     OrderRedisRepository,
     OrderIngestionConsumer,
+    OrderEventsService,
     SqsService,
     SnsService,
     JwtStrategy,
@@ -61,6 +63,7 @@ import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingesti
     OrderReadRepository,
     OrderWriteRepository,
     OrderRedisRepository,
+    OrderEventsService,
     SqsService,
     SnsService,
     CreateOrderUseCase,

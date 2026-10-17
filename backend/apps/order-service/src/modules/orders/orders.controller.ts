@@ -9,7 +9,11 @@ import {
   Inject,
   UseGuards,
   Query,
+  Sse,
+  MessageEvent,
 } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { OrderEventsService } from '@/modules/orders/services/order-events.service.js';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from '@/modules/orders/dto/update-order-status.dto.js';
 import { QueryOrdersDto } from '@/modules/orders/dto/query-orders.dto.js';
@@ -63,6 +67,8 @@ export class OrdersController {
     private readonly getAvailableDriverTripsUseCase: GetAvailableDriverTripsUseCase,
     @Inject(GetRestaurantOrdersUseCase)
     private readonly getRestaurantOrdersUseCase: GetRestaurantOrdersUseCase,
+    @Inject(OrderEventsService)
+    private readonly orderEventsService: OrderEventsService,
   ) {}
 
   // --- Validate Cart (public — không cần auth) ---
@@ -183,6 +189,15 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.getOrderUseCase.execute({ orderId: id });
+  }
+
+  @Sse(':id/events')
+  @UseGuards(JwtAuthGuard)
+  orderEvents(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<Observable<MessageEvent>> {
+    return this.orderEventsService.streamOrderEvents(id, user);
   }
 }
 
