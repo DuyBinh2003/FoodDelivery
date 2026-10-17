@@ -20,6 +20,7 @@ docs/
 │   ├── realtime-registration-flow.md  # Luồng xử lý sự kiện realtime qua AWS SNS/SQS & WebSockets
 │   ├── elasticsearch.md               # Kiến trúc đồng bộ dữ liệu tìm kiếm và cấu hình Elasticsearch
 │   ├── frontend-backend-connection.md # API Gateway (NGINX), routing, CORS và reverse proxy
+│   ├── async-order-processing-flow.md # Xử lý đơn bất đồng bộ: SQS FIFO buffer, Redis In-flight cache, Deferred DB write
 │   └── migration-plan.md              # Lịch sử và nhật ký chuyển đổi từ Monolith sang Microservices
 │
 ├── services/                          # ⚙️ Đặc tả chi tiết từng Microservice & Hợp đồng API (API Contracts)
@@ -27,7 +28,7 @@ docs/
 │   ├── user-service.md                # Port 3001: Auth, tài khoản, hồ sơ đối tác, JWT tokens
 │   ├── admin-service.md               # Port 3002: Thẩm định hồ sơ, cấu hình hệ thống, realtime metric
 │   ├── restaurant-service.md          # Port 3003: Quản lý nhà hàng, thực đơn, danh mục, tags, mở/đóng quán
-│   ├── order-service.md               # Port 3004: Giỏ hàng, tạo đơn hàng, state machine, cuốc xe tài xế, SQS events
+│   ├── order-service.md               # Port 3004: Đệm SQS FIFO, Redis In-flight, state machine, deferred DB persistence khi COMPLETED
 │   ├── driver-service.md              # Port 3005: Định vị GPS tài xế, thuật toán điều phối & ghép đơn
 │   ├── search-service.md              # Port 3006: Tìm kiếm thông minh nhà hàng, món ăn qua Elasticsearch
 │   └── payment-service.md             # Port 3007: Kế toán kép, sổ cái append-only, ví tiền, COD & thấu chi

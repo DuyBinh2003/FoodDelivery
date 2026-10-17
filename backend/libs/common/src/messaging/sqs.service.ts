@@ -69,4 +69,33 @@ export class SqsService implements OnModuleInit {
       throw error;
     }
   }
+
+  async publishFifoEvent(
+    queueUrl: string,
+    eventName: string,
+    payload: unknown,
+    options: { messageGroupId: string; messageDeduplicationId: string },
+  ) {
+    try {
+      const command = new SendMessageCommand({
+        QueueUrl: queueUrl,
+        MessageGroupId: options.messageGroupId,
+        MessageDeduplicationId: options.messageDeduplicationId,
+        MessageBody: JSON.stringify({
+          event: eventName,
+          data: payload,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      const result = await this.sqsClient.send(command);
+      this.logger.log(`FIFO Event ${eventName} published to SQS with MessageId: ${result.MessageId} (Group: ${options.messageGroupId})`);
+      return result;
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to publish FIFO event ${eventName} to SQS: ${msg}`, stack);
+      throw error;
+    }
+  }
 }

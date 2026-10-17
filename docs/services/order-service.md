@@ -6,13 +6,13 @@ Tài liệu đặc tả hạ tầng, mô hình kiến trúc, cơ sở dữ liệ
 
 ## 1. Tổng Quan & Trách Nhiệm (Boundaries)
 
-Order Service là microservice trung tâm chịu trách nhiệm xử lý toàn bộ vòng đời của đơn hàng từ thời điểm người dùng kiểm tra giỏ hàng (Cart Validation), đặt đơn (Order Creation), chuyển đổi trạng thái (State Machine), điều phối cuốc xe tài xế (Driver Trip Handling), cho đến đánh giá chất lượng (Order Review).
-
-- **Phạm vi nghiệp vụ**:
+Order Service là microservice trung tâm chịu trách nhiệm xử lý toàn bộ vòng đời của đơn hàng từ thời điểm người dùng kiểm tra giỏ hàng (Cart Validation), đặt đơn (Order Creation), chuyển đổi trạng thá- **Phạm vi nghiệp vụ**:
   - Tiếp nhận và thẩm định đơn hàng của Khách hàng (Customer).
+  - Đệm chịu tải tiếp nhận đơn (Queue-Based Load Leveling) qua SQS FIFO để bảo vệ cơ sở dữ liệu.
+  - Quản lý trạng thái đơn hàng tạm thời (In-flight State) trên Redis Cache trong suốt quá trình luân chuyển.
   - Quản lý máy trạng thái đơn hàng: `PENDING` ➔ `ACCEPTED` ➔ `COOKING` ➔ `DELIVERING` ➔ `COMPLETED` (hoặc `CANCELLED`).
-  - Cung cấp API phục vụ tài xế tra cứu cuốc xe, tổng kết thu nhập và cập nhật trạng thái giao hàng.
-  - Thu nhận đánh giá đa chiều (Nhà hàng, Món ăn, Tài xế).
+  - Phối hợp với nhà hàng (chế biến món linh hoạt không ép FIFO) và điều phối cuốc xe cho tài xế qua SNS Fanout.
+  - Trì hoãn ghi cơ sở dữ liệu (Deferred Persistence): Chỉ ghi nhận vĩnh viễn vào PostgreSQL `schema_order` khi đơn hàng hoàn tất (`COMPLETED`) hoặc hủy có phát sinh đối soát.
   - Cung cấp số liệu thống kê nội bộ (Metrics) cho Admin Service.
 - **Thông số kết nối hạ tầng**:
   - **Docker Container Name**: `fd_order_service`
@@ -35,24 +35,28 @@ graph TD
         GW -->|Reverse Proxy| OS["🛒 Order Service (NestJS Monorepo)"]
         OS --> Controller["OrdersController & OrdersInternalController"]
         Controller --> UseCases["Use Cases (Clean Architecture)"]
+        UseCases --> RedisRepo["OrderRedisRepository (In-flight State)"]
         UseCases --> Repos["OrderReadRepository & OrderWriteRepository"]
         UseCases --> SQS["SqsService (AWS SDK v3)"]
     end
 
-    subgraph "Data Storage"
-        Repos -->|TypeORM Connection| DB[("🐘 PostgreSQL (:5432)\nSchema: schema_order")]
+    subgraph "Tầng Đệm & Lưu Trữ Tạm Thời (In-flight)"
+        RedisRepo --> Redis[("⚡ Redis Cache (:6379)\norder:inflight:{id}")]
+        SQS -->|1. Đệm Đơn Hàng| SQS_FIFO[("📥 SQS FIFO Queue\norders-processing.fifo")]
+        SQS -->|2. Fanout Tài Xế| SNS_Topic[("📢 SNS Topic\norder-driver-dispatch")]
     end
 
-    subgraph "Event-Driven Messaging"
-        SQS -->|Publish Event| Queue[("📥 SQS Queue (:4566)\nfood-delivery-orders")]
-        Queue --> Consumer["🛵 Driver / Notification Consumers"]
+    subgraph "Tầng Lưu Trữ Vĩnh Viễn (Chỉ ghi khi COMPLETED)"
+        Repos -->|TypeORM Connection| DB[("🐘 PostgreSQL (:5432)\nSchema: schema_order")]
     end
 ```
 
 - **Runtime Framework**: NestJS 12 trên nền Node.js ES Modules (`"type": "module"`), TypeScript strict mode.
 - **ORM & Data Access**: TypeORM 1.1 + `node-pg-migrate` quản lý schema migration độc lập.
-- **Cơ sở dữ liệu**: PostgreSQL 15, phân vùng biệt lập tại schema `schema_order`.
-- **Hàng đợi tin nhắn**: AWS SQS (giả lập bằng LocalStack tại cổng `4566`).
+- **Cơ sở dữ liệu**: PostgreSQL 15, phân vùng biệt lập tại schema `schema_order` (Deferred write khi `COMPLETED`).
+- **Bộ nhớ đệm In-flight**: Redis 7, quản lý toàn bộ dữ liệu đơn hàng đang xử lý với TTL 24h.
+- **Hàng đợi tin nhắn**: AWS SQS (FIFO Queue `orders-processing.fifo` và Standard Queue `food-delivery-orders`).
+- **Phân phối tin nhắn**: AWS SNS (`order-driver-dispatch` Fanout tới các queue của tài xế).
 - **Xác thực & Phân quyền**: `Passport-JWT` + `JwtAuthGuard` trích xuất thông tin người dùng từ Bearer token qua `@CurrentUser()`.
 - **Validation & Serialization**: `ValidationPipe` toàn cục (`whitelist: true`, `forbidNonWhitelisted: true`, `transform: true`) và `ClassSerializerInterceptor`.
 
@@ -61,17 +65,21 @@ graph TD
 ## 3. Tính Năng Cốt Lõi
 
 1. **Kiểm tra giỏ hàng (`ValidateCartUseCase`)**: Tính toán tổng tiền dự kiến, kiểm tra món ăn trước khi thanh toán.
-2. **Khởi tạo đơn hàng giao dịch (`CreateOrderUseCase` + `OrderWriteRepository`)**:
-   - Ghi nhận `t_order` và danh sách `t_order_item` trong cùng một Database Transaction.
-   - Tự động phát sự kiện `ORDER_CREATED` vào hàng đợi AWS SQS.
-3. **Quản lý máy trạng thái (`UpdateOrderStatusUseCase`)**:
-   - Kiểm soát tính hợp lệ của việc chuyển đổi trạng thái (Tránh nhảy cóc trạng thái).
-   - Phát sự kiện `ORDER_STATUS_CHANGED` và `ORDER_ACCEPTED` cho các microservice liên quan.
-4. **Quản lý cuốc xe cho tài xế (`DriverTrips`, `DriverSummary`, `DriverReviews`)**:
-   - Cho phép tài xế xem danh sách đơn đang giao, tổng kết thu nhập và đánh giá từ khách.
-5. **Đánh giá đơn hàng (`CreateOrderReviewUseCase`)**:
+2. **Khởi tạo đơn hàng bất đồng bộ (`CreateOrderUseCase` + Queue Load Leveling)**:
+   - Sinh trước `orderId` (UUID), lưu snapshot khởi tạo vào Redis `order:inflight:{id}` (`status: PENDING`).
+   - Đẩy message vào SQS FIFO `orders-processing.fifo` (nhóm theo `restaurant_id`), phản hồi tức thì HTTP 201 cho Client.
+   - **Tuyệt đối không ghi PostgreSQL ở phase này** để chống nghẽn DB trong giờ cao điểm.
+3. **Bếp chế biến linh hoạt & Điều phối tài xế (`UpdateOrderStatusUseCase`)**:
+   - Nhà hàng theo dõi danh sách đơn chờ, chủ động chế biến theo thực tế món ăn (không ép FIFO cứng nhắc ở bếp).
+   - Khi nhà hàng nhận đơn (`ACCEPTED`), hệ thống cập nhật Redis và phát sự kiện vào SNS Topic `order-driver-dispatch` để Fanout cho tài xế.
+4. **Ghi nhận cơ sở dữ liệu khi hoàn tất (Deferred Persistence)**:
+   - Khi tài xế giao món thành công và nhấn `COMPLETED`: hệ thống dump toàn bộ snapshot từ Redis xuống PostgreSQL `t_order` và `t_order_item` trong cùng một Database Transaction.
+   - Nếu đơn bị `CANCELLED` mà đã thanh toán: ghi DB để đối soát hoàn tiền.
+5. **Tra cứu lai (Hybrid Lookup Strategy)**:
+   - `GetOrderByIdUseCase` và `GetOrderHistoryUseCase` kiểm tra đơn đang luân chuyển trên Redis trước, kết hợp với lịch sử đơn trong PostgreSQL.
+6. **Đánh giá đơn hàng (`CreateOrderReviewUseCase`)**:
    - Khách hàng đánh giá 1-5 sao và đính kèm ảnh cho đơn đã hoàn thành (`COMPLETED`).
-6. **Bảng điều khiển quản trị (`GetOrdersAdminUseCase`)**:
+7. **Bảng điều khiển quản trị (`GetOrdersAdminUseCase`)**:
    - Phân trang, lọc theo trạng thái, theo nhà hàng và khoảng thời gian tạo đơn.
 
 ---
@@ -81,17 +89,17 @@ graph TD
 ### A. Public / Client-Facing APIs (Truy cập qua API Gateway `/orders/*`)
 
 | Endpoint | Method | Auth Guard | Mô tả | Request Body / Query | Mã phản hồi |
-| :--- | :---: | :---: | :--- | :--- | :---: |
+| :--- | :---: | :---: | :--- | :--- | :--- | :---: |
 | `/orders/validate-cart` | `POST` | Public | Kiểm tra và tính tổng tiền giỏ hàng | `ValidateCartDto` | `200`, `400` |
-| `/orders` | `POST` | `JwtAuthGuard` | Tạo đơn hàng mới cho khách hàng đăng nhập | `CreateOrderDto` | `201`, `400`, `401` |
-| `/orders/history/me` | `GET` | `JwtAuthGuard` | Xem lịch sử đơn hàng của người dùng hiện tại | Không | `200`, `401` |
-| `/orders/:id` | `GET` | `JwtAuthGuard` | Tra cứu chi tiết một đơn hàng theo UUID | Param `id: UUID` | `200`, `401`, `404` |
+| `/orders` | `POST` | `JwtAuthGuard` | Tạo đơn bất đồng bộ vào SQS FIFO & Redis (Non-blocking, chưa ghi DB) | `CreateOrderDto` | `201`, `400`, `401` |
+| `/orders/history/me` | `GET` | `JwtAuthGuard` | Xem lịch sử đơn hàng (Hợp nhất đơn đang chạy từ Redis & quá khứ từ DB) | Không | `200`, `401` |
+| `/orders/:id` | `GET` | `JwtAuthGuard` | Tra cứu chi tiết đơn hàng (Tra cứu lai: Redis ➔ PostgreSQL) | Param `id: UUID` | `200`, `401`, `404` |
 | `/orders/:id/status` | `PATCH` | `JwtAuthGuard` | Cập nhật trạng thái đơn hàng (Khách / Quán / Admin) | `UpdateOrderStatusDto` | `200`, `400`, `401` |
 | `/orders/:id/reviews` | `POST` | `JwtAuthGuard` | Gửi đánh giá cho đơn hàng đã hoàn tất | `CreateOrderReviewDto` | `201`, `400`, `404` |
 | `/orders/driver/trips` | `GET` | `JwtAuthGuard` | Lấy danh sách cuốc xe nhận giao của tài xế | Không | `200`, `401` |
 | `/orders/driver/summary` | `GET` | `JwtAuthGuard` | Thống kê tổng số cuốc, doanh thu và điểm đánh giá | Không | `200`, `401` |
 | `/orders/driver/reviews` | `GET` | `JwtAuthGuard` | Xem danh sách đánh giá tài xế nhận được | Không | `200`, `401` |
-| `/orders/driver/trips/:id/status` | `PATCH` | `JwtAuthGuard` | Tài xế cập nhật trạng thái cuốc (`DELIVERING`, `COMPLETED`) | `{ "status": "COMPLETED" }` | `200`, `400`, `401` |
+| `/orders/driver/trips/:id/status` | `PATCH` | `JwtAuthGuard` | Tài xế cập nhật trạng thái cuốc (Ghi DB khi `COMPLETED`) | `{ "status": "COMPLETED" }` | `200`, `400`, `401` |
 | `/orders` | `GET` | `JwtAuthGuard` | Quản trị viên tra cứu danh sách đơn với bộ lọc & phân trang | `QueryOrdersDto` (`page`, `limit`, `status`,...) | `200`, `401` |
 
 ### B. Internal APIs (Giao tiếp nội bộ Docker, NGINX Gateway chặn 403)
@@ -103,13 +111,22 @@ graph TD
 
 ---
 
-## 5. Cơ Chế Sự Kiện (Event-Driven Messaging via SQS)
+## 5. Cơ Chế Sự Kiện (Event-Driven Messaging via SQS & SNS)
 
-Order Service đóng vai trò là một **Event Publisher** đẩy các sự kiện nghiệp vụ vào hàng đợi SQS để đảm bảo tính phản hồi nhanh và giải phóng kết nối đồng bộ:
+Order Service đóng vai trò là một **Event Publisher & Ingestion Manager**:
 
-- **Hàng đợi mục tiêu**: `food-delivery-orders`
-- **Địa chỉ Queue ARN / URL**: `http://localhost:4566/000000000000/food-delivery-orders`
-- **Cấu hình AWS SDK**: Client `@aws-sdk/client-sqs` cấu hình trỏ vào LocalStack endpoint `http://localhost:4566`.
+- **SQS FIFO Ingestion Queue**: `orders-processing.fifo` (Bộ đệm tiếp nhận đơn từ khách hàng, phân nhóm theo `restaurant_id`).
+- **SNS Driver Dispatch Topic**: `order-driver-dispatch` (Fanout đơn hàng đã nhận tới các tài xế).
+- **SQS Domain Events Queue**: `food-delivery-orders` (Lưu vết các sự kiện trạng thái đơn cho notification/delivery).
+
+### Danh Mục Sự Kiện & Thông Điệp
+
+| Kênh Truyền | Tên Sự Kiện / Message | Điều kiện phát | Payload tóm tắt |
+| :--- | :--- | :--- | :--- |
+| **SQS FIFO** | `ORDER_CREATION_JOB` | Khi khách hàng gửi `POST /orders` | `{ orderId, restaurantId, customerId, items, totalAmount, deliveryAddress }` |
+| **SNS Topic** | `ORDER_ACCEPTED` | Khi nhà hàng xác nhận nhận đơn | `{ orderId, restaurantId, customerId, items, deliveryAddress, totalAmount }` |
+| **SQS Queue** | `ORDER_STATUS_CHANGED` | Khi đơn chuyển trạng thái bất kỳ | `{ orderId, previousStatus, newStatus, changedAt, changedBy }` |
+| **PostgreSQL** | `DATABASE_PERSISTED` | Khi tài xế xác nhận `COMPLETED` | Ghi transaction toàn bộ `t_order` và `t_order_item` |lient `@aws-sdk/client-sqs` cấu hình trỏ vào LocalStack endpoint `http://localhost:4566`.
 
 ### Danh Mục Sự Kiện Phát Ra
 

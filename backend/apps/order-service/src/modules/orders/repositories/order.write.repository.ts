@@ -5,6 +5,7 @@ import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
 import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
 import { CreateOrderCommand } from '@/modules/orders/usecases/create-order.usecase.js';
+import { InflightOrderData } from '@/modules/orders/repositories/order.redis.repository.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
 import { OrderEventTypes } from '@/events/index.js';
 
@@ -63,6 +64,45 @@ export class OrderWriteRepository {
         shippingAddress: savedOrder.delivery_address,
       });
 
+      return savedOrder;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async persistCompletedOrder(orderData: InflightOrderData): Promise<Order> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const order = queryRunner.manager.create(Order, {
+        id: orderData.id,
+        customer_id: orderData.customer_id,
+        restaurant_id: orderData.restaurant_id,
+        driver_id: orderData.driver_id ?? undefined,
+        delivery_address: orderData.delivery_address,
+        note: orderData.note ?? null,
+        payment_method: orderData.payment_method ?? 'CASH',
+        total_amount: orderData.total_amount,
+        status: orderData.status,
+      });
+      const savedOrder = await queryRunner.manager.save(order);
+
+      const orderItems = orderData.items.map((item) => {
+        return queryRunner.manager.create(OrderItem, {
+          order_id: savedOrder.id,
+          menu_item_id: item.menu_item_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+        });
+      });
+      await queryRunner.manager.save(orderItems);
+
+      await queryRunner.commitTransaction();
       return savedOrder;
     } catch (err) {
       await queryRunner.rollbackTransaction();

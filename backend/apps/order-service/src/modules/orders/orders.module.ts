@@ -21,6 +21,9 @@ import { GetDriverSummaryUseCase } from '@/modules/orders/usecases/get-driver-su
 import { GetDriverReviewsUseCase } from '@/modules/orders/usecases/get-driver-reviews.usecase.js';
 import { UpdateDriverTripStatusUseCase } from '@/modules/orders/usecases/update-driver-trip-status.usecase.js';
 import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admin.usecase.js';
+import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
+import { SnsService } from '@/common/messaging/sns.service.js';
+import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingestion.consumer.js';
 
 @Module({
   imports: [
@@ -31,7 +34,10 @@ import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admi
   providers: [
     OrderReadRepository,
     OrderWriteRepository,
+    OrderRedisRepository,
+    OrderIngestionConsumer,
     SqsService,
+    SnsService,
     JwtStrategy,
     CreateOrderUseCase,
     GetOrderUseCase,
@@ -48,7 +54,9 @@ import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admi
   exports: [
     OrderReadRepository,
     OrderWriteRepository,
+    OrderRedisRepository,
     SqsService,
+    SnsService,
     CreateOrderUseCase,
     GetOrderUseCase,
     GetOrderHistoryUseCase,
@@ -62,5 +70,5 @@ import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admi
     GetOrdersAdminUseCase,
   ],
 })
-export class OrdersModule {}
+export class OrdersModule { }
 

@@ -9,19 +9,33 @@ ACCOUNT_ID="000000000000"
 echo "Creating SQS queues..."
 awslocal sqs create-queue --queue-name food-delivery-orders --region "$REGION" --attributes MessageRetentionPeriod=300
 awslocal sqs create-queue --queue-name admin-registration-queue --region "$REGION"
+awslocal sqs create-queue --queue-name orders-processing.fifo --region "$REGION" --attributes FifoQueue=true,ContentBasedDeduplication=true,MessageRetentionPeriod=86400
+awslocal sqs create-queue --queue-name driver-dispatch-queue --region "$REGION"
 
-# Create SNS Topic
-echo "Creating SNS topic..."
+# Create SNS Topics
+echo "Creating SNS topics..."
 TOPIC_ARN=$(awslocal sns create-topic --name user-registration-events --region "$REGION" --query 'TopicArn' --output text)
 echo "Topic ARN: $TOPIC_ARN"
 
-# Subscribe admin-registration-queue to the SNS topic
+TOPIC_DRIVER_ARN=$(awslocal sns create-topic --name order-driver-dispatch --region "$REGION" --query 'TopicArn' --output text)
+echo "Driver Topic ARN: $TOPIC_DRIVER_ARN"
+
+# Subscribe admin-registration-queue to the user-registration-events SNS topic
 QUEUE_ARN="arn:aws:sqs:${REGION}:${ACCOUNT_ID}:admin-registration-queue"
-echo "Subscribing SQS queue to SNS topic..."
+echo "Subscribing admin SQS queue to SNS topic..."
 awslocal sns subscribe \
   --topic-arn "$TOPIC_ARN" \
   --protocol sqs \
   --notification-endpoint "$QUEUE_ARN" \
+  --region "$REGION"
+
+# Subscribe driver-dispatch-queue to the order-driver-dispatch SNS topic
+DRIVER_QUEUE_ARN="arn:aws:sqs:${REGION}:${ACCOUNT_ID}:driver-dispatch-queue"
+echo "Subscribing driver SQS queue to SNS topic..."
+awslocal sns subscribe \
+  --topic-arn "$TOPIC_DRIVER_ARN" \
+  --protocol sqs \
+  --notification-endpoint "$DRIVER_QUEUE_ARN" \
   --region "$REGION"
 
 echo "=== LocalStack initialization completed! ==="
