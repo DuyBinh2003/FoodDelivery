@@ -41,3 +41,10 @@ export const createOrderReview = async (orderId: string, data: CreateOrderReview
   return response;
 };
 
+export const cancelOrder = async (orderId: string): Promise<Order> => {
+  return apiClient<Order>(`/orders/${orderId}/status`, {
+    method: 'PATCH',
+    body: { status: 'CANCELLED' },
+  });
+};
+

@@ -8,13 +8,14 @@ interface OrderStepperProps {
 
 const STEPS: { status: OrderStatus; label: string; icon: React.ElementType }[] = [
   { status: 'PENDING', label: 'Chờ xác nhận', icon: Clock },
-  { status: 'ACCEPTED', label: 'Đã xác nhận', icon: Check },
   { status: 'COOKING', label: 'Đang nấu', icon: ChefHat },
+  { status: 'READY_FOR_PICKUP', label: 'Tìm tài xế', icon: Check },
   { status: 'DELIVERING', label: 'Đang giao', icon: Truck },
   { status: 'COMPLETED', label: 'Hoàn thành', icon: Package },
 ];
 
 function getStepIndex(status: OrderStatus): number {
+  if (status === 'ACCEPTED') return 1;
   const index = STEPS.findIndex((s) => s.status === status);
   return index >= 0 ? index : 0;
 }

@@ -41,6 +41,7 @@ export class CreateOrderUseCase {
       items: command.items.map((item) => ({
         id: randomUUID(),
         menu_item_id: item.menu_item_id,
+        name: item.name,
         quantity: item.quantity,
         unit_price: item.unit_price,
       })),

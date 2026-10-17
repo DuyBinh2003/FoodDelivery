@@ -23,6 +23,10 @@ export class CreateOrderItemDto {
   @IsUUID()
   menu_item_id: string;
 
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @Type(() => Number)
   @IsInt()
   @Min(1)
