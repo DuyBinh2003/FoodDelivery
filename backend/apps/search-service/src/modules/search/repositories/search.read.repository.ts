@@ -24,7 +24,7 @@ export interface MenuItemData {
 
 @Injectable()
 export class SearchReadRepository {
-  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
 
   constructor() {}
 

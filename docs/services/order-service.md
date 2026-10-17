@@ -91,15 +91,18 @@ graph TD
 | Endpoint | Method | Auth Guard | Mô tả | Request Body / Query | Mã phản hồi |
 | :--- | :---: | :---: | :--- | :--- | :--- | :---: |
 | `/orders/validate-cart` | `POST` | Public | Kiểm tra và tính tổng tiền giỏ hàng | `ValidateCartDto` | `200`, `400` |
-| `/orders` | `POST` | `JwtAuthGuard` | Tạo đơn bất đồng bộ vào SQS FIFO & Redis (Non-blocking, chưa ghi DB) | `CreateOrderDto` | `201`, `400`, `401` |
+| `/orders` | `POST` | `JwtAuthGuard` | Tạo đơn bất đồng bộ vào SQS `food-delivery-orders` & Redis (Non-blocking, chưa ghi DB) | `CreateOrderDto` | `201`, `400`, `401` |
 | `/orders/history/me` | `GET` | `JwtAuthGuard` | Xem lịch sử đơn hàng (Hợp nhất đơn đang chạy từ Redis & quá khứ từ DB) | Không | `200`, `401` |
+| `/orders/restaurant/:restaurantId` | `GET` | `JwtAuthGuard` | Lấy danh sách đơn của quán (In-flight từ Redis + lịch sử từ DB) | Param `restaurantId: UUID` | `200`, `401` |
 | `/orders/:id` | `GET` | `JwtAuthGuard` | Tra cứu chi tiết đơn hàng (Tra cứu lai: Redis ➔ PostgreSQL) | Param `id: UUID` | `200`, `401`, `404` |
-| `/orders/:id/status` | `PATCH` | `JwtAuthGuard` | Cập nhật trạng thái đơn hàng (Khách / Quán / Admin) | `UpdateOrderStatusDto` | `200`, `400`, `401` |
-| `/orders/:id/reviews` | `POST` | `JwtAuthGuard` | Gửi đánh giá cho đơn hàng đã hoàn tất | `CreateOrderReviewDto` | `201`, `400`, `404` |
-| `/orders/driver/trips` | `GET` | `JwtAuthGuard` | Lấy danh sách cuốc xe nhận giao của tài xế | Không | `200`, `401` |
+| `/orders/:id/status` | `PATCH` | `JwtAuthGuard` | Cập nhật trạng thái chế biến (`COOKING`, `READY_FOR_PICKUP`) | `UpdateOrderStatusDto` | `200`, `400`, `401` |
+| `/orders/driver/available` | `GET` | `JwtAuthGuard` | Lấy danh sách chuyến xe broadcast đang tìm tài xế | Không | `200`, `401` |
+| `/orders/:id/driver-claim` | `POST` | `JwtAuthGuard` | Tài xế nhận cuốc xe với Redis Atomic Lock (chống race condition) | Param `id: UUID` | `200`, `401`, `409` |
+| `/orders/driver/trips` | `GET` | `JwtAuthGuard` | Lấy danh sách cuốc xe của tài xế (In-flight DELIVERING + đã hoàn tất) | Không | `200`, `401` |
 | `/orders/driver/summary` | `GET` | `JwtAuthGuard` | Thống kê tổng số cuốc, doanh thu và điểm đánh giá | Không | `200`, `401` |
 | `/orders/driver/reviews` | `GET` | `JwtAuthGuard` | Xem danh sách đánh giá tài xế nhận được | Không | `200`, `401` |
 | `/orders/driver/trips/:id/status` | `PATCH` | `JwtAuthGuard` | Tài xế cập nhật trạng thái cuốc (Ghi DB khi `COMPLETED`) | `{ "status": "COMPLETED" }` | `200`, `400`, `401` |
+| `/orders/:id/reviews` | `POST` | `JwtAuthGuard` | Gửi đánh giá cho đơn hàng đã hoàn tất | `CreateOrderReviewDto` | `201`, `400`, `404` |
 | `/orders` | `GET` | `JwtAuthGuard` | Quản trị viên tra cứu danh sách đơn với bộ lọc & phân trang | `QueryOrdersDto` (`page`, `limit`, `status`,...) | `200`, `401` |
 
 ### B. Internal APIs (Giao tiếp nội bộ Docker, NGINX Gateway chặn 403)
@@ -115,16 +118,16 @@ graph TD
 
 Order Service đóng vai trò là một **Event Publisher & Ingestion Manager**:
 
-- **SQS FIFO Ingestion Queue**: `orders-processing.fifo` (Bộ đệm tiếp nhận đơn từ khách hàng, phân nhóm theo `restaurant_id`).
-- **SNS Driver Dispatch Topic**: `order-driver-dispatch` (Fanout đơn hàng đã nhận tới các tài xế).
-- **SQS Domain Events Queue**: `food-delivery-orders` (Lưu vết các sự kiện trạng thái đơn cho notification/delivery).
+- **SQS Ingestion Queue**: `food-delivery-orders` (Bộ đệm tiếp nhận đơn từ khách hàng, TTL message 300s).
+- **SNS Driver Dispatch Topic**: `order-driver-dispatch` (Fanout các chuyến xe `READY_FOR_PICKUP` tới các tài xế).
+- **SQS Driver Dispatch Queue**: `driver-dispatch-queue` (Subscribed tới Topic `order-driver-dispatch`).
 
 ### Danh Mục Sự Kiện & Thông Điệp
 
 | Kênh Truyền | Tên Sự Kiện / Message | Điều kiện phát | Payload tóm tắt |
 | :--- | :--- | :--- | :--- |
-| **SQS FIFO** | `ORDER_CREATION_JOB` | Khi khách hàng gửi `POST /orders` | `{ orderId, restaurantId, customerId, items, totalAmount, deliveryAddress }` |
-| **SNS Topic** | `ORDER_ACCEPTED` | Khi nhà hàng xác nhận nhận đơn | `{ orderId, restaurantId, customerId, items, deliveryAddress, totalAmount }` |
+| **SQS Queue** | `ORDER_CREATED` | Khi khách hàng gửi `POST /orders` | `{ orderId, restaurantId, customerId, items, totalAmount, deliveryAddress }` |
+| **SNS Topic** | `ORDER_READY_FOR_PICKUP` | Khi nhà hàng xong món cần tài xế | `{ orderId, restaurantId, restaurantName, customerId, items, deliveryAddress, totalAmount }` |
 | **SQS Queue** | `ORDER_STATUS_CHANGED` | Khi đơn chuyển trạng thái bất kỳ | `{ orderId, previousStatus, newStatus, changedAt, changedBy }` |
 | **PostgreSQL** | `DATABASE_PERSISTED` | Khi tài xế xác nhận `COMPLETED` | Ghi transaction toàn bộ `t_order` và `t_order_item` |lient `@aws-sdk/client-sqs` cấu hình trỏ vào LocalStack endpoint `http://localhost:4566`.
 

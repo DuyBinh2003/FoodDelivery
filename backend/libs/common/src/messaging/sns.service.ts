@@ -8,15 +8,15 @@ export class SnsService {
   private readonly logger = new Logger(SnsService.name);
 
   constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
-    const region = this.configService.get<string>('aws.region') || 'ap-southeast-1';
-    const endpoint = this.configService.get<string>('sns.endpoint') || process.env.LOCALSTACK_ENDPOINT || 'http://localhost:4566';
+    const region = this.configService.getOrThrow<string>('aws.region');
+    const endpoint = this.configService.getOrThrow<string>('sns.endpoint');
 
     this.snsClient = new SNSClient({
       region,
       endpoint,
       credentials: {
-        accessKeyId: this.configService.get<string>('aws.accessKeyId') || 'test',
-        secretAccessKey: this.configService.get<string>('aws.secretAccessKey') || 'test',
+        accessKeyId: this.configService.getOrThrow<string>('aws.accessKeyId'),
+        secretAccessKey: this.configService.getOrThrow<string>('aws.secretAccessKey'),
       },
     });
   }

@@ -19,7 +19,7 @@ export interface DriverTripReview {
 export interface DriverTrip {
   id: string;
   order_id: string;
-  status: 'PENDING' | 'ACCEPTED' | 'COOKING' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'ACCEPTED' | 'COOKING' | 'READY_FOR_PICKUP' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED';
   total_amount: number;
   driver_earnings: number;
   pickup_name: string;

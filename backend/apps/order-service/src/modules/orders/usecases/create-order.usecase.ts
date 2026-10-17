@@ -50,20 +50,8 @@ export class CreateOrderUseCase {
     // 1. Lưu snapshot trạng thái ban đầu vào Redis In-flight Cache
     await this.orderRedisRepo.saveInflightOrder(orderId, orderData);
 
-    // 2. Đẩy message vào SQS FIFO Queue (Load-Leveling Ingestion Buffer, chống nghẽn DB)
-    const fifoQueueUrl =
-      this.configService.get<string>('sqs.orderProcessingFifoUrl') ||
-      'http://localhost:4566/000000000000/orders-processing.fifo';
-
-    await this.sqsService.publishFifoEvent(
-      fifoQueueUrl,
-      'ORDER_CREATION_JOB',
-      orderData,
-      {
-        messageGroupId: command.restaurant_id,
-        messageDeduplicationId: orderId,
-      },
-    );
+    // 2. Đẩy message vào SQS Queue food-delivery-orders để nhà hàng tiếp nhận
+    await this.sqsService.publishEvent(OrderEventTypes.ORDER_CREATED, orderData);
 
     // 3. Trả về ngay lập tức cho Client (Non-blocking, không chạm DB PostgreSQL)
     return {

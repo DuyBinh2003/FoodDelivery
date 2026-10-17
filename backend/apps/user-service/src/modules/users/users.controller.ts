@@ -17,7 +17,7 @@ import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
 
   constructor(
     @Inject(GetCustomerProfileUseCase) private readonly getCustomerProfileUseCase: GetCustomerProfileUseCase,

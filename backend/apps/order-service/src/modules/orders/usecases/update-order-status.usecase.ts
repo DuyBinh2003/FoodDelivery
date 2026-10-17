@@ -60,18 +60,18 @@ export class UpdateOrderStatusUseCase {
         }
       }
 
-      // KHI NHÀ HÀNG XÁC NHẬN (ACCEPTED): Bắn SNS Fanout cho các tài xế
-      if (newStatus === OrderStatus.ACCEPTED) {
-        const topicArn =
-          this.configService.get<string>('sns.orderDriverDispatchTopic') ||
-          'arn:aws:sns:ap-southeast-1:000000000000:order-driver-dispatch';
+      // KHI NHÀ HÀNG XÁC NHẬN MÓN ĂN ĐÃ XONG (READY_FOR_PICKUP hoặc ACCEPTED): Bắn SNS Fanout cho các tài xế
+      if (newStatus === OrderStatus.READY_FOR_PICKUP || newStatus === OrderStatus.ACCEPTED) {
+        const topicArn = this.configService.getOrThrow<string>('sns.orderDriverDispatchTopic');
 
-        await this.snsService.publishEvent(topicArn, OrderEventTypes.ORDER_ACCEPTED, {
+        await this.snsService.publishEvent(topicArn, OrderEventTypes.ORDER_READY_FOR_PICKUP, {
           orderId: inflight.id,
           restaurantId: inflight.restaurant_id,
+          restaurantName: inflight.restaurant_name,
           customerId: inflight.customer_id,
           totalAmount: inflight.total_amount,
           deliveryAddress: inflight.delivery_address,
+          items: inflight.items,
         });
       }
 

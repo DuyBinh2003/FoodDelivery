@@ -9,7 +9,6 @@ ACCOUNT_ID="000000000000"
 echo "Creating SQS queues..."
 awslocal sqs create-queue --queue-name food-delivery-orders --region "$REGION" --attributes MessageRetentionPeriod=300
 awslocal sqs create-queue --queue-name admin-registration-queue --region "$REGION"
-awslocal sqs create-queue --queue-name orders-processing.fifo --region "$REGION" --attributes FifoQueue=true,ContentBasedDeduplication=true,MessageRetentionPeriod=86400
 awslocal sqs create-queue --queue-name driver-dispatch-queue --region "$REGION"
 
 # Create SNS Topics

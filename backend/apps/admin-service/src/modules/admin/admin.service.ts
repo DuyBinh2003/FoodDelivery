@@ -6,9 +6,9 @@ import { ReviewApprovalDto, ApprovalStatus } from '@/modules/admin/dto/review-ap
 
 @Injectable()
 export class AdminService {
-  private readonly userUrl = process.env.USER_SERVICE_URL || 'http://localhost:3001';
-  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
-  private readonly orderUrl = process.env.ORDER_SERVICE_URL || 'http://localhost:3004';
+  private readonly userUrl = process.env.USER_SERVICE_URL!;
+  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
+  private readonly orderUrl = process.env.ORDER_SERVICE_URL!;
   
   constructor(
     @InjectRepository(SystemConfig)

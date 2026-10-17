@@ -8,25 +8,22 @@ import { OrderEventTypes, OrderCreatedEvent } from '@/events/index.js';
 export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
   private consumer: Consumer;
   private readonly logger = new Logger(DriversConsumer.name);
-  private readonly orderUrl = process.env.ORDER_SERVICE_URL || 'http://localhost:3004';
 
   constructor(
     @Inject(ConfigService) private readonly configService: ConfigService,
   ) {}
 
   async onModuleInit() {
-    const region = this.configService.get<string>('aws.region') || 'ap-southeast-1';
-    const endpoint = this.configService.get<string>('sqs.endpoint') || 'http://localhost:4566';
-    const queueUrl =
-      this.configService.get<string>('sqs.driverDispatchQueueUrl') ||
-      'http://localhost:4566/000000000000/driver-dispatch-queue';
+    const region = this.configService.getOrThrow<string>('aws.region');
+    const endpoint = this.configService.getOrThrow<string>('sqs.endpoint');
+    const queueUrl = this.configService.getOrThrow<string>('sqs.driverDispatchQueueUrl');
 
     const sqsClient = new SQSClient({
       region,
       endpoint,
       credentials: {
-        accessKeyId: this.configService.get<string>('aws.accessKeyId') || 'test',
-        secretAccessKey: this.configService.get<string>('aws.secretAccessKey') || 'test',
+        accessKeyId: this.configService.getOrThrow<string>('aws.accessKeyId'),
+        secretAccessKey: this.configService.getOrThrow<string>('aws.secretAccessKey'),
       },
     });
 
@@ -57,42 +54,25 @@ export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
             }
           }
 
-          // 1. Khi nhận ORDER_ACCEPTED từ SNS Fanout của Bếp Nhà hàng
-          if (body.event === OrderEventTypes.ORDER_ACCEPTED || body.event === 'ORDER_ACCEPTED') {
+          // 1. Khi nhận ORDER_READY_FOR_PICKUP hoặc ORDER_ACCEPTED từ SNS Fanout
+          if (
+            body.event === OrderEventTypes.ORDER_READY_FOR_PICKUP ||
+            body.event === 'ORDER_READY_FOR_PICKUP' ||
+            body.event === OrderEventTypes.ORDER_ACCEPTED ||
+            body.event === 'ORDER_ACCEPTED'
+          ) {
             const orderId = body.data?.orderId;
-            this.logger.log(`Received ORDER_ACCEPTED from SNS Fanout for Order: ${orderId}. Matching nearest driver...`);
-
-            setTimeout(async () => {
-              this.logger.log(`Driver assigned for Order: ${orderId}. Updating status to DELIVERING.`);
-              await fetch(`${this.orderUrl}/internal/orders/${orderId}/status`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'DELIVERING' }),
-              }).catch((e: unknown) => {
-                const msg = e instanceof Error ? e.message : String(e);
-                this.logger.error(`Failed to update order status to DELIVERING: ${msg}`);
-              });
-
-              // Mô phỏng quá trình giao hàng trong 5 giây rồi hoàn tất (COMPLETED)
-              setTimeout(async () => {
-                this.logger.log(`Driver completed delivery for Order: ${orderId}. Updating status to COMPLETED (Triggering DB write).`);
-                await fetch(`${this.orderUrl}/internal/orders/${orderId}/status`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ status: 'COMPLETED' }),
-                }).catch((e: unknown) => {
-                  const msg = e instanceof Error ? e.message : String(e);
-                  this.logger.error(`Failed to update order status to COMPLETED: ${msg}`);
-                });
-              }, 5000);
-            }, 3000);
+            const restaurantName = body.data?.restaurantName || 'Nhà hàng';
+            this.logger.log(
+              `[DriversConsumer] Received broadcast ORDER_READY_FOR_PICKUP from SNS Fanout for Order [${orderId}] (${restaurantName}). Available for drivers to claim.`,
+            );
           }
 
-          // 2. Dự phòng cho luồng cũ nếu có ORDER_CREATED
+          // 2. Dự phòng sự kiện ORDER_CREATED
           if (body.event === OrderEventTypes.ORDER_CREATED) {
             const event = body as OrderCreatedEvent;
             const { orderId } = event.data;
-            this.logger.log(`Received ORDER_CREATED for Order: ${orderId}.`);
+            this.logger.log(`[DriversConsumer] Received ORDER_CREATED for Order: ${orderId}.`);
           }
 
           return message;

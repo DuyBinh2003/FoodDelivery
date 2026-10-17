@@ -9,7 +9,7 @@ import { UserGateway } from '@/modules/users/gateways/user.gateway.js';
 
 @Controller('internal')
 export class UsersInternalController {
-  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
 
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,

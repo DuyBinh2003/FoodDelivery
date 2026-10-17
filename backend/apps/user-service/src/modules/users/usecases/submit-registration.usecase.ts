@@ -16,11 +16,11 @@ export class SubmitRegistrationUseCase {
     @InjectRepository(DriverProfile) private readonly driverRepo: Repository<DriverProfile>,
   ) {
     this.snsClient = new SNSClient({
-      region: process.env.AWS_REGION || 'ap-southeast-1',
-      endpoint: process.env.SNS_ENDPOINT || 'http://localhost:4566',
+      region: process.env.AWS_REGION!,
+      endpoint: process.env.SNS_ENDPOINT!,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'test',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'test',
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
       },
     });
   }
@@ -59,7 +59,7 @@ export class SubmitRegistrationUseCase {
       const entity = await this.writeRepo.create(userId, dto);
 
       // Publish to SNS
-      const topicArn = process.env.SNS_USER_REGISTRATION_TOPIC || 'arn:aws:sns:ap-southeast-1:000000000000:user-registration-events';
+      const topicArn = process.env.SNS_USER_REGISTRATION_TOPIC!;
 
       try {
         const event: RegistrationCreatedEvent = {

@@ -35,8 +35,8 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
   private readonly DEFAULT_TTL = 86400; // 24 hours
 
   constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
-    const host = this.configService.get<string>('redis.host') || 'localhost';
-    const port = this.configService.get<number>('redis.port') || 6379;
+    const host = this.configService.getOrThrow<string>('redis.host');
+    const port = this.configService.getOrThrow<number>('redis.port');
     this.client = createClient({ url: `redis://${host}:${port}` }) as RedisClientType;
 
     this.client.on('error', (err: unknown) => {
@@ -139,6 +139,147 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`Failed to scan customer inflight orders: ${msg}`);
       return [];
+    }
+  }
+
+  async getRestaurantInflightOrders(restaurantId: string): Promise<InflightOrderData[]> {
+    try {
+      const keys = await this.client.keys(`${this.KEY_PREFIX}*`);
+      if (!keys || keys.length === 0) return [];
+
+      const orders: InflightOrderData[] = [];
+      for (const key of keys) {
+        const raw = await this.client.get(key);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw) as InflightOrderData;
+            if (parsed.restaurant_id === restaurantId) {
+              orders.push(parsed);
+            }
+          } catch {
+            // Ignore corrupted json
+          }
+        }
+      }
+      return orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Failed to scan restaurant inflight orders: ${msg}`);
+      return [];
+    }
+  }
+
+  async getDriverInflightOrders(driverId: string): Promise<InflightOrderData[]> {
+    try {
+      const keys = await this.client.keys(`${this.KEY_PREFIX}*`);
+      if (!keys || keys.length === 0) return [];
+
+      const orders: InflightOrderData[] = [];
+      for (const key of keys) {
+        const raw = await this.client.get(key);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw) as InflightOrderData;
+            if (parsed.driver_id === driverId) {
+              orders.push(parsed);
+            }
+          } catch {
+            // Ignore corrupted json
+          }
+        }
+      }
+      return orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Failed to scan driver inflight orders: ${msg}`);
+      return [];
+    }
+  }
+
+  async getAvailablePickupOrders(): Promise<InflightOrderData[]> {
+    try {
+      const keys = await this.client.keys(`${this.KEY_PREFIX}*`);
+      if (!keys || keys.length === 0) return [];
+
+      const orders: InflightOrderData[] = [];
+      for (const key of keys) {
+        const raw = await this.client.get(key);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw) as InflightOrderData;
+            if (
+              (parsed.status === OrderStatus.READY_FOR_PICKUP || parsed.status === OrderStatus.ACCEPTED) &&
+              (!parsed.driver_id || parsed.driver_id === '')
+            ) {
+              orders.push(parsed);
+            }
+          } catch {
+            // Ignore corrupted json
+          }
+        }
+      }
+      return orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Failed to scan available pickup orders: ${msg}`);
+      return [];
+    }
+  }
+
+  async claimOrder(
+    orderId: string,
+    driverId: string,
+  ): Promise<{ success: boolean; order?: InflightOrderData; error?: 'NOT_FOUND' | 'CONFLICT' }> {
+    const key = this.getKey(orderId);
+    const now = new Date().toISOString();
+
+    const luaScript = `
+      local key = KEYS[1]
+      local driverId = ARGV[1]
+      local now = ARGV[2]
+      local data = redis.call('GET', key)
+      if not data then
+        return 'NOT_FOUND'
+      end
+      local order = cjson.decode(data)
+      if (order.status == 'READY_FOR_PICKUP' or order.status == 'ACCEPTED') and (not order.driver_id or order.driver_id == '') then
+        order.driver_id = driverId
+        order.status = 'DELIVERING'
+        order.updated_at = now
+        local updatedData = cjson.encode(order)
+        local ttl = redis.call('TTL', key)
+        if ttl > 0 then
+          redis.call('SET', key, updatedData, 'EX', ttl)
+        else
+          redis.call('SET', key, updatedData)
+        end
+        return updatedData
+      else
+        return 'CONFLICT'
+      end
+    `;
+
+    try {
+      const result = await this.client.eval(luaScript, {
+        keys: [key],
+        arguments: [driverId, now],
+      });
+
+      if (result === 'NOT_FOUND') {
+        return { success: false, error: 'NOT_FOUND' };
+      }
+      if (result === 'CONFLICT') {
+        return { success: false, error: 'CONFLICT' };
+      }
+
+      if (typeof result === 'string') {
+        return { success: true, order: JSON.parse(result) as InflightOrderData };
+      }
+      return { success: false, error: 'CONFLICT' };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Error executing claimOrder lua script: ${msg}`);
+      throw err;
     }
   }
 }

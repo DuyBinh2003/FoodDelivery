@@ -16,29 +16,25 @@ export class OrderIngestionConsumer implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    const region = this.configService.get<string>('aws.region') || 'ap-southeast-1';
-    const endpoint = this.configService.get<string>('sqs.endpoint') || 'http://localhost:4566';
-    const queueUrl =
-      this.configService.get<string>('sqs.orderProcessingFifoUrl') ||
-      'http://localhost:4566/000000000000/orders-processing.fifo';
+    const region = this.configService.getOrThrow<string>('aws.region');
+    const endpoint = this.configService.getOrThrow<string>('sqs.endpoint');
+    const queueUrl = this.configService.getOrThrow<string>('sqs.queueUrl');
 
     const sqsClient = new SQSClient({
       region,
       endpoint,
       credentials: {
-        accessKeyId: this.configService.get<string>('aws.accessKeyId') || 'test',
-        secretAccessKey: this.configService.get<string>('aws.secretAccessKey') || 'test',
+        accessKeyId: this.configService.getOrThrow<string>('aws.accessKeyId'),
+        secretAccessKey: this.configService.getOrThrow<string>('aws.secretAccessKey'),
       },
     });
 
     try {
       await sqsClient.send(
         new CreateQueueCommand({
-          QueueName: 'orders-processing.fifo',
+          QueueName: 'food-delivery-orders',
           Attributes: {
-            FifoQueue: 'true',
-            ContentBasedDeduplication: 'true',
-            MessageRetentionPeriod: '86400',
+            MessageRetentionPeriod: '300',
           },
         }),
       );
@@ -58,28 +54,13 @@ export class OrderIngestionConsumer implements OnModuleInit, OnModuleDestroy {
           const restaurantId = orderData.restaurant_id;
 
           this.logger.log(
-            `Pulled order from SQS FIFO queue for Restaurant [${restaurantId}]: Order [${orderId}]. Kitchen reviewing order...`,
+            `[OrderIngestion] Pulled order message for Restaurant [${restaurantId}]: Order [${orderId}]. Order status is PENDING awaiting restaurant kitchen response.`,
           );
-
-          // Mô phỏng nhà hàng xem xét và bấm nhận đơn sau 2.5 giây (Linh hoạt, không ép FIFO cứng nhắc ở bếp)
-          setTimeout(async () => {
-            try {
-              this.logger.log(`Kitchen accepted Order: ${orderId}. Updating status to ACCEPTED and broadcasting to drivers via SNS.`);
-              await this.updateOrderStatusUseCase.execute({
-                orderId,
-                dto: { status: OrderStatus.ACCEPTED },
-                changedBy: `restaurant:${restaurantId}`,
-              });
-            } catch (err: unknown) {
-              const msg = err instanceof Error ? err.message : String(err);
-              this.logger.error(`Failed to accept order ${orderId}: ${msg}`);
-            }
-          }, 2500);
 
           return message;
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err);
-          this.logger.error(`Error processing FIFO message: ${msg}`);
+          this.logger.error(`Error processing ingestion message: ${msg}`);
           throw err;
         }
       },

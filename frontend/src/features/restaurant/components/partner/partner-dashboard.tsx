@@ -17,6 +17,7 @@ import {
   Loader2,
   UtensilsCrossed,
   ArrowRight,
+  ChefHat,
 } from 'lucide-react';
 import {
   getMyRestaurant,
@@ -38,6 +39,7 @@ import type {
 } from '@/features/restaurant/types/partner.types';
 import { MenuItemDialog } from '@/features/restaurant/components/partner/menu-item-dialog';
 import { RestaurantProfileDialog } from '@/features/restaurant/components/partner/restaurant-profile-dialog';
+import { KitchenOrdersTab } from '@/features/restaurant/components/partner/kitchen-orders-tab';
 
 export function PartnerDashboard() {
   const [restaurant, setRestaurant] = useState<PartnerRestaurant | null>(null);
@@ -58,6 +60,7 @@ export function PartnerDashboard() {
   const [editingItem, setEditingItem] = useState<PartnerMenuItem | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'menu' | 'orders'>('orders');
 
   const showToast = (type: 'success' | 'error', text: string) => {
     setToastMessage({ type, text });
@@ -422,8 +425,38 @@ export function PartnerDashboard() {
         </div>
       </div>
 
-      {/* Menu Management Section */}
-      <div className="space-y-6">
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+        <button
+          onClick={() => setActiveTab('orders')}
+          className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-sm font-bold transition-all cursor-pointer ${
+            activeTab === 'orders'
+              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/25'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <ChefHat className="w-4 h-4" />
+          <span>Bếp & Quản lý đơn hàng</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('menu')}
+          className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-sm font-bold transition-all cursor-pointer ${
+            activeTab === 'menu'
+              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/25'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <UtensilsCrossed className="w-4 h-4" />
+          <span>Thực đơn & Món ăn ({menuItems.length})</span>
+        </button>
+      </div>
+
+      {activeTab === 'orders' ? (
+        <KitchenOrdersTab restaurantId={restaurant.id} showToast={showToast} />
+      ) : (
+        /* Menu Management Section */
+        <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-white">Quản lý thực đơn món ăn</h2>
@@ -613,7 +646,8 @@ export function PartnerDashboard() {
             ))}
           </div>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
       {deletingItemId && (

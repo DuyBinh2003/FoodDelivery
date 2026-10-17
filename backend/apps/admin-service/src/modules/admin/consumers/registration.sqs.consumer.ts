@@ -11,14 +11,14 @@ export class RegistrationSqsConsumer implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly adminGateway: AdminGateway) { }
 
   onModuleInit() {
-    const queueUrl = process.env.SQS_ADMIN_REGISTRATION_QUEUE_URL || 'http://localhost:4566/000000000000/admin-registration-queue';
+    const queueUrl = process.env.SQS_ADMIN_REGISTRATION_QUEUE_URL!;
 
     const sqsClient = new SQSClient({
-      region: process.env.AWS_REGION || 'ap-southeast-1',
-      endpoint: process.env.SQS_ENDPOINT || 'http://localhost:4566',
+      region: process.env.AWS_REGION!,
+      endpoint: process.env.SQS_ENDPOINT!,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'test',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'test',
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
       },
     });
 
