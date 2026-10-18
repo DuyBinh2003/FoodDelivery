@@ -12,6 +12,9 @@ export interface DriverTripDto {
   pickup_name: string;
   pickup_address: string;
   dropoff_address: string;
+  claimed_at: Date | null;
+  completed_at: Date | null;
+  duration_minutes: number | null;
   created_at: Date;
   updated_at: Date;
   items: Array<{
@@ -82,6 +85,14 @@ export class GetDriverTripsUseCase {
         const commission = Math.round((totalNum * 0.1) / 1000) * 1000;
         const driverEarnings = baseFee + commission;
 
+        const claimedAt = order.driver_claimed_at ? new Date(order.driver_claimed_at) : null;
+        const completedAt = order.completed_at ? new Date(order.completed_at) : null;
+        let durationMinutes: number | null = null;
+        if (completedAt) {
+          const startTime = claimedAt ? claimedAt.getTime() : new Date(order.created_at).getTime();
+          durationMinutes = Math.max(1, Math.round((completedAt.getTime() - startTime) / (1000 * 60)));
+        }
+
         return {
           id: order.id,
           order_id: order.id,
@@ -91,6 +102,9 @@ export class GetDriverTripsUseCase {
           pickup_name: restaurantInfo?.name ?? 'Nhà hàng Đối tác',
           pickup_address: restaurantInfo?.address ?? 'Địa chỉ nhà hàng',
           dropoff_address: order.delivery_address,
+          claimed_at: claimedAt,
+          completed_at: completedAt,
+          duration_minutes: durationMinutes,
           created_at: new Date(order.created_at),
           updated_at: new Date(order.updated_at),
           items: (order.items || []).map((item: InflightOrderData['items'][number]) => ({
@@ -131,6 +145,16 @@ export class GetDriverTripsUseCase {
         const commission = Math.round((totalNum * 0.1) / 1000) * 1000;
         const driverEarnings = baseFee + commission;
 
+        const claimedAt = order.driver_claimed_at ? new Date(order.driver_claimed_at) : null;
+        const completedAt = order.completed_at ? new Date(order.completed_at) : null;
+        let durationMinutes: number | null = null;
+        if (completedAt) {
+          const startTime = claimedAt ? claimedAt.getTime() : (order.created_at ? new Date(order.created_at).getTime() : null);
+          if (startTime) {
+            durationMinutes = Math.max(1, Math.round((completedAt.getTime() - startTime) / (1000 * 60)));
+          }
+        }
+
         return {
           id: order.id,
           order_id: order.id,
@@ -140,6 +164,9 @@ export class GetDriverTripsUseCase {
           pickup_name: restaurantInfo?.name ?? 'Nhà hàng Đối tác',
           pickup_address: restaurantInfo?.address ?? 'Địa chỉ nhà hàng',
           dropoff_address: order.delivery_address,
+          claimed_at: claimedAt,
+          completed_at: completedAt,
+          duration_minutes: durationMinutes,
           created_at: order.created_at,
           updated_at: order.updated_at,
           items: (order.items || []).map((item) => ({

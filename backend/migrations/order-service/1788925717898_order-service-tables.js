@@ -22,6 +22,11 @@ export const up = (pgm) => {
     note: { type: 'text' },
     estimated_delivery_time: { type: 'timestamptz' },
     payment_method: { type: 'varchar(50)', notNull: true, default: "'CASH'" },
+    cooking_at: { type: 'timestamptz' },
+    ready_at: { type: 'timestamptz' },
+    driver_claimed_at: { type: 'timestamptz' },
+    completed_at: { type: 'timestamptz' },
+    cancelled_at: { type: 'timestamptz' },
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }

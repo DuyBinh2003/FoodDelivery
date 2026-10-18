@@ -25,6 +25,9 @@ export interface DriverTrip {
   pickup_name: string;
   pickup_address: string;
   dropoff_address: string;
+  claimed_at?: string | Date | null;
+  completed_at?: string | Date | null;
+  duration_minutes?: number | null;
   created_at: string | Date;
   updated_at: string | Date;
   items: DriverTripItem[];

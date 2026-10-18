@@ -37,6 +37,11 @@ export interface Order {
   note?: string | null;
   payment_method?: string;
   estimated_delivery_time?: string | null;
+  cooking_at?: string | null;
+  ready_at?: string | null;
+  driver_claimed_at?: string | null;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
   items: OrderItem[];
   created_at: string;
   updated_at?: string;

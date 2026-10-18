@@ -141,6 +141,7 @@ local order = cjson.decode(data)
 -- Chỉ cho phép nhận nếu status là READY_FOR_PICKUP/ACCEPTED và chưa có driver_id
 if (order.status == 'READY_FOR_PICKUP' or order.status == 'ACCEPTED') and (not order.driver_id or order.driver_id == '') then
   order.driver_id = driverId
+  order.driver_claimed_at = now
   order.status = 'DELIVERING'
   order.updated_at = now
   local updatedData = cjson.encode(order)
@@ -162,8 +163,22 @@ end
 
 | Endpoint | Method | Role | Mục đích |
 | :--- | :---: | :---: | :--- |
-| `/orders/restaurant/:restaurantId` | `GET` | Partner | Lấy toàn bộ đơn của nhà hàng (kết hợp in-flight Redis và lịch sử DB) |
+| `/orders/restaurant/:restaurantId` | `GET` | Partner | Lấy toàn bộ đơn của nhà hàng (kết hợp in-flight Redis và lịch sử DB, kèm mốc nấu nướng) |
 | `/orders/driver/available` | `GET` | Driver | Lấy danh sách các chuyến xe broadcast đang chờ tài xế nhận |
-| `/orders/:id/driver-claim` | `POST` | Driver | Tài xế nhận cuốc xe với cơ chế Redis Atomic Lock (chống race condition) |
-| `/orders/:id/status` | `PATCH` | Partner/Admin | Cập nhật trạng thái chế biến (`COOKING`, `READY_FOR_PICKUP`) |
-| `/orders/driver/trips/:id/status` | `PATCH` | Driver | Cập nhật hoàn thành giao hàng (`COMPLETED`) kích hoạt ghi DB |
+| `/orders/:id/driver-claim` | `POST` | Driver | Tài xế nhận cuốc xe với cơ chế Redis Atomic Lock (chống race condition, đóng dấu `driver_claimed_at`) |
+| `/orders/:id/status` | `PATCH` | Partner/Admin | Cập nhật trạng thái chế biến (`COOKING`, `READY_FOR_PICKUP`) đóng dấu `cooking_at` / `ready_at` |
+| `/orders/driver/trips/:id/status` | `PATCH` | Driver | Cập nhật hoàn thành giao hàng (`COMPLETED`) đóng dấu `completed_at` và kích hoạt ghi DB |
+| `/orders/driver/trips` | `GET` | Driver | Danh sách chuyến xe của tài xế kèm mốc `claimed_at`, `completed_at`, và thời lượng cuốc `duration_minutes` |
+
+---
+
+## 6. Cơ Chế Mốc Thời Gian Theo Từng Đối Tượng (Role-Based Milestones Lifecycle)
+
+Nhằm tối ưu hóa trải nghiệm người dùng theo góc nhìn nghiệp vụ thực tế, hệ thống phân định mốc thời gian rõ ràng cho từng Actor:
+
+| Actor | Mốc thời gian trọng tâm | Giao diện hiển thị | Ý nghĩa nghiệp vụ |
+| :--- | :--- | :--- | :--- |
+| **🛵 Tài xế (Driver)** | • `claimed_at` (Nhận cuốc)<br>• `completed_at` (Giao xong)<br>• `duration_minutes` (Thời lượng cuốc xe) | `[Nhận: HH:mm] ➔ [Giao: HH:mm] (⚡ X phút)` tại Driver Trip Card | Tài xế chỉ quan tâm thời gian thực hiện cuốc xe của mình, không quan tâm đơn hàng được khách tạo lúc nào. |
+| **📱 Khách hàng (Customer)** | • `created_at` (Đặt đơn)<br>• `cooking_at` (Bắt đầu nấu)<br>• `ready_at` (Bếp xong)<br>• `driver_claimed_at` (Tài xế nhận)<br>• `completed_at` (Nhận món) | 5-Step Progressive Live Stepper kèm giờ cụ thể dưới từng chặng đã qua | Khách hàng theo dõi toàn bộ hành trình món ăn từ lúc thanh toán tới khi nhận tận tay. |
+| **🍳 Bếp Nhà Hàng (Partner)** | • `created_at` (Giờ khách đặt)<br>• `cooking_at` (Giờ nhận nấu)<br>• `ready_at` (Giờ nấu xong)<br>• `driver_claimed_at` (Giờ tài xế lấy món) | Badge mốc thời gian tại Header thẻ đơn hàng Kitchen Orders Tab | Bếp kiểm soát tốc độ ra món (SLA nấu) và thời điểm tài xế ghé lấy món ăn. |
+

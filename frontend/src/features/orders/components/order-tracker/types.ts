@@ -21,6 +21,13 @@ export interface OrderStatusBannerProps {
 
 export interface OrderLiveStepperProps {
   currentStatus: OrderStatus;
+  milestones?: {
+    created_at?: string | null;
+    cooking_at?: string | null;
+    ready_at?: string | null;
+    driver_claimed_at?: string | null;
+    completed_at?: string | null;
+  };
 }
 
 export interface OrderDriverCardProps {

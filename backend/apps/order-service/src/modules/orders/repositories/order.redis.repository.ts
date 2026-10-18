@@ -24,6 +24,11 @@ export interface InflightOrderData {
   payment_method: string;
   total_amount: number;
   items: InflightOrderItem[];
+  cooking_at?: string | null;
+  ready_at?: string | null;
+  driver_claimed_at?: string | null;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -107,11 +112,25 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
     const order = await this.getInflightOrder(orderId);
     if (!order) return null;
 
+    const now = new Date().toISOString();
+    const milestoneUpdates: Partial<InflightOrderData> = {};
+
+    if (status === OrderStatus.COOKING && !order.cooking_at) {
+      milestoneUpdates.cooking_at = now;
+    } else if (status === OrderStatus.READY_FOR_PICKUP && !order.ready_at) {
+      milestoneUpdates.ready_at = now;
+    } else if (status === OrderStatus.COMPLETED && !order.completed_at) {
+      milestoneUpdates.completed_at = now;
+    } else if (status === OrderStatus.CANCELLED && !order.cancelled_at) {
+      milestoneUpdates.cancelled_at = now;
+    }
+
     const updated: InflightOrderData = {
       ...order,
+      ...milestoneUpdates,
       ...extra,
       status,
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     };
 
     await this.saveInflightOrder(orderId, updated);
@@ -272,6 +291,7 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
       if (order.status == 'READY_FOR_PICKUP' or order.status == 'ACCEPTED') and isDriverUnassigned then
         order.driver_id = driverId
         order.status = 'DELIVERING'
+        order.driver_claimed_at = now
         order.updated_at = now
         local updatedData = cjson.encode(order)
         local ttl = redis.call('TTL', key)

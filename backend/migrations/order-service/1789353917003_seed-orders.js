@@ -11,13 +11,28 @@ export const shorthands = undefined;
  */
 export const up = (pgm) => {
   pgm.sql(`
-    INSERT INTO schema_order.t_order (id, customer_id, restaurant_id, driver_id, total_amount, status, delivery_address) VALUES
-    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 145000.00, 'COMPLETED', '789 Trần Hưng Đạo, Q5, TP.HCM'),
-    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', NULL, 135000.00, 'PENDING', '321 Hai Bà Trưng, Q1, TP.HCM'),
-    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 130000.00, 'COMPLETED', '12 Hoàng Hoa Thám, Bình Thạnh, TP.HCM'),
-    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 110000.00, 'COMPLETED', '88 Nguyễn Thị Minh Khai, Q1, TP.HCM'),
-    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 165000.00, 'DELIVERING', '45 Lê Duẩn, Bến Nghé, Q1, TP.HCM')
-    ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status, driver_id = EXCLUDED.driver_id, total_amount = EXCLUDED.total_amount;
+    INSERT INTO schema_order.t_order (
+      id, customer_id, restaurant_id, driver_id, total_amount, status, delivery_address,
+      cooking_at, ready_at, driver_claimed_at, completed_at
+    ) VALUES
+    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 145000.00, 'COMPLETED', '789 Trần Hưng Đạo, Q5, TP.HCM',
+     NOW() - INTERVAL '2 days' - INTERVAL '40 minutes', NOW() - INTERVAL '2 days' - INTERVAL '25 minutes', NOW() - INTERVAL '2 days' - INTERVAL '20 minutes', NOW() - INTERVAL '2 days'),
+    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', NULL, 135000.00, 'PENDING', '321 Hai Bà Trưng, Q1, TP.HCM',
+     NULL, NULL, NULL, NULL),
+    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 130000.00, 'COMPLETED', '12 Hoàng Hoa Thám, Bình Thạnh, TP.HCM',
+     NOW() - INTERVAL '1 day' - INTERVAL '45 minutes', NOW() - INTERVAL '1 day' - INTERVAL '30 minutes', NOW() - INTERVAL '1 day' - INTERVAL '25 minutes', NOW() - INTERVAL '1 day'),
+    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 110000.00, 'COMPLETED', '88 Nguyễn Thị Minh Khai, Q1, TP.HCM',
+     NOW() - INTERVAL '3 hours' - INTERVAL '40 minutes', NOW() - INTERVAL '3 hours' - INTERVAL '25 minutes', NOW() - INTERVAL '3 hours' - INTERVAL '20 minutes', NOW() - INTERVAL '3 hours'),
+    ('f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 165000.00, 'DELIVERING', '45 Lê Duẩn, Bến Nghé, Q1, TP.HCM',
+     NOW() - INTERVAL '35 minutes', NOW() - INTERVAL '20 minutes', NOW() - INTERVAL '15 minutes', NULL)
+    ON CONFLICT (id) DO UPDATE SET
+      status = EXCLUDED.status,
+      driver_id = EXCLUDED.driver_id,
+      total_amount = EXCLUDED.total_amount,
+      cooking_at = EXCLUDED.cooking_at,
+      ready_at = EXCLUDED.ready_at,
+      driver_claimed_at = EXCLUDED.driver_claimed_at,
+      completed_at = EXCLUDED.completed_at;
   `);
 
   pgm.sql(`

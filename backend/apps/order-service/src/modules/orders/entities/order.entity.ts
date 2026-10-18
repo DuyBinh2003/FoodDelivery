@@ -45,6 +45,21 @@ export class Order {
   @Column({ type: 'varchar', length: 50, default: 'CASH' })
   payment_method: string;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  cooking_at: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  ready_at: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  driver_claimed_at: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  completed_at: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  cancelled_at: Date | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 

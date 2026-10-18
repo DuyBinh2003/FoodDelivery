@@ -39,6 +39,22 @@ const formatDate = (dateInput: string | Date) => {
   });
 };
 
+const formatTime = (dateInput: string | Date) => {
+  const d = new Date(dateInput);
+  return d.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const formatFullDate = (dateInput: string | Date) => {
+  const d = new Date(dateInput);
+  return d.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+  });
+};
+
 export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
   const [showItems, setShowItems] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -108,16 +124,42 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
 
   return (
     <div className="bg-zinc-900/90 border border-white/10 rounded-2xl p-5 shadow-xl backdrop-blur-md transition-all duration-300 hover:border-white/20">
-      {/* Top Header: Order ID, Date & Status */}
+      {/* Top Header: Order ID, Driver Milestone Timestamps & Status */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-white/5">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <div className="text-xs font-mono font-medium text-zinc-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
             #{trip.order_id.slice(0, 8)}
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <Clock className="w-3.5 h-3.5 text-zinc-500" />
-            <span>{formatDate(trip.created_at)}</span>
-          </div>
+          {trip.claimed_at && trip.completed_at ? (
+            <div className="flex items-center gap-1.5 text-xs text-zinc-300 bg-zinc-800/60 px-2.5 py-1 rounded-lg border border-white/5">
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span>
+                Nhận: <span className="font-semibold text-white">{formatTime(trip.claimed_at)}</span>
+              </span>
+              <span className="text-zinc-500">➔</span>
+              <span>
+                Giao: <span className="font-semibold text-emerald-400">{formatTime(trip.completed_at)}</span>
+              </span>
+              <span className="text-zinc-500 text-[11px]">({formatFullDate(trip.completed_at)})</span>
+              {trip.duration_minutes && (
+                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300">
+                  ⚡ {trip.duration_minutes} phút
+                </span>
+              )}
+            </div>
+          ) : trip.claimed_at ? (
+            <div className="flex items-center gap-1.5 text-xs text-zinc-300 bg-zinc-800/60 px-2.5 py-1 rounded-lg border border-white/5">
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span>
+                Nhận cuốc: <span className="font-semibold text-white">{formatTime(trip.claimed_at)}</span> ({formatFullDate(trip.claimed_at)})
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+              <Clock className="w-3.5 h-3.5 text-zinc-500" />
+              <span>{formatDate(trip.created_at)}</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3">
           {getStatusBadge()}

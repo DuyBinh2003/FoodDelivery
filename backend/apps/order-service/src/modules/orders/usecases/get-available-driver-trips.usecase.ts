@@ -84,6 +84,9 @@ export class GetAvailableDriverTripsUseCase {
           pickup_name: restaurantInfo?.name ?? 'Nhà hàng Đối tác',
           pickup_address: restaurantInfo?.address ?? 'Địa chỉ lấy hàng',
           dropoff_address: order.delivery_address,
+          claimed_at: null,
+          completed_at: null,
+          duration_minutes: null,
           created_at: new Date(order.created_at),
           updated_at: new Date(order.updated_at),
           items: (order.items || []).map((item: InflightOrderData['items'][number]) => ({

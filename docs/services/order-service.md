@@ -99,7 +99,7 @@ graph TD
 | `/orders/:id/status` | `PATCH` | `JwtAuthGuard` | Cập nhật trạng thái chế biến (`COOKING`, `READY_FOR_PICKUP`) | `UpdateOrderStatusDto` | `200`, `400`, `401` |
 | `/orders/driver/available` | `GET` | `JwtAuthGuard` | Lấy danh sách chuyến xe broadcast đang tìm tài xế (Chỉ phát tán cho tài xế `status === 'ONLINE'` & `verification_status === 'APPROVED'`, trả về `[]` nếu ngoại tuyến) | Không | `200`, `401` |
 | `/orders/:id/driver-claim` | `POST` | `JwtAuthGuard` | Tài xế nhận cuốc xe với Redis Atomic Lock (chống race condition; từ chối 403 nếu tài xế đang offline/chưa active) | Param `id: UUID` | `200`, `401`, `403`, `409` |
-| `/orders/driver/trips` | `GET` | `JwtAuthGuard` | Lấy danh sách cuốc xe của tài xế (In-flight DELIVERING + đã hoàn tất) | Không | `200`, `401` |
+| `/orders/driver/trips` | `GET` | `JwtAuthGuard` | Lấy danh sách cuốc xe của tài xế (Bao gồm mốc `claimed_at`, `completed_at`, và thời lượng cuốc `duration_minutes`) | Không | `200`, `401` |
 | `/orders/driver/summary` | `GET` | `JwtAuthGuard` | Thống kê tổng số cuốc, doanh thu và điểm đánh giá | Không | `200`, `401` |
 | `/orders/driver/reviews` | `GET` | `JwtAuthGuard` | Xem danh sách đánh giá tài xế nhận được | Không | `200`, `401` |
 | `/orders/driver/trips/:id/status` | `PATCH` | `JwtAuthGuard` | Tài xế cập nhật trạng thái cuốc (Ghi DB khi `COMPLETED`) | `{ "status": "COMPLETED" }` | `200`, `400`, `401` |
@@ -164,6 +164,11 @@ erDiagram
         text note
         timestamptz estimated_delivery_time
         varchar payment_method "Mặc định CASH"
+        timestamptz cooking_at "Thời điểm bắt đầu nấu"
+        timestamptz ready_at "Thời điểm nấu xong"
+        timestamptz driver_claimed_at "Thời điểm tài xế nhận cuốc"
+        timestamptz completed_at "Thời điểm giao hàng thành công"
+        timestamptz cancelled_at "Thời điểm hủy đơn"
         timestamptz created_at
         timestamptz updated_at
         boolean is_deleted
@@ -203,6 +208,12 @@ erDiagram
    - `status`: Mặc định `'PENDING'`.
    - `note`: Ghi chú thêm từ khách hàng (Nullable).
    - `payment_method`: Phương thức thanh toán (`CASH`, `WALLET`, `VNPAY`...).
+   - **Mốc thời gian theo từng Actor (Role-based Milestones)**:
+     - `cooking_at`: Bếp bắt đầu chế biến món ăn.
+     - `ready_at`: Bếp nấu xong, phát tín hiệu tìm tài xế.
+     - `driver_claimed_at`: Tài xế nhận cuốc (Dùng làm mốc tính thời lượng cuốc xe `duration_minutes`).
+     - `completed_at`: Tài xế giao thành công cho khách hàng.
+     - `cancelled_at`: Thời điểm hủy đơn nếu có.
 2. **`t_order_item`**:
    - `order_id`: Khóa ngoại tham chiếu `t_order(id)` với hành vi `ON DELETE RESTRICT` để bảo vệ toàn vẹn lịch sử giao dịch.
    - `quantity` và `unit_price`: Bắt buộc, giá lưu tại thời điểm đặt đơn.

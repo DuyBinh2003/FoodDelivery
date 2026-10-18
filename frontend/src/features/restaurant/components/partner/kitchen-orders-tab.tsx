@@ -41,6 +41,46 @@ const formatDate = (dateInput: string | Date) => {
   });
 };
 
+const formatTime = (dateInput: string | Date) => {
+  const d = new Date(dateInput);
+  return d.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const getKitchenMilestoneBadge = (order: PartnerOrder) => {
+  if (order.status === 'COMPLETED' && order.completed_at) {
+    return (
+      <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+        Xong: {formatTime(order.completed_at)}
+      </span>
+    );
+  }
+  if (order.status === 'DELIVERING' && order.driver_claimed_at) {
+    return (
+      <span className="text-[11px] font-mono text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-md">
+        Xế nhận lúc: {formatTime(order.driver_claimed_at)}
+      </span>
+    );
+  }
+  if (order.status === 'READY_FOR_PICKUP' && order.ready_at) {
+    return (
+      <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+        Xong món: {formatTime(order.ready_at)}
+      </span>
+    );
+  }
+  if (order.status === 'COOKING' && order.cooking_at) {
+    return (
+      <span className="text-[11px] font-mono text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md">
+        Bếp nấu lúc: {formatTime(order.cooking_at)}
+      </span>
+    );
+  }
+  return null;
+};
+
 export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabProps) {
   const [orders, setOrders] = useState<PartnerOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -268,7 +308,7 @@ export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabPr
               >
                 {/* Header: ID, Date, Status */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/5">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2.5">
                     <span className="font-mono text-xs font-bold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg">
                       #{order.id.slice(0, 8)}
                     </span>
@@ -276,6 +316,7 @@ export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabPr
                       <Clock className="w-3.5 h-3.5 text-zinc-500" />
                       {formatDate(order.created_at)}
                     </span>
+                    {getKitchenMilestoneBadge(order)}
                   </div>
                   {getStatusBadge(order.status)}
                 </div>

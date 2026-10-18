@@ -52,7 +52,17 @@ function getStatusIndex(status: OrderStatus): number {
   return idx >= 0 ? idx : 0;
 }
 
-export function OrderLiveStepper({ currentStatus }: OrderLiveStepperProps) {
+function formatStepTime(timeStr?: string | null): string | null {
+  if (!timeStr) return null;
+  const d = new Date(timeStr);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export function OrderLiveStepper({ currentStatus, milestones }: OrderLiveStepperProps) {
   if (currentStatus === 'CANCELLED') {
     return (
       <div className="py-4 px-2">
@@ -67,6 +77,16 @@ export function OrderLiveStepper({ currentStatus }: OrderLiveStepperProps) {
   }
 
   const currentIndex = getStatusIndex(currentStatus);
+
+  const stepTimes: Record<OrderStatus, string | null> = {
+    PENDING: formatStepTime(milestones?.created_at),
+    COOKING: formatStepTime(milestones?.cooking_at),
+    READY_FOR_PICKUP: formatStepTime(milestones?.ready_at),
+    DELIVERING: formatStepTime(milestones?.driver_claimed_at),
+    COMPLETED: formatStepTime(milestones?.completed_at),
+    ACCEPTED: null,
+    CANCELLED: null,
+  };
 
   return (
     <div className="w-full py-4 sm:py-6">
@@ -87,6 +107,7 @@ export function OrderLiveStepper({ currentStatus }: OrderLiveStepperProps) {
             const isCurrent = index === currentIndex;
             const isPending = index > currentIndex;
             const Icon = step.icon;
+            const stepTime = stepTimes[step.status];
 
             return (
               <div
@@ -121,17 +142,23 @@ export function OrderLiveStepper({ currentStatus }: OrderLiveStepperProps) {
                   {step.label}
                 </span>
 
-                {/* Sublabel (Hidden on small mobile) */}
-                <span
-                  className={cn(
-                    'text-[10px] mt-0.5 hidden sm:inline-block leading-tight transition-colors duration-300',
-                    isCurrent && 'text-zinc-300',
-                    isCompleted && 'text-zinc-400',
-                    isPending && 'text-zinc-600'
-                  )}
-                >
-                  {step.sublabel}
-                </span>
+                {/* Sublabel or Milestone Timestamp */}
+                {stepTime && (isCompleted || isCurrent) ? (
+                  <span className="mt-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-white/5 text-zinc-300 border border-white/10 shadow-sm">
+                    {stepTime}
+                  </span>
+                ) : (
+                  <span
+                    className={cn(
+                      'text-[10px] mt-0.5 hidden sm:inline-block leading-tight transition-colors duration-300',
+                      isCurrent && 'text-zinc-300',
+                      isCompleted && 'text-zinc-400',
+                      isPending && 'text-zinc-600'
+                    )}
+                  >
+                    {step.sublabel}
+                  </span>
+                )}
               </div>
             );
           })}

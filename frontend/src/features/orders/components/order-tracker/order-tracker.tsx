@@ -52,7 +52,16 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
 
       {/* 3. 5-Step Progressive Stepper */}
       <div className="rounded-2xl bg-zinc-900/80 border border-white/[0.08] p-5 shadow-lg shadow-black/20 backdrop-blur-md">
-        <OrderLiveStepper currentStatus={activeOrder.status} />
+        <OrderLiveStepper
+          currentStatus={activeOrder.status}
+          milestones={{
+            created_at: activeOrder.created_at,
+            cooking_at: activeOrder.cooking_at,
+            ready_at: activeOrder.ready_at,
+            driver_claimed_at: activeOrder.driver_claimed_at,
+            completed_at: activeOrder.completed_at,
+          }}
+        />
       </div>
 
       {/* 4. Driver Information Card (Delivering or Completed) */}
