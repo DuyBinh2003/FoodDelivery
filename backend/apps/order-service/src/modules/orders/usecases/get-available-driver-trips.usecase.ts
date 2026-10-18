@@ -12,7 +12,32 @@ export class GetAvailableDriverTripsUseCase {
     private readonly configService: ConfigService,
   ) {}
 
-  async execute(): Promise<DriverTripDto[]> {
+  async execute(driverUserId?: string): Promise<DriverTripDto[]> {
+    if (driverUserId) {
+      const userUrl = this.configService.getOrThrow<string>('services.userUrl');
+      try {
+        const statusRes = await fetch(`${userUrl}/internal/drivers/${driverUserId}/status`);
+        if (statusRes.ok) {
+          const statusData = (await statusRes.json().catch(() => null)) as {
+            is_driver: boolean;
+            is_active: boolean;
+            status: string;
+            verification_status: string;
+          } | null;
+
+          // Nếu tài xế không active (OFFLINE hoặc chưa APPROVED), lập tức trả về mảng rỗng
+          if (!statusData || !statusData.is_active) {
+            return [];
+          }
+        } else {
+          return [];
+        }
+      } catch (_e) {
+        // Khi không thể kết nối tới user-service, ngắt an toàn không phát tán đơn
+        return [];
+      }
+    }
+
     const restaurantUrl = this.configService.getOrThrow<string>('services.restaurantUrl');
 
     // 1. Quét các đơn đang ở trạng thái READY_FOR_PICKUP hoặc ACCEPTED mà driver_id đang null

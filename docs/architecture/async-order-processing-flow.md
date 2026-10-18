@@ -16,8 +16,8 @@ Tài liệu mô tả chi tiết thiết kế kỹ thuật, luồng thông điệ
    - **Khi nấu xong**: Bếp bấm **"Món đã xong - Tìm tài xế"** (`READY_FOR_PICKUP`), hệ thống tự động bắn bản tin vào SNS Topic `order-driver-dispatch`.
 4. **Phát Tán Điều Phối & Nhận Cuốc Bất Khả Tranh Chấp (SNS Fanout & Atomic Claim)**:
    - SNS Topic `order-driver-dispatch` tự động Fanout tới SQS Queue `driver-dispatch-queue` của các tài xế.
-   - Các tài xế đang trực tuyến nhìn thấy chuyến xe broadcast trong tab *Đơn chờ nhận*.
-   - Cơ chế **Redis Lua Atomic Script (`claimOrder`)** bảo đảm khi nhiều tài xế cùng bấm *Nhận chuyến*, chỉ một tài xế nhanh nhất nhận được chuyến xe (`DELIVERING` gán `driver_id`), các tài xế khác nhận phản hồi `409 Conflict`.
+   - **Xác thực trạng thái hoạt động (Active Check)**: Chỉ các tài xế đang **Trực tuyến (`status == 'ONLINE'`)** và **Đã phê duyệt (`verification_status == 'APPROVED'`)** mới được phép lấy danh sách chuyến xe broadcast trong tab *Đơn chờ nhận* (`GET /orders/driver/available`). Tài xế ngoại tuyến không bị làm phiền và hệ thống không bắn đơn tới họ.
+   - Cơ chế **Redis Lua Atomic Script (`claimOrder`)** bảo đảm khi nhiều tài xế cùng bấm *Nhận chuyến*, hệ thống kiểm tra trạng thái active và chỉ một tài xế nhanh nhất nhận được chuyến xe (`DELIVERING` gán `driver_id`), các tài xế khác nhận phản hồi `409 Conflict`.
 5. **Trì Hoãn Ghi Cơ Sở Dữ Liệu (Deferred Persistence)**:
    - Khi tài xế giao hàng thành công và nhấn **`COMPLETED`**: Order Service dump toàn bộ snapshot từ Redis xuống PostgreSQL `schema_order` (`t_order` + `t_order_item`) trong một Database Transaction duy nhất, sau đó rút ngắn TTL Redis còn 30 phút để giải phóng RAM.
 
@@ -89,18 +89,16 @@ sequenceDiagram
 
     %% Phase 3: Driver Fanout & Atomic Claim
     SNS->>SQS_Driver: Fanout Broadcast chuyến xe mới
-    SQS_Driver->>D1: Hiển thị cuốc xe tại Tab "Đơn chờ nhận"
-    SQS_Driver->>D2: Hiển thị cuốc xe tại Tab "Đơn chờ nhận"
-    par Hai tài xế cùng bấm Nhận chuyến
-        D1->>API: POST /orders/:id/driver-claim
-        API->>R: Lua Script Atomic Claim (D1 đến trước)
+    SQS_Driver->>D1: D1 đang ONLINE: Hiển thị cuốc xe tại Tab "Đơn chờ nhận"
+    Note over D2: D2 đang OFFLINE: Không hiển thị đơn, không phát tán
+    par Hai tài xế cùng thao tác Nhận chuyến
+        D1->>API: POST /orders/:id/driver-claim (D1 ONLINE)
+        API->>R: Lua Script Atomic Claim (D1 đến trước & Active)
         R-->>API: Claim Thành Công
         API-->>D1: HTTP 200 OK (Chuyển sang DELIVERING, bắt đầu đi giao)
     and
-        D2->>API: POST /orders/:id/driver-claim
-        API->>R: Lua Script Atomic Claim (D2 đến sau, driver_id đã có)
-        R-->>API: Claim Thất Bại (CONFLICT)
-        API-->>D2: HTTP 409 Conflict (Cuốc xe đã được tài xế khác nhận)
+        D2->>API: POST /orders/:id/driver-claim (D2 OFFLINE)
+        API-->>D2: HTTP 403 Forbidden (Tài xế đang Ngoại tuyến, không thể nhận chuyến)
     end
 
     %% Phase 4: Delivery & Deferred Persistence

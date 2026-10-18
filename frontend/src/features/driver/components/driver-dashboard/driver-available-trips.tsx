@@ -10,12 +10,16 @@ import {
   RotateCcw,
   Loader2,
   CheckCircle2,
+  PowerOff,
+  Radio,
 } from 'lucide-react';
 import type { DriverTrip } from '@/features/driver/types/driver.types';
 
 interface DriverAvailableTripsProps {
   trips: DriverTrip[];
   loading: boolean;
+  isOnline?: boolean;
+  onGoOnline?: () => void;
   onRefresh: () => void;
   onClaimTrip: (orderId: string) => Promise<void>;
 }
@@ -38,6 +42,8 @@ const formatDate = (dateInput: string | Date) => {
 export function DriverAvailableTrips({
   trips,
   loading,
+  isOnline = true,
+  onGoOnline,
   onRefresh,
   onClaimTrip,
 }: DriverAvailableTripsProps) {
@@ -59,26 +65,64 @@ export function DriverAvailableTrips({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-            <span>Chuyến xe đang tìm tài xế ({trips.length})</span>
+            {isOnline ? (
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+            ) : (
+              <span className="w-2.5 h-2.5 rounded-full bg-zinc-500" />
+            )}
+            <span>
+              {isOnline
+                ? `Chuyến xe đang tìm tài xế (${trips.length})`
+                : 'Chuyến xe đang tìm tài xế (Tạm dừng)'}
+            </span>
           </h2>
           <p className="text-xs text-zinc-400">
-            Hệ thống phát tín hiệu theo thời gian thực (Atomic Claim - Ai bấm trước nhận trước)
+            {isOnline
+              ? 'Hệ thống phát tín hiệu theo thời gian thực (Atomic Claim - Ai bấm trước nhận trước)'
+              : 'Tài xế đang ở trạng thái Ngoại tuyến. Bật Trực tuyến để bắt đầu nhận đơn.'}
           </p>
         </div>
 
-        <button
-          onClick={onRefresh}
-          disabled={loading}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer"
-        >
-          <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Làm mới</span>
-        </button>
+        {isOnline && (
+          <button
+            onClick={onRefresh}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Làm mới</span>
+          </button>
+        )}
       </div>
 
-      {/* Trips list */}
-      {loading && trips.length === 0 ? (
+      {/* When Offline: Dedicated Premium Offline Status Banner */}
+      {!isOnline ? (
+        <div className="bg-gradient-to-br from-zinc-900/90 via-zinc-900/60 to-amber-950/20 border border-amber-500/20 rounded-3xl p-8 sm:p-10 text-center shadow-2xl backdrop-blur-md relative overflow-hidden">
+          <div className="absolute top-0 right-1/4 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/10">
+            <PowerOff className="w-8 h-8" />
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
+            <span>Đang Ngoại Tuyến (OFFLINE)</span>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">
+            Hệ thống đang tạm dừng bắn đơn tới bạn
+          </h3>
+          <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto mb-6 leading-relaxed">
+            Bạn đang ở chế độ ngoại tuyến. Các chuyến xe mới sẽ không được phân phối để đảm bảo bạn không bị làm phiền trong thời gian nghỉ ngơi. Chuyển sang trực tuyến bất cứ lúc nào để tiếp tục nhận cuốc!
+          </p>
+          {onGoOnline && (
+            <button
+              onClick={onGoOnline}
+              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/25 cursor-pointer active:scale-95"
+            >
+              <Radio className="w-4 h-4 text-zinc-950 animate-pulse" />
+              <span>Bật Trực Tuyến Để Nhận Đơn</span>
+            </button>
+          )}
+        </div>
+      ) : loading && trips.length === 0 ? (
         <div className="py-16 text-center text-zinc-400">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-amber-500" />
           <p className="text-sm">Đang tìm các chuyến xe quanh bạn...</p>

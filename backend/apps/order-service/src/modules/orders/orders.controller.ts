@@ -141,8 +141,8 @@ export class OrdersController {
 
   @Get('driver/available')
   @UseGuards(JwtAuthGuard)
-  getAvailableTrips() {
-    return this.getAvailableDriverTripsUseCase.execute();
+  getAvailableTrips(@CurrentUser() user: JwtPayload) {
+    return this.getAvailableDriverTripsUseCase.execute(user.id);
   }
 
   @Post(':id/driver-claim')

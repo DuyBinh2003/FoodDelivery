@@ -97,8 +97,8 @@ graph TD
 | `/orders/:id` | `GET` | `JwtAuthGuard` | Tra cứu chi tiết đơn hàng (Tra cứu lai: Redis ➔ PostgreSQL) | Param `id: UUID` | `200`, `401`, `404` |
 | `/orders/:id/events` | `GET (SSE)` | `JwtAuthGuard` | Luồng sự kiện Server-Sent Events (SSE) theo dõi trạng thái đơn hàng thời gian thực qua Redis Pub/Sub (`order:events:{id}`) | Param `id: UUID`, Query `?token=...` hoặc Cookie | `200 (text/event-stream)`, `401`, `403`, `404` |
 | `/orders/:id/status` | `PATCH` | `JwtAuthGuard` | Cập nhật trạng thái chế biến (`COOKING`, `READY_FOR_PICKUP`) | `UpdateOrderStatusDto` | `200`, `400`, `401` |
-| `/orders/driver/available` | `GET` | `JwtAuthGuard` | Lấy danh sách chuyến xe broadcast đang tìm tài xế | Không | `200`, `401` |
-| `/orders/:id/driver-claim` | `POST` | `JwtAuthGuard` | Tài xế nhận cuốc xe với Redis Atomic Lock (chống race condition) | Param `id: UUID` | `200`, `401`, `409` |
+| `/orders/driver/available` | `GET` | `JwtAuthGuard` | Lấy danh sách chuyến xe broadcast đang tìm tài xế (Chỉ phát tán cho tài xế `status === 'ONLINE'` & `verification_status === 'APPROVED'`, trả về `[]` nếu ngoại tuyến) | Không | `200`, `401` |
+| `/orders/:id/driver-claim` | `POST` | `JwtAuthGuard` | Tài xế nhận cuốc xe với Redis Atomic Lock (chống race condition; từ chối 403 nếu tài xế đang offline/chưa active) | Param `id: UUID` | `200`, `401`, `403`, `409` |
 | `/orders/driver/trips` | `GET` | `JwtAuthGuard` | Lấy danh sách cuốc xe của tài xế (In-flight DELIVERING + đã hoàn tất) | Không | `200`, `401` |
 | `/orders/driver/summary` | `GET` | `JwtAuthGuard` | Thống kê tổng số cuốc, doanh thu và điểm đánh giá | Không | `200`, `401` |
 | `/orders/driver/reviews` | `GET` | `JwtAuthGuard` | Xem danh sách đánh giá tài xế nhận được | Không | `200`, `401` |

@@ -54,11 +54,14 @@ export function DriverDashboard() {
     }, 4000);
   };
 
+  const currentStatus: DriverStatus = user?.driverProfile?.status || 'OFFLINE';
+  const isOnline = currentStatus === 'ONLINE';
+
   const loadData = async () => {
     try {
       setLoading(true);
       const [availableRes, tripsRes, summaryRes, reviewsRes] = await Promise.all([
-        getAvailableDriverTrips().catch(() => []),
+        isOnline ? getAvailableDriverTrips().catch(() => []) : Promise.resolve([]),
         getDriverTrips().catch(() => []),
         getDriverSummary().catch(() => null),
         getDriverReviews().catch(() => null),
@@ -77,10 +80,11 @@ export function DriverDashboard() {
 
   useEffect(() => {
     let isMounted = true;
+
     const fetchInitialData = async () => {
       try {
         const [availableRes, tripsRes, summaryRes, reviewsRes] = await Promise.all([
-          getAvailableDriverTrips().catch(() => []),
+          isOnline ? getAvailableDriverTrips().catch(() => []) : Promise.resolve([]),
           getDriverTrips().catch(() => []),
           getDriverSummary().catch(() => null),
           getDriverReviews().catch(() => null),
@@ -104,27 +108,40 @@ export function DriverDashboard() {
 
     void fetchInitialData();
 
-    // Tự động quét đơn chờ nhận mới mỗi 10 giây
-    const pollInterval = setInterval(() => {
-      if (isMounted) {
-        getAvailableDriverTrips()
-          .then((res) => {
-            if (isMounted) setAvailableTrips(res);
-          })
-          .catch(() => {});
-      }
-    }, 10000);
+    // Tự động quét đơn chờ nhận mới mỗi 10 giây CHỈ KHI tài xế đang TRỰC TUYẾN (ONLINE)
+    let pollInterval: NodeJS.Timeout | null = null;
+    if (isOnline) {
+      pollInterval = setInterval(() => {
+        if (isMounted) {
+          getAvailableDriverTrips()
+            .then((res) => {
+              if (isMounted) setAvailableTrips(res);
+            })
+            .catch(() => {});
+        }
+      }, 10000);
+    } else {
+      setAvailableTrips([]);
+    }
 
     return () => {
       isMounted = false;
-      clearInterval(pollInterval);
+      if (pollInterval) clearInterval(pollInterval);
     };
-  }, []);
+  }, [isOnline]);
 
   const handleToggleStatus = async (newStatus: DriverStatus) => {
     try {
       await updateDriverStatus(newStatus);
       setDriverStatus(newStatus);
+      if (newStatus === 'OFFLINE') {
+        setAvailableTrips([]);
+      } else {
+        // Vừa chuyển sang ONLINE -> fetch ngay danh sách chuyến khả dụng
+        getAvailableDriverTrips()
+          .then((res) => setAvailableTrips(res))
+          .catch(() => {});
+      }
       showToast(
         'success',
         newStatus === 'ONLINE'
@@ -215,7 +232,7 @@ export function DriverDashboard() {
     );
   }
 
-  const currentStatus: DriverStatus = user?.driverProfile?.status || 'ONLINE';
+  // currentStatus is already defined above
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
@@ -334,6 +351,8 @@ export function DriverDashboard() {
             <DriverAvailableTrips
               trips={availableTrips}
               loading={loading}
+              isOnline={isOnline}
+              onGoOnline={() => handleToggleStatus('ONLINE')}
               onRefresh={loadData}
               onClaimTrip={handleClaimTrip}
             />

@@ -3,7 +3,9 @@ import {
   Inject,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
 import { OrderEventTypes } from '@/events/index.js';
@@ -21,12 +23,39 @@ export class ClaimDriverTripUseCase {
     private readonly orderRedisRepo: OrderRedisRepository,
     @Inject(SqsService)
     private readonly sqsService: SqsService,
+    @Inject(ConfigService)
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(command: ClaimDriverTripCommand): Promise<Order> {
     const { orderId, driverId } = command;
 
-    // 1. Thực hiện Atomic Claim trên Redis
+    // 1. Kiểm tra trạng thái hoạt động của tài xế qua user-service
+    const userUrl = this.configService.getOrThrow<string>('services.userUrl');
+    try {
+      const statusRes = await fetch(`${userUrl}/internal/drivers/${driverId}/status`);
+      if (statusRes.ok) {
+        const statusData = (await statusRes.json().catch(() => null)) as {
+          is_driver: boolean;
+          is_active: boolean;
+          status: string;
+          verification_status: string;
+        } | null;
+
+        if (!statusData || !statusData.is_active) {
+          throw new ForbiddenException(
+            'Tài xế đang ở trạng thái Ngoại tuyến hoặc chưa được kích hoạt. Vui lòng bật Trực tuyến để nhận chuyến.',
+          );
+        }
+      } else {
+        throw new ForbiddenException('Không tìm thấy thông tin tài xế hợp lệ');
+      }
+    } catch (err: unknown) {
+      if (err instanceof ForbiddenException) throw err;
+      throw new ForbiddenException('Không thể xác thực trạng thái tài xế vào lúc này.');
+    }
+
+    // 2. Thực hiện Atomic Claim trên Redis
     const claimResult = await this.orderRedisRepo.claimOrder(orderId, driverId);
 
     if (!claimResult.success) {

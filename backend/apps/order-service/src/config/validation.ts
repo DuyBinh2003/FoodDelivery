@@ -57,6 +57,10 @@ class OrderServiceEnvVars {
   @IsString()
   @IsNotEmpty()
   RESTAURANT_SERVICE_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  USER_SERVICE_URL: string;
 }
 
 export function validate(config: Record<string, unknown>) {
