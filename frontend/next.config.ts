@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import path from "node:path";
+
 function requireEnv(key: string): string {
   const val = process.env[key];
   if (!val || val.trim() === '') {
@@ -11,6 +13,9 @@ function requireEnv(key: string): string {
 }
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   images: {
     remotePatterns: [
       {
