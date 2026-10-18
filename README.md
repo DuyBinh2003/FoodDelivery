@@ -66,69 +66,44 @@ graph TD
 > 📚 **Trung tâm tài liệu toàn dự án:** [`docs/README.md`](./docs/README.md)
 
 
-## 🛣️ Lộ Trình Phát Triển (Đã Hoàn Thành Migration)
+## ✨ Tính Năng Nổi Bật Của Hệ Thống (Core System Features)
 
-Chúng ta đã hoàn tất việc chia tách dự án từ Monolith sang Microservices chuẩn mực:
+Hệ thống Food Delivery được thiết kế toàn diện, phục vụ 4 nhóm đối tượng chính (Khách hàng, Đối tác Quán ăn, Đối tác Tài xế, Quản trị viên) cùng hệ thống Sổ cái Kế toán kép chuẩn FinTech:
 
-- **Phase 1: Cấu trúc thư mục (Monorepo)** ✅
-  - Chuyển source code sang `apps/` và `libs/`
-  - Tách DB Schema Isolation (`schema-per-service`)
-- **Phase 2: Xoá Cross-module Dependency** ✅
-  - Loại bỏ các `@InjectRepository` gọi chéo
-- **Phase 3: Internal API Endpoints** ✅
-  - Sử dụng REST API (fetch) để giao tiếp nội bộ thay vì TypeORM trực tiếp
-- **Phase 4: Event Contract Library** ✅
-  - Đóng gói giao thức sự kiện (Event Types) vào `libs/events/` để gửi nhận SQS/SNS
-- **Phase 5: Docker Compose Full Stack** ✅
-  - Tạo `Dockerfile` chuẩn cho toàn bộ 6 service
-  - Triển khai full stack bằng Docker Network
-- **Phase 6: API Gateway** ✅
-  - Triển khai NGINX làm Reverse Proxy (`gateway/nginx.conf`)
-- **Phase 7: Kênh Đối Tác / Quản Lý Nhà Hàng (Merchant Portal)** ✅
-  - Bật/tắt mở bán nhận đơn theo thời gian thực (`is_active`)
-  - Quản lý thực đơn: CRUD món ăn, điều chỉnh giá bán, bật/tắt còn món (`is_available`), phân loại danh mục (`m_category`) và gán nhãn tags (`m_tag`)
-  - Tích hợp bảo vệ giỏ hàng và đặt món tại `order-service` khi quán đóng cửa
-  - Giao diện quản lý chuyên nghiệp tại `/partner/restaurant`
-- **Phase 8: Đối Tác Tài Xế & Chuẩn Hóa Quan Hệ DB 1-1 (Issue #49)** ✅
-  - Hỗ trợ luồng đăng ký tài xế chuyên biệt tại `/register/driver` và Cổng đối tác tại `/register`
-  - Tái sử dụng trọn vẹn hạ tầng Event-Driven (SNS/SQS) và WebSockets realtime từ luồng nhà hàng
-  - Chặn đăng ký lần 2 báo lỗi HTTP 409 Conflict (1 User tối đa 1 Nhà hàng và 1 Tài xế, cho phép nộp lại khi bị từ chối)
-  - Chuẩn hóa quan hệ 1-1: Thiết lập ràng buộc `UNIQUE` trên `m_restaurant.owner_id` và `m_driver_profile.user_id`
-  - Tích hợp xét duyệt tài xế và kích hoạt hồ sơ tự động tại Admin Portal (`/admin/approvals`)
-- **Phase 9: Quản Lý Navbar Thông Minh & Cổng Thông Tin Tài Xế (Driver Portal)** ✅
-  - Ẩn/hiện thông minh các nút Đăng ký tài xế / Đăng ký nhà hàng dựa theo hồ sơ thực tế và trạng thái xét duyệt
-  - Cung cấp Cổng thông tin tài xế chuyên biệt tại `/driver/dashboard`:
-    - Bật/tắt trạng thái hoạt động (Trực tuyến / Ngoại tuyến - Online/Offline) với animation xung nhịp hiện đại
-    - Thống kê tổng quan thu nhập, cuốc xe hoàn thành, đánh giá sao và cuốc xe trong ngày
-    - Lịch sử chuyến đi chi tiết: Điểm đón (Quán ăn) ➡️ Điểm đến (Khách hàng), tiền nhận được (+VNĐ), danh sách món ăn, và trạng thái cuốc xe
-    - Xem đánh giá của khách hàng: Điểm rating 1 - 5 sao, thanh phân bổ sao và nhận xét chi tiết
-- **Phase 10: Dịch Vụ Thanh Toán & Sổ Cái Cốt Lõi (Core Payment & Ledger System - Sprint 1)** ✅
-  - Triển khai Microservice độc lập `payment-service` (:3007) và Schema PostgreSQL riêng biệt `schema_payment`
-  - Thiết kế sổ cái kế toán kép (**Double-Entry Bookkeeping**) chuẩn FinTech, lưu trữ **Append-Only** (`t_ledger_transaction`, `t_ledger_entry`)
-  - Quản lý tài khoản ví 4 chủ thể: Khách hàng, Tài xế, Nhà hàng, Nền tảng (`m_wallet_account`, `m_wallet_balance`)
-  - Bảo đảm bất biến tuyệt đối `sum(DEBIT) == sum(CREDIT)` bằng `Decimal.js` và khóa bi quan (`SELECT FOR UPDATE`)
-  - Cơ chế cấn trừ đơn COD và xử lý số dư âm tạm thời của Tài xế (tự động gắn cờ `isDriverInactive` bảo vệ nền tảng)
-  - 100% kiểm thử tự động với Vitest và tài liệu chi tiết tại [`docs/services/payment-service.md`](./docs/services/payment-service.md)
-- **Phase 11: Vận Hành Đơn Bếp & Điều Phối Giao Hàng (Restaurant & Driver Fulfillment - Issue #55)** ✅
-  - Nhà hàng tiếp nhận đơn và quản lý đơn bếp thời gian thực tại Merchant Portal (`/partner/restaurant`): Tab "Đơn bếp", xem chi tiết đơn hàng, chuyển trạng thái chế biến (`COOKING` ➡️ `READY_FOR_PICKUP`).
-  - Tài xế nhận cuốc xe và vận hành chuyến đi tại Driver Portal (`/driver/dashboard`): Xem danh sách chuyến sẵn sàng nhận (`AVAILABLE`), nhận cuốc xe (`CLAIM`), cập nhật trạng thái di chuyển (`DELIVERING` ➡️ `COMPLETED`).
-  - Quản lý mốc thời gian luân chuyển đơn hàng (**Order Milestones**): `cooking_at`, `ready_at`, `driver_claimed_at`, `completed_at`, `cancelled_at` đồng bộ giữa Redis In-flight cache và PostgreSQL.
-  - Kiểm thử tự động với Vitest bao phủ 100% luồng nghiệp vụ: `order-milestones.spec.ts` và `driver-active-dispatch.spec.ts`.
-- **Phase 12: Kiến Trúc Xử Lý Lỗi Toàn Diện & Chuẩn Hóa CI/CD (Full-Stack Error Handling & CI/CD Pipeline - Issue #57)** ✅
-  - **Backend**: Triển khai bộ lọc ngoại lệ toàn cục `GlobalExceptionFilter` tại `libs/common/src/filters/`, áp dụng cho toàn bộ 7 Microservices; chuẩn hóa cấu trúc lỗi `ErrorResponseBody`, che giấu lỗi database nhạy cảm (HTTP 500), bảo toàn root cause qua Logger và xử lý lỗi validate từ `ValidationPipe`.
-  - **Frontend**:
-    - Chuẩn hóa tầng mạng `apiClient` và lớp ngoại lệ `ApiError` với thông điệp tiếng Việt thân thiện, tự động xử lý hết hạn phiên (HTTP 401) và chuyển hướng đăng nhập thông minh.
-    - Xây dựng hệ thống Error Boundary phân cấp: `error.tsx` (Route-level), `global-error.tsx` (Root-level), trang 404 phong cách ẩm thực (`not-found.tsx`).
-    - Component giao diện dự phòng `ErrorState` tái sử dụng với nút "Thử lại" (Retry action).
-    - Cấu hình môi trường nghiêm ngặt (**Fail-Fast**): Cơ chế `requireEnv` kiểm tra biến môi trường khi build, cấm fallback ngầm và cấm dữ liệu giả trong UI.
-  - **CI/CD Pipeline**: Hoàn thiện GitHub Actions workflow (`ci-cd.yml`) tự động hóa kiểm tra: Oxlint + Absolute Import check, Vitest unit test (Backend) và ESLint + Next.js Production Build (Frontend) với tỷ lệ pass 100%.
-- **Phase 13: Quản Lý Sổ Địa Chỉ & Tính Toán Lộ Trình Driver (Issue #18)** ✅
-  - **Quản lý Sổ địa chỉ đa năng (`schema_user.m_user_address`)**: Hỗ trợ người dùng lưu nhiều địa chỉ nhận hàng với nhãn định danh (`HOME`, `WORK`, `OTHER`), tự động chuyển đổi địa chỉ mặc định duy nhất (`is_default`), lưu trữ tọa độ chuẩn WGS84 (`latitude: numeric(10,8)`, `longitude: numeric(11,8)`).
-  - **Bản đồ tương tác không phụ thuộc API key**: Tích hợp Leaflet + OpenStreetMap + OpenStreetMap Nominatim reverse geocoding trên Frontend, hỗ trợ tìm kiếm địa điểm autocomplete, kéo thả ghim vị trí và lấy tọa độ GPS từ thiết bị qua Geolocation API.
-  - **Snapshot đơn hàng bất biến (Immutable Order Snapshot)**: Snapshot trực tiếp thông tin người nhận (`recipient_name`, `recipient_phone`) và tọa độ giao hàng (`delivery_lat`, `delivery_lng`) vào `schema_order.t_order` và Redis In-flight cache khi khách hàng đặt đơn tại `/checkout`.
-  - **Tính toán khoảng cách lộ trình (Haversine Formula)**: Triển khai tiện ích `calculateHaversineDistanceKm` tính toán khoảng cách thực tế giữa Nhà hàng và Điểm giao hàng; bổ sung trường `distance_km` trong `DriverTripDto` và hiển thị huy hiệu cự ly trên Driver Portal (`/driver/dashboard`) phục vụ phân bổ cuốc xe tối ưu.
-  - **Trải nghiệm người dùng cao cấp**: Trang quản lý Sổ địa chỉ riêng biệt tại `/profile/addresses`, modal chọn địa chỉ tích hợp trực tiếp tại `/checkout` (`AddressSelectorModal`), thiết kế hiện đại Dark theme theo tôn chỉ UI/UX Pro Max.
-  - **Kiểm thử tự động & Tài liệu hóa**: Bổ sung bộ kiểm thử Vitest toàn diện (`user-address.spec.ts`, `order-distance-calculation.spec.ts`) đạt 100% pass; cập nhật đầy đủ tài liệu kỹ thuật tại [`docs/features/customer/address-book.md`](./docs/features/customer/address-book.md).
+### 1. 🧑 Phân Hệ Khách Hàng (Customer Experience)
+- **Khám phá ẩm thực & Tìm kiếm thông minh**: Tìm kiếm món ăn và quán ăn siêu tốc qua Elasticsearch; hỗ trợ bộ lọc đa chiều (danh mục, tags ẩm thực, khoảng cách, freeship, đánh giá); xem chi tiết nhà hàng với hero banner và popup cấu hình món ăn.
+- **Giỏ hàng nâng cao (Advanced Cart)**: Quản lý giỏ hàng offline-first, áp dụng chính sách nghiêm ngặt một nhà hàng duy nhất (Single Restaurant Policy), tự động đối soát giá và tình trạng đóng/mở cửa của quán trước khi chuyển sang bước thanh toán.
+- **Sổ địa chỉ đa năng (Address Book & Leaflet Map)**: Bản đồ tương tác Leaflet + OpenStreetMap tích hợp định vị GPS (WGS84), tìm kiếm địa điểm autocomplete và reverse geocoding không phụ thuộc API key ngoài; quản lý nhiều địa chỉ với nhãn `HOME` / `WORK` / `OTHER` và tự động đổi địa chỉ mặc định.
+- **Đặt hàng bất đồng bộ & Snapshot bất biến**: Snapshot nguyên vẹn tọa độ giao hàng (`delivery_lat`, `delivery_lng`) và người nhận vào đơn hàng; tiếp nhận đơn qua hàng đợi SQS FIFO chống quá tải hệ thống.
+
+### 2. 🏪 Phân Hệ Đối Tác Nhà Hàng (Merchant Portal)
+- **Đăng ký mở quán & Thẩm định hồ sơ**: Luồng nộp đơn đăng ký kinh doanh trực tuyến; phát tán sự kiện SNS/SQS sang Admin Service và nhận thông báo phê duyệt thời gian thực qua WebSockets.
+- **Quản lý trạng thái hoạt động tức thì**: Bật/tắt trạng thái mở bán (`is_active`) theo thời gian thực; tự động vô hiệu hóa giỏ hàng và chặn đặt món khi quán tạm đóng cửa.
+- **Quản lý thực đơn linh hoạt (Menu Catalog)**: Toàn quyền CRUD món ăn, điều chỉnh giá bán, bật/tắt tình trạng còn hàng (`is_available`), phân loại theo danh mục (`m_category`) và gán thẻ tags (`m_tag`).
+- **Bảng điều khiển đơn bếp (Kitchen Orders Dashboard)**: Màn hình chuyên dụng cho bếp tại `/partner/restaurant` theo dõi đơn mới theo thời gian thực, chuyển trạng thái chế biến linh hoạt (`COOKING` ➔ `READY_FOR_PICKUP`).
+
+### 3. 🛵 Phân Hệ Đối Tác Tài Xế (Driver Portal & Dispatch)
+- **Đăng ký tài xế & Chuẩn hóa quan hệ 1-1**: Nộp hồ sơ đối tác với thông tin phương tiện và CCCD; ràng buộc cơ sở dữ liệu `UNIQUE` (1 tài khoản chỉ 1 tài xế, chống gian lận đăng ký trùng lặp).
+- **Cổng thông tin tài xế chuyên biệt (`/driver/dashboard`)**:
+  - Bật/tắt trạng thái nhận cuốc (Trực tuyến / Ngoại tuyến - Online/Offline) với hiệu ứng animation xung nhịp trực quan.
+  - Nhận cuốc xe sẵn sàng (`AVAILABLE`) với cơ chế khóa nguyên tử Redis Atomic Lock chống race condition khi nhiều tài xế cùng bấm nhận.
+  - Cập nhật trạng thái lộ trình di chuyển (`DELIVERING` ➔ `COMPLETED`).
+- **Tính toán lộ trình & Khoảng cách (Haversine Distance)**: Tự động tính cự ly thực tế giữa Nhà hàng và Điểm giao hàng (`distance_km`), hiển thị huy hiệu cự ly trực quan trên từng thẻ chuyến đi giúp tài xế ước tính thời gian di chuyển.
+- **Báo cáo thu nhập & Đánh giá**: Bảng thống kê tổng quan doanh thu ngày/tuần, số cuốc hoàn thành, lịch sử chuyến đi chi tiết và phân bổ điểm sao đánh giá từ khách hàng.
+
+### 4. 💳 Dịch Vụ Thanh Toán & Sổ Cái Kế Toán Kép (FinTech Core Payment)
+- **Microservice độc lập (`payment-service`)**: Cơ sở dữ liệu phân lập hoàn toàn tại `schema_payment`.
+- **Sổ cái kế toán kép Append-Only**: Thiết kế chuẩn tài chính quốc tế (`t_ledger_transaction`, `t_ledger_entry`), bảo đảm bất biến tuyệt đối `sum(DEBIT) == sum(CREDIT)` bằng thư viện `Decimal.js` và khóa bi quan (`SELECT FOR UPDATE`).
+- **Quản lý ví 4 chủ thể**: Khách hàng, Tài xế, Nhà hàng và Nền tảng Platform (`m_wallet_account`, `m_wallet_balance`).
+- **Đối soát COD & Quản trị rủi ro**: Cơ chế cấn trừ tự động cho các cuốc xe tiền mặt (COD), quản lý thấu chi/số dư âm an toàn và tự động khóa nhận cuốc (`isDriverInactive`) khi tài xế vượt ngưỡng âm cho phép.
+
+### 5. 👑 Phân Hệ Quản Trị & Vận Hành Hệ Thống (Admin & Ops)
+- **Bảng điều khiển chỉ số (Admin Dashboard)**: Thống kê số lượng người dùng, tài xế hoạt động, nhà hàng, tổng sản lượng đơn hàng và tổng giá trị giao dịch GMV toàn hệ sinh thái.
+- **Cổng phê duyệt đối tác (Approvals Portal)**: Thẩm định hồ sơ mở quán và đăng ký tài xế; duyệt/từ chối kèm lý do và kích hoạt tài khoản đối tác tự động.
+- **Khả năng chịu tải & Xử lý lỗi toàn diện**:
+  - Tầng đệm Queue-Based Load Leveling (AWS SQS FIFO) và bộ nhớ đệm In-flight Cache (Redis TTL 24h) chống nghẽn DB giờ cao điểm.
+  - Trì hoãn ghi cơ sở dữ liệu (**Deferred Persistence**): Chỉ ghi nhận giao dịch xuống PostgreSQL khi đơn hoàn tất hoặc hủy đối soát.
+  - Kiến trúc Full-Stack Error Handling: Bộ lọc ngoại lệ toàn cục `GlobalExceptionFilter` (Backend), Error Boundary phân cấp (Frontend), Fail-Fast ENV validation và 100% kiểm thử tự động với Vitest.
 
 ---
 
