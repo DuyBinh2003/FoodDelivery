@@ -8,7 +8,15 @@ export class ElasticsearchRepository implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.createIndices();
+    try {
+      await this.createIndices();
+    } catch (e: unknown) {
+      const err = e as Error;
+      console.warn(`[SearchService] Elasticsearch initial index check failed: ${err.message}. Retrying index setup in 5s...`);
+      setTimeout(() => {
+        this.createIndices().catch(() => {});
+      }, 5000);
+    }
     setTimeout(() => {
       this.syncFromRestaurantServiceIfEmpty().catch(() => {});
     }, 5000);
@@ -41,7 +49,7 @@ export class ElasticsearchRepository implements OnModuleInit {
 
   async syncAllRestaurants(): Promise<{ synced: number; error?: string }> {
     try {
-      const url = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+      const url = process.env.RESTAURANT_SERVICE_URL!;
       const res = await fetch(`${url}/restaurants`);
       if (!res.ok) return { synced: 0, error: 'Restaurant service unavailable' };
       const restaurants = (await res.json()) as Array<Record<string, unknown>>;

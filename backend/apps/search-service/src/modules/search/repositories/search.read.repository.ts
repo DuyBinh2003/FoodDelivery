@@ -15,6 +15,8 @@ export interface MenuItemData {
   id: string;
   restaurant_id: string;
   name: string;
+  description?: string;
+  image_url?: string;
   price: number;
   is_available: boolean;
   tags?: TagItem[];
@@ -24,7 +26,7 @@ export interface MenuItemData {
 
 @Injectable()
 export class SearchReadRepository {
-  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
 
   constructor() {}
 

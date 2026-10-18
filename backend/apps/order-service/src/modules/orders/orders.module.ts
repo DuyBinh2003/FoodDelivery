@@ -21,9 +21,13 @@ import { GetDriverSummaryUseCase } from '@/modules/orders/usecases/get-driver-su
 import { GetDriverReviewsUseCase } from '@/modules/orders/usecases/get-driver-reviews.usecase.js';
 import { UpdateDriverTripStatusUseCase } from '@/modules/orders/usecases/update-driver-trip-status.usecase.js';
 import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admin.usecase.js';
+import { ClaimDriverTripUseCase } from '@/modules/orders/usecases/claim-driver-trip.usecase.js';
+import { GetAvailableDriverTripsUseCase } from '@/modules/orders/usecases/get-available-driver-trips.usecase.js';
+import { GetRestaurantOrdersUseCase } from '@/modules/orders/usecases/get-restaurant-orders.usecase.js';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { SnsService } from '@/common/messaging/sns.service.js';
 import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingestion.consumer.js';
+import { OrderEventsService } from '@/modules/orders/services/order-events.service.js';
 
 @Module({
   imports: [
@@ -36,6 +40,7 @@ import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingesti
     OrderWriteRepository,
     OrderRedisRepository,
     OrderIngestionConsumer,
+    OrderEventsService,
     SqsService,
     SnsService,
     JwtStrategy,
@@ -50,11 +55,15 @@ import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingesti
     GetDriverReviewsUseCase,
     UpdateDriverTripStatusUseCase,
     GetOrdersAdminUseCase,
+    ClaimDriverTripUseCase,
+    GetAvailableDriverTripsUseCase,
+    GetRestaurantOrdersUseCase,
   ],
   exports: [
     OrderReadRepository,
     OrderWriteRepository,
     OrderRedisRepository,
+    OrderEventsService,
     SqsService,
     SnsService,
     CreateOrderUseCase,
@@ -68,6 +77,9 @@ import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingesti
     GetDriverReviewsUseCase,
     UpdateDriverTripStatusUseCase,
     GetOrdersAdminUseCase,
+    ClaimDriverTripUseCase,
+    GetAvailableDriverTripsUseCase,
+    GetRestaurantOrdersUseCase,
   ],
 })
 export class OrdersModule { }

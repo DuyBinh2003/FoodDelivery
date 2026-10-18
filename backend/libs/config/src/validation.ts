@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsString, IsNotEmpty, IsNumberString, IsOptional, validateSync } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumberString, validateSync } from 'class-validator';
 
 class EnvironmentVariables {
   @IsString()
@@ -42,7 +42,7 @@ class EnvironmentVariables {
   @IsNotEmpty()
   AWS_SECRET_ACCESS_KEY: string;
 
-  @IsString()
+   @IsString()
   @IsNotEmpty()
   SQS_ENDPOINT: string;
 
@@ -51,20 +51,32 @@ class EnvironmentVariables {
   SQS_QUEUE_URL: string;
 
   @IsString()
-  @IsOptional()
-  SQS_ORDER_PROCESSING_FIFO_URL?: string;
+  @IsNotEmpty()
+  SQS_DRIVER_DISPATCH_QUEUE_URL: string;
 
   @IsString()
-  @IsOptional()
-  SQS_DRIVER_DISPATCH_QUEUE_URL?: string;
+  @IsNotEmpty()
+  SNS_ENDPOINT: string;
 
   @IsString()
-  @IsOptional()
-  SNS_ENDPOINT?: string;
+  @IsNotEmpty()
+  SNS_ORDER_DRIVER_DISPATCH_TOPIC: string;
 
   @IsString()
-  @IsOptional()
-  SNS_ORDER_DRIVER_DISPATCH_TOPIC?: string;
+  @IsNotEmpty()
+  ORDER_SERVICE_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  RESTAURANT_SERVICE_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  DELIVERY_SERVICE_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  USER_SERVICE_URL: string;
 }
 
 export function validate(config: Record<string, unknown>) {

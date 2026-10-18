@@ -225,6 +225,39 @@ export default function LoginForm() {
                   admin@...
                 </span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('owner@phobien.com');
+                  setPassword('password123');
+                }}
+                className="p-2.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-red-500/50 text-left transition-all duration-200 group focus:outline-none focus:ring-1 focus:ring-red-500/50"
+              >
+                <span className="text-xs font-semibold text-red-400 group-hover:text-red-300 block">
+                  Nhà hàng Phở Biên
+                </span>
+                <span className="text-[11px] text-zinc-400 group-hover:text-zinc-300 truncate block font-mono">
+                  owner@phobien.com
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('driver1@fooddelivery.com');
+                  setPassword('password123');
+                }}
+                className="p-2.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-red-500/50 text-left transition-all duration-200 group focus:outline-none focus:ring-1 focus:ring-red-500/50"
+              >
+                <span className="text-xs font-semibold text-red-400 group-hover:text-red-300 block">
+                  Tài xế 1
+                </span>
+                <span className="text-[11px] text-zinc-400 group-hover:text-zinc-300 truncate block font-mono">
+                  driver1@fooddelivery.com
+                </span>
+              </button>
+
             </div>
           </div>
         </CardFooter>

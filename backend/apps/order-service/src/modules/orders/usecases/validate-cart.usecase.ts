@@ -1,4 +1,5 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ValidateCartDto } from '@/modules/orders/dto/validate-cart.dto.js';
 
 export interface ValidatedCartItem {
@@ -32,11 +33,13 @@ interface InternalMenuItem {
 
 @Injectable()
 export class ValidateCartUseCase {
-  constructor() {}
+  constructor(
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {}
 
   async execute(dto: ValidateCartDto): Promise<ValidateCartResponse> {
     const { items, restaurant_id } = dto;
-    const restaurantUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+    const restaurantUrl = this.configService.getOrThrow<string>('services.restaurantUrl');
 
     // 1. Check restaurant status (is_active)
     try {

@@ -89,6 +89,12 @@ export class OrderWriteRepository {
         payment_method: orderData.payment_method ?? 'CASH',
         total_amount: orderData.total_amount,
         status: orderData.status,
+        cooking_at: orderData.cooking_at ? new Date(orderData.cooking_at) : null,
+        ready_at: orderData.ready_at ? new Date(orderData.ready_at) : null,
+        driver_claimed_at: orderData.driver_claimed_at ? new Date(orderData.driver_claimed_at) : null,
+        completed_at: orderData.completed_at ? new Date(orderData.completed_at) : null,
+        cancelled_at: orderData.cancelled_at ? new Date(orderData.cancelled_at) : null,
+        created_at: orderData.created_at ? new Date(orderData.created_at) : undefined,
       });
       const savedOrder = await queryRunner.manager.save(order);
 

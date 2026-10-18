@@ -8,8 +8,11 @@ export interface CreateOrderPayload {
   payment_method?: 'CASH' | 'MOMO' | 'VNPAY';
   items: Array<{
     menu_item_id: string;
+    name?: string;
     quantity: number;
     unit_price: number;
+    options?: string[];
+    notes?: string;
   }>;
 }
 
@@ -20,9 +23,13 @@ export const createOrder = async (payload: CreateOrderPayload): Promise<Order> =
   });
 };
 
-export const getOrderById = async (orderId: string): Promise<Order> => {
+export const getOrderById = async (
+  orderId: string,
+  options?: { headers?: Record<string, string> },
+): Promise<Order> => {
   return apiClient<Order>(`/orders/${orderId}`, {
     method: 'GET',
+    headers: options?.headers,
   });
 };
 
@@ -35,5 +42,12 @@ export const getOrderHistory = async (): Promise<Order[]> => {
 export const createOrderReview = async (orderId: string, data: CreateOrderReviewDto) => {
   const response = await apiClient<unknown>(`/orders/${orderId}/reviews`, { method: 'POST', body: data });
   return response;
+};
+
+export const cancelOrder = async (orderId: string): Promise<Order> => {
+  return apiClient<Order>(`/orders/${orderId}/status`, {
+    method: 'PATCH',
+    body: { status: 'CANCELLED' },
+  });
 };
 

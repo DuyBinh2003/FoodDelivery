@@ -2,7 +2,6 @@ import { plainToInstance } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
-  IsOptional,
   validateSync,
 } from 'class-validator';
 
@@ -33,6 +32,14 @@ class OrderServiceEnvVars {
 
   @IsString()
   @IsNotEmpty()
+  REDIS_HOST: string;
+
+  @IsString()
+  @IsNotEmpty()
+  REDIS_PORT: string;
+
+  @IsString()
+  @IsNotEmpty()
   SQS_ENDPOINT: string;
 
   @IsString()
@@ -40,8 +47,20 @@ class OrderServiceEnvVars {
   SQS_QUEUE_URL: string;
 
   @IsString()
-  @IsOptional()
-  RESTAURANT_SERVICE_URL?: string;
+  @IsNotEmpty()
+  SNS_ENDPOINT: string;
+
+  @IsString()
+  @IsNotEmpty()
+  SNS_ORDER_DRIVER_DISPATCH_TOPIC: string;
+
+  @IsString()
+  @IsNotEmpty()
+  RESTAURANT_SERVICE_URL: string;
+
+  @IsString()
+  @IsNotEmpty()
+  USER_SERVICE_URL: string;
 }
 
 export function validate(config: Record<string, unknown>) {

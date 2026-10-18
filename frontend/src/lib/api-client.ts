@@ -140,8 +140,10 @@ async function apiClient<T>(
     if (error instanceof ApiError) {
       throw error;
     }
+    const causeCode = (error as { cause?: { code?: string } })?.cause?.code;
     const message = error instanceof Error ? error.message : 'Unknown error occurred';
-    throw new ApiError(500, `Fetch Error: ${message}`);
+    const detail = causeCode ? ` (${causeCode})` : '';
+    throw new ApiError(500, `Fetch Error to ${url.origin}${url.pathname}: ${message}${detail}`);
   }
 }
 

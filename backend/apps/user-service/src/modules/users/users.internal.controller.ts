@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, NotFoundException, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, NotFoundException, Inject, ParseUUIDPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@/modules/users/entities/user.entity.js';
@@ -9,7 +9,7 @@ import { UserGateway } from '@/modules/users/gateways/user.gateway.js';
 
 @Controller('internal')
 export class UsersInternalController {
-  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
 
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
@@ -173,5 +173,39 @@ export class UsersInternalController {
       await this.driverRepo.save(driver);
     }
     return driver;
+  }
+
+  @Get('drivers/:userId/status')
+  async getDriverStatus(@Param('userId', ParseUUIDPipe) userId: string) {
+    const driver = await this.driverRepo.findOne({
+      where: { user_id: userId, is_deleted: false },
+    });
+    if (!driver) {
+      return {
+        is_driver: false,
+        id: null,
+        user_id: userId,
+        status: DriverStatus.OFFLINE,
+        verification_status: 'NONE',
+        is_active: false,
+        vehicle_plate: null,
+        vehicle_type: null,
+      };
+    }
+
+    const isActive =
+      driver.status === DriverStatus.ONLINE &&
+      driver.verification_status === 'APPROVED';
+
+    return {
+      is_driver: true,
+      id: driver.id,
+      user_id: driver.user_id,
+      status: driver.status,
+      verification_status: driver.verification_status,
+      is_active: isActive,
+      vehicle_plate: driver.vehicle_plate,
+      vehicle_type: driver.vehicle_type,
+    };
   }
 }

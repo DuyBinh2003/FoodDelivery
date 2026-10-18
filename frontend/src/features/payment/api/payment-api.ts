@@ -29,10 +29,14 @@ export const processOrderPayment = async (dto: ProcessPaymentDto): Promise<{
   });
 };
 
-export const getOrderPaymentDetails = async (orderId: string): Promise<OrderPaymentDetails | null> => {
+export const getOrderPaymentDetails = async (
+  orderId: string,
+  options?: { headers?: Record<string, string> },
+): Promise<OrderPaymentDetails | null> => {
   try {
     return await apiClient<OrderPaymentDetails>(`/payment/order/${orderId}`, {
       method: 'GET',
+      headers: options?.headers,
     });
   } catch {
     return null;

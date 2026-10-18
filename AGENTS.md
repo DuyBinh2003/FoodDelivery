@@ -35,4 +35,12 @@ Tất cả các yêu cầu về:
 - Cấu trúc phân cấp nghiêm ngặt trong `docs/`: `architecture/`, `services/`, `business/`, `features/<actor>/`, `frontend/`.
 - Tài liệu song hành cùng mã nguồn (Docs-as-Code), cập nhật đồng bộ các file mục lục `README.md`.
 - Bắt buộc dùng Mermaid cho sơ đồ luồng và tuân thủ templates chuẩn.
-**Hành động tham chiếu**: Bắt buộc đọc `.agents/skills/documentation-policy/SKILL.md` khi tạo mới, cập nhật, hoặc tái cấu trúc tài liệu.
+**Hành động tham chiếu**: Bắt buộc đọc `.agents/skills/documentation-policy/SKILL.md` khi tạo mới, cập nhật, hoặc tái cấu trúc tài liệu.
+
+## 8. QUY CHUẨN KIỂM THỬ (Testing Policy)
+- Bắt buộc viết Unit Test (Vitest) cho 100% các Use Case / Luồng nghiệp vụ (Business Flow).
+- Test bám sát Docs / Implementation Plan, có Traceability Header, phủ đủ 3 nhánh (Happy Path, Edge Cases, Error / Rejection Flow).
+- Đặt tập trung trong `apps/<service>/src/modules/<module>/tests/<flow-or-usecase>.spec.ts`.
+- Bắt buộc chạy `npm test` và đạt 100% pass trước khi nghiệm thu hoàn thành task.
+**Hành động tham chiếu**: Bắt buộc đọc `.agents/skills/testing-policy/SKILL.md` khi triển khai, sửa đổi hoặc kiểm thử các luồng nghiệp vụ.
+

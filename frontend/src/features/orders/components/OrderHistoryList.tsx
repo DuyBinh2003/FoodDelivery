@@ -24,6 +24,7 @@ const StatusBadge = ({ status }: { status: OrderStatus }) => {
     PENDING: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
     ACCEPTED: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     COOKING: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    READY_FOR_PICKUP: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
     DELIVERING: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
     COMPLETED: 'bg-green-500/10 text-green-400 border-green-500/20',
     CANCELLED: 'bg-red-500/10 text-red-400 border-red-500/20',

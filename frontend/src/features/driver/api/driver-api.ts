@@ -37,3 +37,15 @@ export async function updateDriverTripStatus(orderId: string, status: string): P
     body: { status },
   });
 }
+
+export async function getAvailableDriverTrips(): Promise<DriverTrip[]> {
+  return await apiClient<DriverTrip[]>('/orders/driver/available', {
+    cache: 'no-store',
+  });
+}
+
+export async function claimDriverTrip(orderId: string): Promise<DriverTrip> {
+  return await apiClient<DriverTrip>(`/orders/${orderId}/driver-claim`, {
+    method: 'POST',
+  });
+}

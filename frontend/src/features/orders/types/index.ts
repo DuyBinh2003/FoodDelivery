@@ -1,4 +1,19 @@
-export type OrderStatus = 'PENDING' | 'ACCEPTED' | 'COOKING' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED';
+export type OrderStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'COOKING'
+  | 'READY_FOR_PICKUP'
+  | 'DELIVERING'
+  | 'COMPLETED'
+  | 'CANCELLED';
+
+export interface OrderDriverInfo {
+  id: string;
+  name: string;
+  phone?: string;
+  vehicle_plate?: string;
+  vehicle_type?: string;
+}
 
 export interface OrderItem {
   id: string;
@@ -6,6 +21,8 @@ export interface OrderItem {
   name: string;
   quantity: number;
   unit_price: number;
+  options?: string[];
+  notes?: string;
 }
 
 export interface Order {
@@ -13,12 +30,23 @@ export interface Order {
   customer_id: string;
   restaurant_id: string;
   restaurant_name: string;
+  restaurant_address?: string;
   driver_id: string | null;
+  driver?: OrderDriverInfo | null;
   total_amount: number;
   status: OrderStatus;
   delivery_address: string;
+  note?: string | null;
+  payment_method?: string;
+  estimated_delivery_time?: string | null;
+  cooking_at?: string | null;
+  ready_at?: string | null;
+  driver_claimed_at?: string | null;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
   items: OrderItem[];
   created_at: string;
+  updated_at?: string;
   review?: OrderReview;
 }
 

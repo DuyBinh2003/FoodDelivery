@@ -19,6 +19,8 @@ import {
   getDriverReviews,
   updateDriverStatus,
   updateDriverTripStatus,
+  getAvailableDriverTrips,
+  claimDriverTrip,
 } from '@/features/driver/api';
 import type {
   DriverTrip,
@@ -30,15 +32,17 @@ import { DriverStatusSwitch } from './driver-status-switch';
 import { DriverMetricsGrid } from './driver-metrics-grid';
 import { DriverTripsList } from './driver-trips-list';
 import { DriverReviewsTab } from './driver-reviews-tab';
+import { DriverAvailableTrips } from './driver-available-trips';
 
 export function DriverDashboard() {
   const { user, setDriverStatus, refreshProfile } = useAuthStore();
 
+  const [availableTrips, setAvailableTrips] = useState<DriverTrip[]>([]);
   const [trips, setTrips] = useState<DriverTrip[]>([]);
   const [summary, setSummary] = useState<DriverSummary | null>(null);
   const [reviewsData, setReviewsData] = useState<DriverReviewsResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'trips' | 'reviews'>('trips');
+  const [activeTab, setActiveTab] = useState<'available' | 'trips' | 'reviews'>('available');
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null
   );
@@ -50,15 +54,20 @@ export function DriverDashboard() {
     }, 4000);
   };
 
+  const currentStatus: DriverStatus = user?.driverProfile?.status || 'OFFLINE';
+  const isOnline = currentStatus === 'ONLINE';
+
   const loadData = async () => {
     try {
       setLoading(true);
-      const [tripsRes, summaryRes, reviewsRes] = await Promise.all([
+      const [availableRes, tripsRes, summaryRes, reviewsRes] = await Promise.all([
+        isOnline ? getAvailableDriverTrips().catch(() => []) : Promise.resolve([]),
         getDriverTrips().catch(() => []),
         getDriverSummary().catch(() => null),
         getDriverReviews().catch(() => null),
       ]);
 
+      setAvailableTrips(availableRes);
       setTrips(tripsRes);
       setSummary(summaryRes);
       setReviewsData(reviewsRes);
@@ -71,15 +80,18 @@ export function DriverDashboard() {
 
   useEffect(() => {
     let isMounted = true;
+
     const fetchInitialData = async () => {
       try {
-        const [tripsRes, summaryRes, reviewsRes] = await Promise.all([
+        const [availableRes, tripsRes, summaryRes, reviewsRes] = await Promise.all([
+          isOnline ? getAvailableDriverTrips().catch(() => []) : Promise.resolve([]),
           getDriverTrips().catch(() => []),
           getDriverSummary().catch(() => null),
           getDriverReviews().catch(() => null),
         ]);
 
         if (!isMounted) return;
+        setAvailableTrips(availableRes);
         setTrips(tripsRes);
         setSummary(summaryRes);
         setReviewsData(reviewsRes);
@@ -96,15 +108,38 @@ export function DriverDashboard() {
 
     void fetchInitialData();
 
+    // Tự động quét đơn chờ nhận mới mỗi 10 giây CHỈ KHI tài xế đang TRỰC TUYẾN (ONLINE)
+    let pollInterval: NodeJS.Timeout | null = null;
+    if (isOnline) {
+      pollInterval = setInterval(() => {
+        if (isMounted) {
+          getAvailableDriverTrips()
+            .then((res) => {
+              if (isMounted) setAvailableTrips(res);
+            })
+            .catch(() => {});
+        }
+      }, 10000);
+    }
+
     return () => {
       isMounted = false;
+      if (pollInterval) clearInterval(pollInterval);
     };
-  }, []);
+  }, [isOnline]);
 
   const handleToggleStatus = async (newStatus: DriverStatus) => {
     try {
       await updateDriverStatus(newStatus);
       setDriverStatus(newStatus);
+      if (newStatus === 'OFFLINE') {
+        setAvailableTrips([]);
+      } else {
+        // Vừa chuyển sang ONLINE -> fetch ngay danh sách chuyến khả dụng
+        getAvailableDriverTrips()
+          .then((res) => setAvailableTrips(res))
+          .catch(() => {});
+      }
       showToast(
         'success',
         newStatus === 'ONLINE'
@@ -126,6 +161,19 @@ export function DriverDashboard() {
       await loadData();
     } catch {
       showToast('error', 'Lỗi khi cập nhật trạng thái cuốc xe');
+    }
+  };
+
+  const handleClaimTrip = async (orderId: string) => {
+    try {
+      await claimDriverTrip(orderId);
+      showToast('success', 'Nhận chuyến thành công! Hãy đến quán lấy món và bắt đầu giao.');
+      await loadData();
+      setActiveTab('trips');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Chuyến xe đã được tài xế khác nhận';
+      showToast('error', msg);
+      await loadData();
     }
   };
 
@@ -182,7 +230,7 @@ export function DriverDashboard() {
     );
   }
 
-  const currentStatus: DriverStatus = user?.driverProfile?.status || 'ONLINE';
+  // currentStatus is already defined above
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
@@ -247,6 +295,21 @@ export function DriverDashboard() {
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div className="flex items-center gap-2">
               <button
+                onClick={() => setActiveTab('available')}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                  activeTab === 'available'
+                    ? 'bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Bike className="w-4 h-4" />
+                <span>Đơn Chờ Nhận ({availableTrips.length})</span>
+                {availableTrips.length > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                )}
+              </button>
+
+              <button
                 onClick={() => setActiveTab('trips')}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                   activeTab === 'trips'
@@ -282,7 +345,16 @@ export function DriverDashboard() {
           </div>
 
           {/* Active Tab Component */}
-          {activeTab === 'trips' ? (
+          {activeTab === 'available' ? (
+            <DriverAvailableTrips
+              trips={availableTrips}
+              loading={loading}
+              isOnline={isOnline}
+              onGoOnline={() => handleToggleStatus('ONLINE')}
+              onRefresh={loadData}
+              onClaimTrip={handleClaimTrip}
+            />
+          ) : activeTab === 'trips' ? (
             <DriverTripsList
               trips={trips}
               loading={loading}

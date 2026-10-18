@@ -68,3 +68,45 @@ export async function getAvailableTags(): Promise<TagItem[]> {
     next: { revalidate: 60 } as NextFetchRequestConfig,
   });
 }
+
+export interface PartnerOrderItem {
+  id?: string;
+  menu_item_id: string;
+  name?: string;
+  quantity: number;
+  unit_price: number;
+  options?: string[];
+  notes?: string;
+}
+
+export interface PartnerOrder {
+  id: string;
+  customer_id: string;
+  restaurant_id: string;
+  driver_id: string | null;
+  total_amount: number;
+  status: string;
+  delivery_address: string;
+  note: string | null;
+  cooking_at?: string | null;
+  ready_at?: string | null;
+  driver_claimed_at?: string | null;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
+  created_at: string;
+  updated_at: string;
+  items: PartnerOrderItem[];
+}
+
+export async function getRestaurantOrders(restaurantId: string): Promise<PartnerOrder[]> {
+  return await apiClient<PartnerOrder[]>(`/orders/restaurant/${restaurantId}`, {
+    cache: 'no-store',
+  });
+}
+
+export async function updateOrderStatus(orderId: string, status: string): Promise<PartnerOrder> {
+  return await apiClient<PartnerOrder>(`/orders/${orderId}/status`, {
+    method: 'PATCH',
+    body: { status },
+  });
+}

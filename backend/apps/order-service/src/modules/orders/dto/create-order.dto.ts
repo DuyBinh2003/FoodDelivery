@@ -23,6 +23,10 @@ export class CreateOrderItemDto {
   @IsUUID()
   menu_item_id: string;
 
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -32,6 +36,15 @@ export class CreateOrderItemDto {
   @IsNumber()
   @Min(0)
   unit_price: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  options?: string[];
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }
 
 export class CreateOrderDto {

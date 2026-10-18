@@ -19,12 +19,15 @@ export interface DriverTripReview {
 export interface DriverTrip {
   id: string;
   order_id: string;
-  status: 'PENDING' | 'ACCEPTED' | 'COOKING' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'ACCEPTED' | 'COOKING' | 'READY_FOR_PICKUP' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED';
   total_amount: number;
   driver_earnings: number;
   pickup_name: string;
   pickup_address: string;
   dropoff_address: string;
+  claimed_at?: string | Date | null;
+  completed_at?: string | Date | null;
+  duration_minutes?: number | null;
   created_at: string | Date;
   updated_at: string | Date;
   items: DriverTripItem[];
