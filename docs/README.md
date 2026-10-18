@@ -21,6 +21,7 @@ docs/
 │   ├── elasticsearch.md               # Kiến trúc đồng bộ dữ liệu tìm kiếm và cấu hình Elasticsearch
 │   ├── frontend-backend-connection.md # API Gateway (NGINX), routing, CORS và reverse proxy
 │   ├── async-order-processing-flow.md # Xử lý đơn bất đồng bộ: SQS FIFO buffer, Redis In-flight cache, Deferred DB write
+│   ├── error-handling.md              # Kiến trúc xử lý lỗi toàn diện Full-Stack (Backend filter, Frontend UI fallback)
 │   └── migration-plan.md              # Lịch sử và nhật ký chuyển đổi từ Monolith sang Microservices
 │
 ├── services/                          # ⚙️ Đặc tả chi tiết từng Microservice & Hợp đồng API (API Contracts)

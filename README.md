@@ -109,6 +109,19 @@ Chúng ta đã hoàn tất việc chia tách dự án từ Monolith sang Microse
   - Bảo đảm bất biến tuyệt đối `sum(DEBIT) == sum(CREDIT)` bằng `Decimal.js` và khóa bi quan (`SELECT FOR UPDATE`)
   - Cơ chế cấn trừ đơn COD và xử lý số dư âm tạm thời của Tài xế (tự động gắn cờ `isDriverInactive` bảo vệ nền tảng)
   - 100% kiểm thử tự động với Vitest và tài liệu chi tiết tại [`docs/services/payment-service.md`](./docs/services/payment-service.md)
+- **Phase 11: Vận Hành Đơn Bếp & Điều Phối Giao Hàng (Restaurant & Driver Fulfillment - Issue #55)** ✅
+  - Nhà hàng tiếp nhận đơn và quản lý đơn bếp thời gian thực tại Merchant Portal (`/partner/restaurant`): Tab "Đơn bếp", xem chi tiết đơn hàng, chuyển trạng thái chế biến (`COOKING` ➡️ `READY_FOR_PICKUP`).
+  - Tài xế nhận cuốc xe và vận hành chuyến đi tại Driver Portal (`/driver/dashboard`): Xem danh sách chuyến sẵn sàng nhận (`AVAILABLE`), nhận cuốc xe (`CLAIM`), cập nhật trạng thái di chuyển (`DELIVERING` ➡️ `COMPLETED`).
+  - Quản lý mốc thời gian luân chuyển đơn hàng (**Order Milestones**): `cooking_at`, `ready_at`, `driver_claimed_at`, `completed_at`, `cancelled_at` đồng bộ giữa Redis In-flight cache và PostgreSQL.
+  - Kiểm thử tự động với Vitest bao phủ 100% luồng nghiệp vụ: `order-milestones.spec.ts` và `driver-active-dispatch.spec.ts`.
+- **Phase 12: Kiến Trúc Xử Lý Lỗi Toàn Diện & Chuẩn Hóa CI/CD (Full-Stack Error Handling & CI/CD Pipeline - Issue #57)** ✅
+  - **Backend**: Triển khai bộ lọc ngoại lệ toàn cục `GlobalExceptionFilter` tại `libs/common/src/filters/`, áp dụng cho toàn bộ 7 Microservices; chuẩn hóa cấu trúc lỗi `ErrorResponseBody`, che giấu lỗi database nhạy cảm (HTTP 500), bảo toàn root cause qua Logger và xử lý lỗi validate từ `ValidationPipe`.
+  - **Frontend**:
+    - Chuẩn hóa tầng mạng `apiClient` và lớp ngoại lệ `ApiError` với thông điệp tiếng Việt thân thiện, tự động xử lý hết hạn phiên (HTTP 401) và chuyển hướng đăng nhập thông minh.
+    - Xây dựng hệ thống Error Boundary phân cấp: `error.tsx` (Route-level), `global-error.tsx` (Root-level), trang 404 phong cách ẩm thực (`not-found.tsx`).
+    - Component giao diện dự phòng `ErrorState` tái sử dụng với nút "Thử lại" (Retry action).
+    - Cấu hình môi trường nghiêm ngặt (**Fail-Fast**): Cơ chế `requireEnv` kiểm tra biến môi trường khi build, cấm fallback ngầm và cấm dữ liệu giả trong UI.
+  - **CI/CD Pipeline**: Hoàn thiện GitHub Actions workflow (`ci-cd.yml`) tự động hóa kiểm tra: Oxlint + Absolute Import check, Vitest unit test (Backend) và ESLint + Next.js Production Build (Frontend) với tỷ lệ pass 100%.
 
 ---
 
