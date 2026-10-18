@@ -9,7 +9,7 @@ Dưới đây là danh sách các tính năng (issues) được chia theo từng
 ### 🛒 Epic 1: Trải nghiệm mua sắm (Shopping Experience)
 - **[Issue C1] Tìm kiếm & Lọc thông minh:** Tích hợp engine tìm kiếm (Elasticsearch hoặc MeiliSearch) để tìm kiếm nhà hàng/món ăn theo tên, filter theo đánh giá, khoảng cách, freeship, category (trà sữa, cơm tấm...).
 - **[Issue C2] Hệ thống Giỏ hàng (Advanced Cart):** Hỗ trợ thêm topping, ghi chú cho từng món. Cảnh báo khi đặt món ở 2 nhà hàng khác nhau (tách đơn hoặc reset giỏ hàng).
-- **[Issue C3] Quản lý Địa chỉ (Address Book):** Tích hợp Google Maps API hoặc Goong API để chọn vị trí trên bản đồ, tính khoảng cách từ nhà hàng đến khách, lưu các địa chỉ quen thuộc (Nhà, Công ty).
+- **[Issue C3] Quản lý Địa chỉ (Address Book) & Tính Toán Lộ Trình (Issue #18) [HOÀN THÀNH]**: Quản lý sổ địa chỉ đa năng cho User với tọa độ GPS WGS84 (`m_user_address`), bản đồ tương tác Leaflet + OpenStreetMap + Nominatim geocoding không phụ thuộc API key, snapshot địa chỉ và tọa độ vào `t_order` (`delivery_lat`, `delivery_lng`), tính khoảng cách Haversine chuẩn xác (`distance_km`) giữa Quán ăn và Khách hàng cho tài xế.
 
 ### 💳 Epic 2: Thanh toán & Khuyến mãi (Checkout & Promos)
 - **[Issue C4] Promotion/Voucher Engine:** Cho phép áp dụng nhiều loại mã giảm giá cùng lúc (1 mã giảm giá món + 1 mã freeship). Validate điều kiện áp dụng (giá trị đơn tối thiểu, số lượng giới hạn).
@@ -38,7 +38,7 @@ Dưới đây là danh sách các tính năng (issues) được chia theo từng
 
 ### 📍 Epic 6: Hệ thống điều phối (Dispatch System)
 - **[Issue D1] Driver Tracking (Real-time GPS):** Bắn tọa độ liên tục của tài xế qua WebSocket để khách hàng thấy tài xế đang di chuyển trên bản đồ.
-- **[Issue D2] Thuật toán chia cuốc (Order Routing):** Khi có đơn mới, tự động ping các tài xế trong bán kính gần nhất (dùng Redis Geospatial hoặc PostGIS). Tài xế có 15s để accept.
+- **[Issue D2] Thuật toán chia cuốc (Order Routing):** Tích hợp công thức Haversine tính toán lộ trình khoảng cách (`distance_km`) giữa nhà hàng và khách hàng. Hiển thị huy hiệu cự ly trên cổng tài xế (`DriverTripCard`), sẵn sàng kết hợp cùng Redis Geospatial để dispatch cuốc tới tài xế gần nhất.
 - **[Issue D3] Quy trình giao nhận (Delivery Flow):** Flow thao tác: Đã tới quán -> Đã lấy món (chụp ảnh hóa đơn) -> Đang giao -> Đã giao thành công (chụp ảnh bằng chứng).
 
 ### 💰 Epic 7: Ví tài xế (Driver Wallet)

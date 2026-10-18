@@ -4,6 +4,10 @@ import type { Order, CreateOrderReviewDto } from '@/features/orders/types';
 export interface CreateOrderPayload {
   restaurant_id: string;
   delivery_address: string;
+  delivery_lat?: number;
+  delivery_lng?: number;
+  recipient_name?: string;
+  recipient_phone?: string;
   note?: string;
   payment_method?: 'CASH' | 'MOMO' | 'VNPAY';
   items: Array<{

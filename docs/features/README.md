@@ -13,6 +13,7 @@ docs/features/
 ├── README.md                          # Mục lục tính năng (Bạn đang ở đây)
 │
 ├── customer/                          # 🛒 Phân hệ Khách Hàng (Customer App)
+│   ├── address-book.md                # Sổ địa chỉ đa năng: GPS WGS84, Leaflet OSM, snapshot đơn hàng, tính cự ly lộ trình
 │   ├── advanced-cart.md               # Hệ thống giỏ hàng: chính sách 1 nhà hàng, auto revalidation, toppings
 │   └── restaurant-detail-and-product-modal.md # Trang chi tiết nhà hàng (/restaurant/:id) & popup xem sản phẩm
 │
@@ -32,6 +33,7 @@ docs/features/
 ### 1. Phân hệ Khách hàng (`customer/`)
 | Tính năng | Đường dẫn ứng dụng | Mô tả cốt lõi | Tài liệu |
 | :--- | :--- | :--- | :--- |
+| **Sổ Địa Chỉ & Lộ Trình (Address Book)** | `/profile/addresses`, `/checkout` | Quản lý sổ địa chỉ đa năng với bản đồ Leaflet OSM, snapshot tọa độ GPS vào đơn hàng, tính khoảng cách Haversine lộ trình giao hàng cho tài xế. | [`address-book.md`](./customer/address-book.md) |
 | **Giỏ hàng nâng cao (Advanced Cart)** | `/cart`, `/checkout` | Lưu giỏ hàng offline-first, tự động cập nhật giá và kiểm tra mở/đóng cửa khi thanh toán, bắt buộc 1 nhà hàng duy nhất. | [`advanced-cart.md`](./customer/advanced-cart.md) |
 | **Trang Quán & Popup Thêm Món** | `/restaurant/[id]` | Hero banner nhà hàng cao cấp, tìm kiếm trong quán, lọc danh mục sticky, popup xem chi tiết món 16:9 với chip ghi chú nhanh và stepper số lượng. | [`restaurant-detail-and-product-modal.md`](./customer/restaurant-detail-and-product-modal.md) |
 

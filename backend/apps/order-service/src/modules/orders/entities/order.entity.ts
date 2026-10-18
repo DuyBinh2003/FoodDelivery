@@ -36,6 +36,18 @@ export class Order {
   @Column({ type: 'text' })
   delivery_address: string;
 
+  @Column({ type: 'numeric', precision: 10, scale: 8, nullable: true })
+  delivery_lat: number | null;
+
+  @Column({ type: 'numeric', precision: 11, scale: 8, nullable: true })
+  delivery_lng: number | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  recipient_name: string | null;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  recipient_phone: string | null;
+
   @Column({ type: 'text', nullable: true })
   note: string | null;
 

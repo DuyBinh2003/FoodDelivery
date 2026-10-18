@@ -41,6 +41,7 @@ docs/
 ├── features/                          # 📱 Đặc tả tính năng và luồng tương tác người dùng (User Flows)
 │   ├── README.md                      # Index chuyên mục tính năng theo actor
 │   ├── customer/                      # Phân hệ Khách hàng (Customer Experience)
+│   │   ├── address-book.md            # Sổ địa chỉ đa năng (WGS84 GPS, Leaflet OSM, snapshot đơn hàng, Haversine routing)
 │   │   └── advanced-cart.md           # Hệ thống giỏ hàng nâng cao, ràng buộc 1 nhà hàng, auto validation
 │   ├── partner/                       # Phân hệ Đối tác Nhà hàng (Merchant Portal)
 │   │   ├── merchant-partner-portal.md # Bảng điều khiển đối tác quán ăn, bật/tắt nhận đơn, quản lý menu

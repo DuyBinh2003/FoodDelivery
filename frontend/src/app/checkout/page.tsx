@@ -18,7 +18,16 @@ import {
   CheckCircle2,
   Sparkles,
   MessageSquare,
+  Edit2,
+  Home,
+  Briefcase,
 } from 'lucide-react';
+import {
+  AddressSelectorModal,
+  getUserAddresses,
+  type UserAddress,
+} from '@/features/address';
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -33,6 +42,11 @@ export default function CheckoutPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [orderNote, setOrderNote] = useState('');
 
+  // Address Book state
+  const [addresses, setAddresses] = useState<UserAddress[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(null);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+
   const hasValidatedRef = useRef(false);
   const fetchedCustomerIdRef = useRef<string | null>(null);
 
@@ -41,6 +55,12 @@ export default function CheckoutPage() {
   const customerPhone = (user?.customerProfile?.phone as string) || '';
   const customerAddress =
     (user?.customerProfile?.address as string) || 'Chưa cập nhật địa chỉ giao hàng';
+
+  const finalRecipientName = selectedAddress?.recipient_name || customerName;
+  const finalRecipientPhone = selectedAddress?.recipient_phone || customerPhone;
+  const finalDeliveryAddress = selectedAddress?.full_address || customerAddress;
+  const finalDeliveryLat = selectedAddress?.latitude ? Number(selectedAddress.latitude) : undefined;
+  const finalDeliveryLng = selectedAddress?.longitude ? Number(selectedAddress.longitude) : undefined;
 
   const subtotal = getSubtotal();
   const shippingFee = 15000;
@@ -85,6 +105,44 @@ export default function CheckoutPage() {
     fetchWallet();
   }, [customerId, fetchWallet]);
 
+  // Fetch saved addresses from address book on mount / customerId change
+  useEffect(() => {
+    if (!customerId) return;
+    let active = true;
+
+    getUserAddresses()
+      .then((list) => {
+        if (active) {
+          setAddresses(list);
+          if (list.length > 0) {
+            const def = list.find((a) => a.is_default) || list[0];
+            setSelectedAddress((curr) => curr ?? def);
+          }
+        }
+      })
+      .catch((err: unknown) => {
+        console.warn('Failed to load user addresses for checkout:', err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [customerId]);
+
+  // Refresh saved addresses callback for modal updates
+  const fetchAddresses = useCallback(async () => {
+    try {
+      const list = await getUserAddresses();
+      setAddresses(list);
+      if (list.length > 0) {
+        const def = list.find((a) => a.is_default) || list[0];
+        setSelectedAddress(def);
+      }
+    } catch (err: unknown) {
+      console.warn('Failed to load user addresses for checkout:', err);
+    }
+  }, []);
+
   const handlePlaceOrder = async () => {
     if (items.length === 0) return;
 
@@ -109,10 +167,14 @@ export default function CheckoutPage() {
         return;
       }
 
-      // 1. Create order in order-service
+      // 1. Create order in order-service with address snapshot
       const orderPayload = {
         restaurant_id: restaurantId,
-        delivery_address: customerAddress,
+        delivery_address: finalDeliveryAddress,
+        delivery_lat: finalDeliveryLat,
+        delivery_lng: finalDeliveryLng,
+        recipient_name: finalRecipientName,
+        recipient_phone: finalRecipientPhone,
         note: orderNote.trim() || undefined,
         items: items.map((item) => ({
           menu_item_id: item.item_id,
@@ -191,16 +253,64 @@ export default function CheckoutPage() {
 
             {/* Delivery Info */}
             <section className="bg-zinc-900 border border-white/5 rounded-3xl p-5 space-y-3">
-              <h2 className="text-white font-semibold flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-orange-500" />
-                Địa chỉ giao hàng
-              </h2>
-              <div className="bg-zinc-800/40 border border-white/5 rounded-2xl p-4">
-                <p className="text-white font-semibold">
-                  {customerName}
-                  {customerPhone ? ` • ${customerPhone}` : ''}
+              <div className="flex items-center justify-between">
+                <h2 className="text-white font-semibold flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-orange-500" />
+                  Địa chỉ giao hàng
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setIsAddressModalOpen(true)}
+                  className="text-xs text-orange-400 hover:text-orange-300 font-medium flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 transition-all active:scale-95"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  {selectedAddress ? 'Đổi địa chỉ' : 'Chọn địa chỉ'}
+                </button>
+              </div>
+
+              <div
+                onClick={() => setIsAddressModalOpen(true)}
+                className="bg-zinc-800/40 border border-white/5 hover:border-orange-500/30 rounded-2xl p-4 cursor-pointer transition-all group"
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-white font-semibold flex items-center gap-2 text-sm">
+                    {finalRecipientName}
+                    {finalRecipientPhone ? ` • ${finalRecipientPhone}` : ''}
+                  </span>
+                  {selectedAddress && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">
+                      {selectedAddress.label === 'HOME' ? (
+                        <>
+                          <Home className="w-3 h-3 text-blue-400" /> Nhà riêng
+                        </>
+                      ) : selectedAddress.label === 'WORK' ? (
+                        <>
+                          <Briefcase className="w-3 h-3 text-purple-400" /> Cơ quan
+                        </>
+                      ) : (
+                        <>
+                          <MapPin className="w-3 h-3 text-amber-400" /> Khác
+                        </>
+                      )}
+                    </span>
+                  )}
+                  {selectedAddress?.is_default && (
+                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      Mặc định
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-zinc-300 text-xs leading-relaxed group-hover:text-white transition-colors">
+                  {finalDeliveryAddress}
                 </p>
-                <p className="text-zinc-400 text-sm mt-1">{customerAddress}</p>
+
+                {selectedAddress?.delivery_notes && (
+                  <p className="text-[11px] text-zinc-400 italic mt-1.5 pt-1.5 border-t border-zinc-700/40">
+                    <span className="not-italic text-zinc-500 font-medium">Ghi chú: </span>
+                    {selectedAddress.delivery_notes}
+                  </p>
+                )}
               </div>
             </section>
 
@@ -430,6 +540,18 @@ export default function CheckoutPage() {
           </div>
         </div>
       )}
+
+      {/* Address Selector & Add Modal */}
+      <AddressSelectorModal
+        isOpen={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
+        addresses={addresses}
+        selectedAddressId={selectedAddress?.id}
+        onSelectAddress={(addr) => setSelectedAddress(addr)}
+        onRefreshAddresses={fetchAddresses}
+        defaultRecipientName={customerName}
+        defaultRecipientPhone={customerPhone}
+      />
     </div>
   );
 }

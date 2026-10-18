@@ -22,6 +22,10 @@ export interface InflightOrderData {
   driver_id: string | null;
   status: OrderStatus;
   delivery_address: string;
+  delivery_lat?: number | null;
+  delivery_lng?: number | null;
+  recipient_name?: string | null;
+  recipient_phone?: string | null;
   note: string | null;
   payment_method: string;
   total_amount: number;

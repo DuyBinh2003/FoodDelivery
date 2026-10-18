@@ -24,7 +24,14 @@ export interface DriverTrip {
   driver_earnings: number;
   pickup_name: string;
   pickup_address: string;
+  pickup_lat?: number | null;
+  pickup_lng?: number | null;
   dropoff_address: string;
+  dropoff_lat?: number | null;
+  dropoff_lng?: number | null;
+  recipient_name?: string | null;
+  recipient_phone?: string | null;
+  distance_km?: number | null;
   claimed_at?: string | Date | null;
   completed_at?: string | Date | null;
   duration_minutes?: number | null;

@@ -161,6 +161,10 @@ erDiagram
         numeric total_amount "numeric(15,2)"
         varchar status "PENDING, ACCEPTED, COOKING, DELIVERING, COMPLETED, CANCELLED"
         text delivery_address
+        numeric delivery_lat "numeric(10,8) Tọa độ vĩ độ điểm giao hàng"
+        numeric delivery_lng "numeric(11,8) Tọa độ kinh độ điểm giao hàng"
+        varchar recipient_name "varchar(255) Tên người nhận snapshot"
+        varchar recipient_phone "varchar(50) SĐT người nhận snapshot"
         text note
         timestamptz estimated_delivery_time
         varchar payment_method "Mặc định CASH"

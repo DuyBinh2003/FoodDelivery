@@ -183,9 +183,23 @@ export function DriverAvailableTrips({
                       <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                         <MapPin className="w-3.5 h-3.5" />
                       </div>
-                      <div>
-                        <p className="text-xs font-bold text-white">Địa chỉ giao hàng</p>
-                        <p className="text-xs text-zinc-400 line-clamp-1">{trip.dropoff_address}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-bold text-white">Địa chỉ giao hàng</p>
+                          {trip.distance_km != null && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/30 shrink-0">
+                              <Navigation className="w-3 h-3" />
+                              {trip.distance_km} km
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-zinc-400 line-clamp-1 mt-0.5">{trip.dropoff_address}</p>
+                        {trip.recipient_name && (
+                          <p className="text-[11px] text-zinc-400 mt-0.5">
+                            <span className="text-zinc-300 font-medium">{trip.recipient_name}</span>
+                            {trip.recipient_phone && <span> • {trip.recipient_phone}</span>}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>

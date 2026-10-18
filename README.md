@@ -122,6 +122,13 @@ Chúng ta đã hoàn tất việc chia tách dự án từ Monolith sang Microse
     - Component giao diện dự phòng `ErrorState` tái sử dụng với nút "Thử lại" (Retry action).
     - Cấu hình môi trường nghiêm ngặt (**Fail-Fast**): Cơ chế `requireEnv` kiểm tra biến môi trường khi build, cấm fallback ngầm và cấm dữ liệu giả trong UI.
   - **CI/CD Pipeline**: Hoàn thiện GitHub Actions workflow (`ci-cd.yml`) tự động hóa kiểm tra: Oxlint + Absolute Import check, Vitest unit test (Backend) và ESLint + Next.js Production Build (Frontend) với tỷ lệ pass 100%.
+- **Phase 13: Quản Lý Sổ Địa Chỉ & Tính Toán Lộ Trình Driver (Issue #18)** ✅
+  - **Quản lý Sổ địa chỉ đa năng (`schema_user.m_user_address`)**: Hỗ trợ người dùng lưu nhiều địa chỉ nhận hàng với nhãn định danh (`HOME`, `WORK`, `OTHER`), tự động chuyển đổi địa chỉ mặc định duy nhất (`is_default`), lưu trữ tọa độ chuẩn WGS84 (`latitude: numeric(10,8)`, `longitude: numeric(11,8)`).
+  - **Bản đồ tương tác không phụ thuộc API key**: Tích hợp Leaflet + OpenStreetMap + OpenStreetMap Nominatim reverse geocoding trên Frontend, hỗ trợ tìm kiếm địa điểm autocomplete, kéo thả ghim vị trí và lấy tọa độ GPS từ thiết bị qua Geolocation API.
+  - **Snapshot đơn hàng bất biến (Immutable Order Snapshot)**: Snapshot trực tiếp thông tin người nhận (`recipient_name`, `recipient_phone`) và tọa độ giao hàng (`delivery_lat`, `delivery_lng`) vào `schema_order.t_order` và Redis In-flight cache khi khách hàng đặt đơn tại `/checkout`.
+  - **Tính toán khoảng cách lộ trình (Haversine Formula)**: Triển khai tiện ích `calculateHaversineDistanceKm` tính toán khoảng cách thực tế giữa Nhà hàng và Điểm giao hàng; bổ sung trường `distance_km` trong `DriverTripDto` và hiển thị huy hiệu cự ly trên Driver Portal (`/driver/dashboard`) phục vụ phân bổ cuốc xe tối ưu.
+  - **Trải nghiệm người dùng cao cấp**: Trang quản lý Sổ địa chỉ riêng biệt tại `/profile/addresses`, modal chọn địa chỉ tích hợp trực tiếp tại `/checkout` (`AddressSelectorModal`), thiết kế hiện đại Dark theme theo tôn chỉ UI/UX Pro Max.
+  - **Kiểm thử tự động & Tài liệu hóa**: Bổ sung bộ kiểm thử Vitest toàn diện (`user-address.spec.ts`, `order-distance-calculation.spec.ts`) đạt 100% pass; cập nhật đầy đủ tài liệu kỹ thuật tại [`docs/features/customer/address-book.md`](./docs/features/customer/address-book.md).
 
 ---
 
