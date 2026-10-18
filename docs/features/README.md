@@ -21,9 +21,12 @@ docs/features/
 │   ├── merchant-partner-portal.md     # Quản lý quán ăn: mở/đóng cửa thời gian thực, quản lý menu & danh mục
 │   └── restaurant-registration-flow.md# Luồng nộp đơn mở quán, xét duyệt tự động, WebSocket thông báo
 │
-└── driver/                            # 🛵 Phân hệ Đối Tác Tài Xế (Driver App & Portal)
-    ├── driver-portal.md               # Dashboard tài xế: Online/Offline switch, cuốc xe, thu nhập & review
-    └── driver-registration-flow.md    # Luồng đăng ký tài xế, quy tắc 1-1 không trùng lặp, phê duyệt Admin
+├── driver/                            # 🛵 Phân hệ Đối Tác Tài Xế (Driver App & Portal)
+│   ├── driver-portal.md               # Dashboard tài xế: Online/Offline switch, cuốc xe, thu nhập & review
+│   └── driver-registration-flow.md    # Luồng đăng ký tài xế, quy tắc 1-1 không trùng lặp, phê duyệt Admin
+│
+└── admin/                             # 👑 Phân hệ Quản Trị Viên (Admin Portal & Backoffice)
+    └── admin-portal.md                # Dashboard visualize Recharts, Ví Sàn Treasury, Orders/Trips, Master Data
 ```
 
 ---
@@ -48,6 +51,11 @@ docs/features/
 | :--- | :--- | :--- | :--- |
 | **Cổng Thông Tin Tài Xế (Driver Portal)** | `/driver/dashboard` | Bật/tắt trạng thái nhận cuốc, thống kê thu nhập ngày/tuần, lịch sử cuốc xe chi tiết và xem đánh giá khách hàng. | [`driver-portal.md`](./driver/driver-portal.md) |
 | **Đăng ký Tài Xế** | `/register/driver` | Form đăng ký phương tiện & CCCD, ràng buộc 1 tài khoản chỉ 1 tài xế, quản trị viên phê duyệt trên Admin Portal. | [`driver-registration-flow.md`](./driver/driver-registration-flow.md) |
+
+### 4. Phân hệ Quản trị viên (`admin/`)
+| Tính năng | Đường dẫn ứng dụng | Mô tả cốt lõi | Tài liệu |
+| :--- | :--- | :--- | :--- |
+| **Admin Portal Toàn Diện** | `/admin/dashboard`, `/admin/wallet`, `/admin/orders`, `/admin/users`, `/admin/restaurants` | Hệ thống quản trị hoàn chỉnh: Dashboard visualize Recharts, Ví doanh thu sàn Sổ cái kép, Quản lý đơn/cuốc xe GPS, Quản lý Master users/drivers/restaurants. | [`admin-portal.md`](./admin/admin-portal.md) |
 
 ---
 

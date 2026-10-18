@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Inject } from '@nestjs/common';
 import { AdminService } from '@/modules/admin/admin.service.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
@@ -17,6 +17,79 @@ export class AdminController {
   @Get('metrics/dashboard')
   getDashboardMetrics() {
     return this.adminService.getDashboardMetrics();
+  }
+
+  @Get('analytics/dashboard')
+  getDashboardAnalytics(@Query('range') range?: '7d' | '30d' | 'all') {
+    return this.adminService.getDashboardAnalytics(range || '7d');
+  }
+
+  @Get('wallet/summary')
+  getWalletSummary(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.adminService.getPlatformWalletSummary(
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 20,
+    );
+  }
+
+  @Get('orders')
+  getOrders(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAdminOrders({
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 20,
+      status,
+      search,
+    });
+  }
+
+  @Get('users')
+  getUsers(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('role') role?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAdminUsers({
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 20,
+      role,
+      search,
+    });
+  }
+
+  @Get('drivers')
+  getDrivers(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAdminDrivers({
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 20,
+      status,
+      search,
+    });
+  }
+
+  @Get('restaurants')
+  getRestaurants(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAdminRestaurants({
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 20,
+      status,
+      search,
+    });
   }
 
   @Get('approvals/pending')

@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Body, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, ParseUUIDPipe, Query } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
@@ -22,6 +22,36 @@ export class OrdersInternalController {
     ]);
 
     return { totalOrders, totalGmv };
+  }
+
+  @Get('orders/analytics-timeseries')
+  async getAnalyticsTimeseries(@Query('range') range?: '7d' | '30d' | 'all') {
+    return this.orderReadRepo.getAnalyticsTimeSeries(range || '7d');
+  }
+
+  @Get('orders/admin-list')
+  async getAdminOrders(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: OrderStatus,
+    @Query('search') search?: string,
+  ) {
+    const p = Math.max(1, Number(page) || 1);
+    const l = Math.max(1, Math.min(100, Number(limit) || 20));
+    const result = await this.orderReadRepo.findWithFilters({
+      page: p,
+      limit: l,
+      status: status || undefined,
+      search: search || undefined,
+    });
+
+    return {
+      data: result.data,
+      total: result.total,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(result.total / l),
+    };
   }
 
   @Patch('orders/:id/status')

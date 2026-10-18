@@ -24,6 +24,45 @@ export class RestaurantsInternalController {
     };
   }
 
+  @Get('restaurants/admin-list')
+  async getRestaurantsAdmin(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    const p = Math.max(1, Number(page) || 1);
+    const l = Math.max(1, Math.min(100, Number(limit) || 20));
+
+    const qb = this.restaurantRepo
+      .createQueryBuilder('r')
+      .where('r.is_deleted = false');
+
+    if (search) {
+      qb.andWhere('(r.name ILIKE :search OR r.address ILIKE :search)', { search: `%${search}%` });
+    }
+
+    if (status === 'ACTIVE') {
+      qb.andWhere('r.is_active = true');
+    } else if (status === 'INACTIVE') {
+      qb.andWhere('r.is_active = false');
+    }
+
+    const [data, total] = await qb
+      .orderBy('r.created_at', 'DESC')
+      .skip((p - 1) * l)
+      .take(l)
+      .getManyAndCount();
+
+    return {
+      data,
+      total,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(total / l),
+    };
+  }
+
   @Get('restaurants/categories')
   async getCategories(): Promise<Category[]> {
     return this.categoryRepo.find({ where: { is_deleted: false } });
