@@ -17,7 +17,7 @@ import type { ArgumentsHost } from '@nestjs/common';
 import {
   GlobalExceptionFilter,
   type ErrorResponseBody,
-} from '../http-exception.filter.js';
+} from '@/common/filters/http-exception.filter.js';
 
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
