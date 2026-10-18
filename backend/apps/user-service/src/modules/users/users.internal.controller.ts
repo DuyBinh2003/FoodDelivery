@@ -6,6 +6,7 @@ import { DriverProfile, DriverStatus } from '@/modules/users/entities/driver-pro
 import { RegistrationRequest } from '@/modules/users/entities/registration-request.entity.js';
 import { ReviewRegistrationDto, RegistrationStatus } from '@/modules/users/dto/review-registration.dto.js';
 import { UserGateway } from '@/modules/users/gateways/user.gateway.js';
+import { UserAddressRepository } from '@/modules/users/repositories/user-address.repository.js';
 
 @Controller('internal')
 export class UsersInternalController {
@@ -16,6 +17,7 @@ export class UsersInternalController {
     @InjectRepository(DriverProfile) private readonly driverRepo: Repository<DriverProfile>,
     @InjectRepository(RegistrationRequest) private readonly regRepo: Repository<RegistrationRequest>,
     @Inject(UserGateway) private readonly userGateway: UserGateway,
+    @Inject(UserAddressRepository) private readonly addressRepo: UserAddressRepository,
   ) {}
 
   @Get('users/metrics')
@@ -207,5 +209,20 @@ export class UsersInternalController {
       vehicle_plate: driver.vehicle_plate,
       vehicle_type: driver.vehicle_type,
     };
+  }
+
+  @Get('users/:id/addresses')
+  async getUserAddressesInternal(@Param('id', ParseUUIDPipe) id: string) {
+    return this.addressRepo.findUserAddresses(id);
+  }
+
+  @Get('users/:id/default-address')
+  async getDefaultAddressInternal(@Param('id', ParseUUIDPipe) id: string) {
+    const addresses = await this.addressRepo.findUserAddresses(id);
+    const defaultAddr = addresses.find((a) => a.is_default) || addresses[0] || null;
+    if (!defaultAddr) {
+      throw new NotFoundException(`User ${id} has no registered addresses`);
+    }
+    return defaultAddr;
   }
 }

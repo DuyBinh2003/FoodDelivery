@@ -40,6 +40,13 @@ export const up = (pgm) => {
     ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'OFFLINE', 'APPROVED', '59-S3 999.99', 'Yamaha Exciter', 10.7800, 106.6950)
     ON CONFLICT (id) DO UPDATE SET verification_status = EXCLUDED.verification_status, vehicle_plate = EXCLUDED.vehicle_plate, vehicle_type = EXCLUDED.vehicle_type;
   `);
+
+  pgm.sql(`
+    INSERT INTO schema_user.m_user_address (id, user_id, recipient_name, recipient_phone, label, street_address, ward, district, city, full_address, latitude, longitude, delivery_notes, is_default) VALUES
+    ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Nguyễn Văn An', '0901234567', 'HOME', '72 Lê Thánh Tôn', 'Bến Nghé', 'Quận 1', 'TP. Hồ Chí Minh', '72 Lê Thánh Tôn, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh', 10.776530, 106.700980, 'Gọi trước khi giao', true),
+    ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Nguyễn Văn An (Công ty)', '0901234567', 'WORK', 'Tòa nhà Bitexco, 2 Hải Triều', 'Bến Nghé', 'Quận 1', 'TP. Hồ Chí Minh', 'Tòa nhà Bitexco, 2 Hải Triều, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh', 10.771660, 106.704400, 'Gửi lễ tân tầng trệt', false)
+    ON CONFLICT (id) DO NOTHING;
+  `);
 };
 
 /**
@@ -47,6 +54,7 @@ export const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 export const down = (pgm) => {
+  pgm.sql(`DELETE FROM schema_user.m_user_address WHERE id::text LIKE 'd0eebc99%';`);
   pgm.sql(`DELETE FROM schema_user.t_registration_request;`);
   pgm.sql(`DELETE FROM schema_user.m_driver_profile WHERE id::text LIKE 'c0eebc99%';`);
   pgm.sql(`DELETE FROM schema_user.m_customer_profile WHERE id::text LIKE 'b0eebc99%';`);

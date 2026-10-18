@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UtensilsCrossed, Menu, ClipboardList, LogIn, User, LogOut, History, ChevronDown, Bike, Store } from 'lucide-react';
+import { UtensilsCrossed, Menu, ClipboardList, LogIn, User, LogOut, History, ChevronDown, Bike, Store, MapPin } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { useEffect, useState, useRef } from 'react';
 
@@ -94,6 +94,15 @@ export function Navbar() {
                       >
                         <History className="w-4 h-4 text-zinc-400" />
                         Lịch sử mua hàng
+                      </Link>
+
+                      <Link
+                        href="/profile/addresses"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        <MapPin className="w-4 h-4 text-zinc-400" />
+                        Sổ địa chỉ
                       </Link>
 
                       <div className="h-px bg-white/10 my-1"></div>

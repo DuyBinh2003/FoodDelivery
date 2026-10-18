@@ -198,14 +198,26 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
             <Navigation className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0 pt-0.5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-semibold text-orange-400 uppercase tracking-wider">
                 Điểm Đến (Giao khách)
               </span>
+              {trip.distance_km != null && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                  <Navigation className="w-3 h-3" />
+                  {trip.distance_km} km
+                </span>
+              )}
             </div>
             <div className="text-sm font-medium text-zinc-200 mt-0.5">
               {trip.dropoff_address}
             </div>
+            {trip.recipient_name && (
+              <p className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
+                <span className="text-zinc-300 font-medium">{trip.recipient_name}</span>
+                {trip.recipient_phone && <span>• {trip.recipient_phone}</span>}
+              </p>
+            )}
           </div>
         </div>
       </div>

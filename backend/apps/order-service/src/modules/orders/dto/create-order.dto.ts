@@ -56,6 +56,22 @@ export class CreateOrderDto {
   delivery_address: string;
 
   @IsOptional()
+  @IsNumber()
+  delivery_lat?: number;
+
+  @IsOptional()
+  @IsNumber()
+  delivery_lng?: number;
+
+  @IsOptional()
+  @IsString()
+  recipient_name?: string;
+
+  @IsOptional()
+  @IsString()
+  recipient_phone?: string;
+
+  @IsOptional()
   @IsString()
   @MaxLength(500)
   note?: string;

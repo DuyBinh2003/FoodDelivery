@@ -2,6 +2,7 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderRedisRepository, InflightOrderData } from '@/modules/orders/repositories/order.redis.repository.js';
+import { calculateHaversineDistanceKm } from '@/common/utils/geo.utils.js';
 
 export interface DriverTripDto {
   id: string;
@@ -11,7 +12,14 @@ export interface DriverTripDto {
   driver_earnings: number;
   pickup_name: string;
   pickup_address: string;
+  pickup_lat?: number | null;
+  pickup_lng?: number | null;
   dropoff_address: string;
+  dropoff_lat?: number | null;
+  dropoff_lng?: number | null;
+  recipient_name?: string | null;
+  recipient_phone?: string | null;
+  distance_km?: number | null;
   claimed_at: Date | null;
   completed_at: Date | null;
   duration_minutes: number | null;
@@ -58,7 +66,7 @@ export class GetDriverTripsUseCase {
     const filteredDbOrders = dbOrders.filter((o) => !inflightIds.has(o.id));
 
     // Cache restaurant lookups
-    const restaurantCache = new Map<string, { name: string; address: string }>();
+    const restaurantCache = new Map<string, { name: string; address: string; lat?: number | null; lon?: number | null }>();
 
     // Map inflight trips
     const inflightTrips: DriverTripDto[] = await Promise.all(
@@ -68,11 +76,13 @@ export class GetDriverTripsUseCase {
           try {
             const res = await fetch(`${restaurantUrl}/internal/restaurants/${order.restaurant_id}/details`);
             if (res.ok) {
-              const resData = await res.json().catch(() => null);
+              const resData = (await res.json().catch(() => null)) as { name: string; address: string; lat?: number; lon?: number } | null;
               if (resData) {
                 restaurantInfo = {
                   name: resData.name,
                   address: resData.address,
+                  lat: resData.lat != null ? Number(resData.lat) : null,
+                  lon: resData.lon != null ? Number(resData.lon) : null,
                 };
                 restaurantCache.set(order.restaurant_id, restaurantInfo);
               }
@@ -95,6 +105,19 @@ export class GetDriverTripsUseCase {
           durationMinutes = Math.max(1, Math.round((completedAt.getTime() - startTime) / (1000 * 60)));
         }
 
+        const distanceKm =
+          restaurantInfo?.lat != null &&
+          restaurantInfo?.lon != null &&
+          order.delivery_lat != null &&
+          order.delivery_lng != null
+            ? calculateHaversineDistanceKm(
+                restaurantInfo.lat,
+                restaurantInfo.lon,
+                Number(order.delivery_lat),
+                Number(order.delivery_lng),
+              )
+            : null;
+
         return {
           id: order.id,
           order_id: order.id,
@@ -103,7 +126,14 @@ export class GetDriverTripsUseCase {
           driver_earnings: driverEarnings,
           pickup_name: restaurantInfo?.name ?? 'Nhà hàng Đối tác',
           pickup_address: restaurantInfo?.address ?? 'Địa chỉ nhà hàng',
+          pickup_lat: restaurantInfo?.lat ?? null,
+          pickup_lng: restaurantInfo?.lon ?? null,
           dropoff_address: order.delivery_address,
+          dropoff_lat: order.delivery_lat != null ? Number(order.delivery_lat) : null,
+          dropoff_lng: order.delivery_lng != null ? Number(order.delivery_lng) : null,
+          recipient_name: order.recipient_name ?? null,
+          recipient_phone: order.recipient_phone ?? null,
+          distance_km: distanceKm,
           claimed_at: claimedAt,
           completed_at: completedAt,
           duration_minutes: durationMinutes,
@@ -128,11 +158,13 @@ export class GetDriverTripsUseCase {
           try {
             const res = await fetch(`${restaurantUrl}/internal/restaurants/${order.restaurant_id}/details`);
             if (res.ok) {
-              const resData = await res.json().catch(() => null);
+              const resData = (await res.json().catch(() => null)) as { name: string; address: string; lat?: number; lon?: number } | null;
               if (resData) {
                 restaurantInfo = {
                   name: resData.name,
                   address: resData.address,
+                  lat: resData.lat != null ? Number(resData.lat) : null,
+                  lon: resData.lon != null ? Number(resData.lon) : null,
                 };
                 restaurantCache.set(order.restaurant_id, restaurantInfo);
               }
@@ -157,6 +189,19 @@ export class GetDriverTripsUseCase {
           }
         }
 
+        const distanceKm =
+          restaurantInfo?.lat != null &&
+          restaurantInfo?.lon != null &&
+          order.delivery_lat != null &&
+          order.delivery_lng != null
+            ? calculateHaversineDistanceKm(
+                restaurantInfo.lat,
+                restaurantInfo.lon,
+                Number(order.delivery_lat),
+                Number(order.delivery_lng),
+              )
+            : null;
+
         return {
           id: order.id,
           order_id: order.id,
@@ -165,7 +210,14 @@ export class GetDriverTripsUseCase {
           driver_earnings: driverEarnings,
           pickup_name: restaurantInfo?.name ?? 'Nhà hàng Đối tác',
           pickup_address: restaurantInfo?.address ?? 'Địa chỉ nhà hàng',
+          pickup_lat: restaurantInfo?.lat ?? null,
+          pickup_lng: restaurantInfo?.lon ?? null,
           dropoff_address: order.delivery_address,
+          dropoff_lat: order.delivery_lat != null ? Number(order.delivery_lat) : null,
+          dropoff_lng: order.delivery_lng != null ? Number(order.delivery_lng) : null,
+          recipient_name: order.recipient_name ?? null,
+          recipient_phone: order.recipient_phone ?? null,
+          distance_km: distanceKm,
           claimed_at: claimedAt,
           completed_at: completedAt,
           duration_minutes: durationMinutes,

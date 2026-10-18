@@ -19,8 +19,9 @@ Các bảng chính liên quan:
 - `m_user` (id, email, password_hash, role)
 - `m_customer_profile` (id, user_id, full_name, phone)
 - `m_driver_profile` (id, user_id, status, verification_status, vehicle_plate, vehicle_type, current_location_lat, current_location_lng)
+- `m_user_address` (id, user_id, recipient_name, recipient_phone, label, street_address, ward, district, city, full_address, latitude, longitude, delivery_notes, is_default, created_at, updated_at)
 
-Mọi thao tác quản lý, tạo mới Profile đều được thực hiện thông qua `UserWriteRepository` và API tương ứng.
+Mọi thao tác quản lý, tạo mới Profile và Sổ địa chỉ đều được thực hiện thông qua Repository tương ứng (`UserWriteRepository`, `UserAddressRepository`).
 
 ---
 
@@ -34,6 +35,11 @@ Mọi thao tác quản lý, tạo mới Profile đều được thực hiện th
 | `/users/profile` | `GET` | `JwtAuthGuard` | Lấy thông tin user hiện tại kèm các Profile mở rộng | Không | `200`, `401` |
 | `/users/profile/driver/status` | `PATCH` | `JwtAuthGuard` | Tài xế chuyển đổi trạng thái `ONLINE` / `OFFLINE` | `{ "status": "ONLINE" \| "OFFLINE" }` | `200`, `401` |
 | `/users/registrations` | `POST` | `JwtAuthGuard` | Nộp hồ sơ đăng ký đối tác (Tài xế / Nhà hàng) | `{ type: "DRIVER", payload: {...} }` | `201`, `400`, `409` |
+| `/users/addresses` | `GET` | `JwtAuthGuard` | Lấy danh sách sổ địa chỉ của người dùng | Không | `200`, `401` |
+| `/users/addresses` | `POST` | `JwtAuthGuard` | Thêm địa chỉ mới kèm tọa độ GPS (WGS84) | `{ recipient_name, recipient_phone, label, street_address, ward, district, city, full_address, latitude, longitude, delivery_notes?, is_default? }` | `201`, `400`, `401` |
+| `/users/addresses/:id` | `PATCH` | `JwtAuthGuard` | Cập nhật thông tin địa chỉ | `{ recipient_name?, recipient_phone?, label?, street_address?, full_address?, latitude?, longitude?, ... }` | `200`, `400`, `401`, `404` |
+| `/users/addresses/:id/default` | `PATCH` | `JwtAuthGuard` | Đặt một địa chỉ làm mặc định | Không | `200`, `401`, `404` |
+| `/users/addresses/:id` | `DELETE` | `JwtAuthGuard` | Xóa địa chỉ khỏi sổ địa chỉ | Không | `200`, `401`, `404` |
 
 ### B. Internal APIs (Giao tiếp nội bộ Docker, NGINX chặn bên ngoài)
 | Endpoint | Method | Service Gọi | Mục đích & Mô tả | Phản hồi |
@@ -42,3 +48,6 @@ Mọi thao tác quản lý, tạo mới Profile đều được thực hiện th
 | `/internal/users/pending-approvals` | `GET` | `admin-service` | Lấy danh sách hồ sơ đăng ký đang chờ duyệt | `{ restaurants: [], drivers: [] }` |
 | `/internal/registrations/:id/review` | `POST` | `admin-service` | Quản trị viên duyệt hoặc từ chối đơn đăng ký | `{ id, type, status, ... }` |
 | `/internal/drivers/:userId/status` | `GET` | `order-service` | Kiểm tra trạng thái hoạt động của tài xế (`is_active: status === 'ONLINE' && verification_status === 'APPROVED'`) trước khi gửi hoặc nhận cuốc xe | `{ is_driver, id, user_id, status, verification_status, is_active, vehicle_plate, vehicle_type }` |
+| `/internal/users/:id/addresses` | `GET` | `order-service` | Lấy danh sách địa chỉ của người dùng theo UUID | `[ { id, full_address, latitude, longitude, ... } ]` |
+| `/internal/users/:id/default-address` | `GET` | `order-service` | Lấy địa chỉ giao hàng mặc định của người dùng | `{ id, full_address, latitude, longitude, ... }` |
+

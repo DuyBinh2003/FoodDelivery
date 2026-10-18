@@ -19,7 +19,7 @@ export default function FoodCard({ item, index, mode = 'menu' }: FoodCardProps) 
 
   return (
     <Link href={`/restaurant/${item.restaurant_id}?item=${item.id}`}>
-      <Card className="group flex flex-col rounded-2xl overflow-hidden bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04] hover:border-white/[0.12] hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 ease-out hover:-translate-y-1">
+      <Card className="group flex flex-col p-0 gap-0 rounded-2xl overflow-hidden bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.04] hover:border-white/[0.12] hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 ease-out hover:-translate-y-1">
         {/* Image banner */}
         <div className="relative h-44 w-full overflow-hidden bg-zinc-900">
           {item.image_url ? (
@@ -62,7 +62,7 @@ export default function FoodCard({ item, index, mode = 'menu' }: FoodCardProps) 
           )}
         </CardContent>
 
-        <CardFooter className="p-5 pt-3">
+        <CardFooter className="p-5 pt-0 border-t-0 bg-transparent">
           <div className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-white/5 group-hover:bg-orange-500/10 text-zinc-300 group-hover:text-orange-400 border border-white/5 group-hover:border-orange-500/20 transition-all duration-300">
             <span className="text-sm font-semibold">
               {mode === 'restaurant' ? 'Thêm vào giỏ' : 'Xem chi tiết'}
