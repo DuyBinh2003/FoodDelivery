@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Put, Patch, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject, Put, Patch, Post, Body, UseGuards, Logger, NotFoundException } from '@nestjs/common';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
 import { Roles } from '@/common/decorators/roles.decorator.js';
@@ -17,6 +17,7 @@ import { DriverProfile } from '@/modules/users/entities/driver-profile.entity.js
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name);
   private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
 
   constructor(
@@ -35,8 +36,13 @@ export class UsersController {
       let driverProfile: DriverProfile | null = null;
       try {
         driverProfile = await this.getDriverProfileUseCase.execute({ userId: user.id });
-      } catch (_e) {
-        // Not a driver yet, ignore
+      } catch (error: unknown) {
+        if (error instanceof NotFoundException) {
+          // Expected when user has not registered as driver yet
+          driverProfile = null;
+        } else {
+          this.logger.warn(`Failed to retrieve driver profile for user ${user.id}:`, error);
+        }
       }
 
       // Check registration requests
@@ -50,13 +56,15 @@ export class UsersController {
       try {
         const res = await fetch(`${this.restaurantUrl}/internal/restaurants/by-owner/${user.id}`);
         if (res.ok) {
-          const resData = await res.json().catch(() => null);
+          const resData = (await res.json().catch(() => null)) as { id?: string } | null;
           if (resData && resData.id) {
             restaurant = resData;
           }
+        } else {
+          this.logger.warn(`Restaurant-service returned status ${res.status} for owner check ${user.id}`);
         }
-      } catch (_err) {
-        // Service might be unreachable or error, continue
+      } catch (error: unknown) {
+        this.logger.warn(`Failed to reach restaurant-service for owner check ${user.id}:`, error);
       }
 
       const hasDriver = !!(driverProfile && driverProfile.verification_status === 'APPROVED');

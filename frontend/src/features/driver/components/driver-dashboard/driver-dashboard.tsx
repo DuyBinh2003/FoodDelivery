@@ -65,10 +65,24 @@ export function DriverDashboard() {
       setLoading(true);
       setLoadError(null);
       const [availableRes, tripsRes, summaryRes, reviewsRes] = await Promise.all([
-        isOnline ? getAvailableDriverTrips().catch(() => []) : Promise.resolve([]),
-        getDriverTrips().catch(() => []),
-        getDriverSummary().catch(() => null),
-        getDriverReviews().catch(() => null),
+        isOnline
+          ? getAvailableDriverTrips().catch((err) => {
+              console.warn('[DriverDashboard] Failed to fetch available trips:', err);
+              return [];
+            })
+          : Promise.resolve([]),
+        getDriverTrips().catch((err) => {
+          console.warn('[DriverDashboard] Failed to fetch trips:', err);
+          return [];
+        }),
+        getDriverSummary().catch((err) => {
+          console.warn('[DriverDashboard] Failed to fetch summary:', err);
+          return null;
+        }),
+        getDriverReviews().catch((err) => {
+          console.warn('[DriverDashboard] Failed to fetch reviews:', err);
+          return null;
+        }),
       ]);
 
       setAvailableTrips(availableRes);
@@ -90,10 +104,24 @@ export function DriverDashboard() {
     const fetchInitialData = async () => {
       try {
         const [availableRes, tripsRes, summaryRes, reviewsRes] = await Promise.all([
-          isOnline ? getAvailableDriverTrips().catch(() => []) : Promise.resolve([]),
-          getDriverTrips().catch(() => []),
-          getDriverSummary().catch(() => null),
-          getDriverReviews().catch(() => null),
+          isOnline
+            ? getAvailableDriverTrips().catch((err) => {
+                console.warn('[DriverDashboard] Failed to fetch available trips:', err);
+                return [];
+              })
+            : Promise.resolve([]),
+          getDriverTrips().catch((err) => {
+            console.warn('[DriverDashboard] Failed to fetch trips:', err);
+            return [];
+          }),
+          getDriverSummary().catch((err) => {
+            console.warn('[DriverDashboard] Failed to fetch summary:', err);
+            return null;
+          }),
+          getDriverReviews().catch((err) => {
+            console.warn('[DriverDashboard] Failed to fetch reviews:', err);
+            return null;
+          }),
         ]);
 
         if (!isMounted) return;
@@ -101,9 +129,10 @@ export function DriverDashboard() {
         setTrips(tripsRes);
         setSummary(summaryRes);
         setReviewsData(reviewsRes);
-      } catch {
+      } catch (err: unknown) {
         if (isMounted) {
-          showToast('error', 'Có lỗi khi tải dữ liệu đối tác tài xế');
+          console.error('[DriverDashboard] Initial load error:', err);
+          showToast('error', getErrorMessage(err, 'Có lỗi khi tải dữ liệu đối tác tài xế'));
         }
       } finally {
         if (isMounted) {
@@ -123,7 +152,9 @@ export function DriverDashboard() {
             .then((res) => {
               if (isMounted) setAvailableTrips(res);
             })
-            .catch(() => {});
+            .catch((err) => {
+              console.warn('[DriverDashboard] Polling available trips failed:', err);
+            });
         }
       }, 10000);
     }
@@ -144,7 +175,9 @@ export function DriverDashboard() {
         // Vừa chuyển sang ONLINE -> fetch ngay danh sách chuyến khả dụng
         getAvailableDriverTrips()
           .then((res) => setAvailableTrips(res))
-          .catch(() => {});
+          .catch((err) => {
+            console.warn('[DriverDashboard] Failed to fetch trips after going online:', err);
+          });
       }
       showToast(
         'success',
@@ -153,10 +186,12 @@ export function DriverDashboard() {
           : 'Đã chuyển sang NGOẠI TUYẾN. Tạm nghỉ nhận đơn.'
       );
       // Quiet background sync
-      refreshProfile().catch(() => {});
-    } catch (_err) {
-      showToast('error', getErrorMessage(_err, 'Không thể cập nhật trạng thái hoạt động'));
-      throw _err;
+      refreshProfile().catch((err) => {
+        console.warn('[DriverDashboard] Background profile refresh failed:', err);
+      });
+    } catch (error) {
+      showToast('error', getErrorMessage(error, 'Không thể cập nhật trạng thái hoạt động'));
+      throw error;
     }
   };
 

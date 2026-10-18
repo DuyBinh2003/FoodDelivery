@@ -77,9 +77,18 @@ export function PartnerDashboard() {
       setError(null);
 
       const [resData, catsData, tagsData] = await Promise.all([
-        getMyRestaurant().catch(() => null),
-        getAvailableCategories().catch(() => []),
-        getAvailableTags().catch(() => []),
+        getMyRestaurant().catch((err) => {
+          console.warn('[PartnerDashboard] Failed to fetch restaurant:', err);
+          return null;
+        }),
+        getAvailableCategories().catch((err) => {
+          console.warn('[PartnerDashboard] Failed to fetch categories:', err);
+          return [];
+        }),
+        getAvailableTags().catch((err) => {
+          console.warn('[PartnerDashboard] Failed to fetch tags:', err);
+          return [];
+        }),
       ]);
 
       if (!resData) {
@@ -104,9 +113,18 @@ export function PartnerDashboard() {
     async function init() {
       try {
         const [resData, catsData, tagsData] = await Promise.all([
-          getMyRestaurant().catch(() => null),
-          getAvailableCategories().catch(() => []),
-          getAvailableTags().catch(() => []),
+          getMyRestaurant().catch((err) => {
+            console.warn('[PartnerDashboard] Failed to fetch restaurant:', err);
+            return null;
+          }),
+          getAvailableCategories().catch((err) => {
+            console.warn('[PartnerDashboard] Failed to fetch categories:', err);
+            return [];
+          }),
+          getAvailableTags().catch((err) => {
+            console.warn('[PartnerDashboard] Failed to fetch tags:', err);
+            return [];
+          }),
         ]);
         if (!isMounted) return;
         if (!resData) {

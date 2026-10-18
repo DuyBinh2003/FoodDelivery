@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ValidateCartDto } from '@/modules/orders/dto/validate-cart.dto.js';
 
@@ -33,6 +33,8 @@ interface InternalMenuItem {
 
 @Injectable()
 export class ValidateCartUseCase {
+  private readonly logger = new Logger(ValidateCartUseCase.name);
+
   constructor(
     @Inject(ConfigService) private readonly configService: ConfigService,
   ) {}
@@ -56,8 +58,8 @@ export class ValidateCartUseCase {
           };
         }
       }
-    } catch (err) {
-      console.warn('[ValidateCartUseCase] Unable to check restaurant status:', err);
+    } catch (error: unknown) {
+      this.logger.warn('Unable to check restaurant status:', error);
     }
 
     // 2. Fetch menu items from restaurant-service via internal API

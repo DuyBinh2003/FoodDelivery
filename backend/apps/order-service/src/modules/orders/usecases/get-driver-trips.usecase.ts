@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderRedisRepository, InflightOrderData } from '@/modules/orders/repositories/order.redis.repository.js';
@@ -35,6 +35,8 @@ export interface DriverTripDto {
 
 @Injectable()
 export class GetDriverTripsUseCase {
+  private readonly logger = new Logger(GetDriverTripsUseCase.name);
+
   constructor(
     @Inject(OrderReadRepository)
     private readonly orderReadRepo: OrderReadRepository,
@@ -75,8 +77,8 @@ export class GetDriverTripsUseCase {
                 restaurantCache.set(order.restaurant_id, restaurantInfo);
               }
             }
-          } catch (_e) {
-            // Ignore error
+          } catch (error: unknown) {
+            this.logger.warn(`Failed to fetch restaurant details for trip order ${order.id}:`, error);
           }
         }
 
@@ -135,8 +137,8 @@ export class GetDriverTripsUseCase {
                 restaurantCache.set(order.restaurant_id, restaurantInfo);
               }
             }
-          } catch (_e) {
-            // Ignore error
+          } catch (error: unknown) {
+            this.logger.warn(`Failed to fetch restaurant details for past trip order ${order.id}:`, error);
           }
         }
 

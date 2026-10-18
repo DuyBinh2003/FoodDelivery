@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 export interface CategoryItem {
   id: string;
@@ -26,6 +26,7 @@ export interface MenuItemData {
 
 @Injectable()
 export class SearchReadRepository {
+  private readonly logger = new Logger(SearchReadRepository.name);
   private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
 
   constructor() {}
@@ -33,21 +34,33 @@ export class SearchReadRepository {
   async getCategories(): Promise<CategoryItem[]> {
     return fetch(`${this.restaurantUrl}/internal/restaurants/categories`)
       .then(async (r) => {
-        if (!r.ok) return [];
+        if (!r.ok) {
+          this.logger.warn(`Categories fetch returned status ${r.status}`);
+          return [];
+        }
         const data = await r.json();
         return Array.isArray(data) ? (data as CategoryItem[]) : [];
       })
-      .catch(() => []);
+      .catch((err) => {
+        this.logger.warn('Failed to fetch categories from restaurant-service:', err);
+        return [];
+      });
   }
 
   async getTags(): Promise<TagItem[]> {
     return fetch(`${this.restaurantUrl}/internal/restaurants/tags`)
       .then(async (r) => {
-        if (!r.ok) return [];
+        if (!r.ok) {
+          this.logger.warn(`Tags fetch returned status ${r.status}`);
+          return [];
+        }
         const data = await r.json();
         return Array.isArray(data) ? (data as TagItem[]) : [];
       })
-      .catch(() => []);
+      .catch((err) => {
+        this.logger.warn('Failed to fetch tags from restaurant-service:', err);
+        return [];
+      });
   }
 
   async getMenuItemsForRestaurants(
@@ -64,21 +77,33 @@ export class SearchReadRepository {
 
     return fetch(`${this.restaurantUrl}/internal/restaurants/menu-items?${q.toString()}`)
       .then(async (r) => {
-        if (!r.ok) return [];
+        if (!r.ok) {
+          this.logger.warn(`Menu items fetch returned status ${r.status}`);
+          return [];
+        }
         const data = await r.json();
         return Array.isArray(data) ? (data as MenuItemData[]) : [];
       })
-      .catch(() => []);
+      .catch((err) => {
+        this.logger.warn('Failed to fetch menu items from restaurant-service:', err);
+        return [];
+      });
   }
 
   async getFreeshipDistanceThreshold(): Promise<number> {
     return fetch(`${this.restaurantUrl}/internal/restaurants/configs/freeship`)
       .then(async (r) => {
-        if (!r.ok) return 2;
+        if (!r.ok) {
+          this.logger.warn(`Freeship threshold fetch returned status ${r.status}`);
+          return 2;
+        }
         const data = await r.json();
         const num = Number(data);
         return isNaN(num) ? 2 : num;
       })
-      .catch(() => 2);
+      .catch((err) => {
+        this.logger.warn('Failed to fetch freeship distance threshold from restaurant-service:', err);
+        return 2;
+      });
   }
 }

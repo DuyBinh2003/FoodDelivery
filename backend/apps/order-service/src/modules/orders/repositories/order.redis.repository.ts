@@ -371,7 +371,9 @@ export class OrderRedisRepository implements OnModuleInit, OnModuleDestroy {
 
       return () => {
         if (isSubscribed && this.subClient.isOpen) {
-          this.subClient.unsubscribe(channel, messageHandler).catch(() => {});
+          this.subClient.unsubscribe(channel, messageHandler).catch((err) => {
+            this.logger.warn(`Failed to unsubscribe from channel ${channel}:`, err);
+          });
         }
       };
     });

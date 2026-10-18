@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SystemConfig } from '@/modules/admin/entities/system-config.entity.js';
@@ -6,6 +6,7 @@ import { ReviewApprovalDto, ApprovalStatus } from '@/modules/admin/dto/review-ap
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
   private readonly userUrl = process.env.USER_SERVICE_URL!;
   private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
   private readonly orderUrl = process.env.ORDER_SERVICE_URL!;
@@ -17,9 +18,18 @@ export class AdminService {
 
   async getDashboardMetrics() {
     const [usersRes, restaurantsRes, ordersRes] = await Promise.all([
-      fetch(`${this.userUrl}/internal/users/metrics`).catch(() => null),
-      fetch(`${this.restaurantUrl}/internal/restaurants/metrics`).catch(() => null),
-      fetch(`${this.orderUrl}/internal/orders/metrics`).catch(() => null),
+      fetch(`${this.userUrl}/internal/users/metrics`).catch((err) => {
+        this.logger.warn('Failed to fetch users metrics:', err);
+        return null;
+      }),
+      fetch(`${this.restaurantUrl}/internal/restaurants/metrics`).catch((err) => {
+        this.logger.warn('Failed to fetch restaurant metrics:', err);
+        return null;
+      }),
+      fetch(`${this.orderUrl}/internal/orders/metrics`).catch((err) => {
+        this.logger.warn('Failed to fetch order metrics:', err);
+        return null;
+      }),
     ]);
 
     const usersData = (usersRes && usersRes.ok) ? await usersRes.json().catch(() => ({})) : {};
@@ -36,7 +46,10 @@ export class AdminService {
   }
 
   async getPendingApprovals() {
-    const res = await fetch(`${this.userUrl}/internal/users/pending-approvals`).catch(() => null);
+    const res = await fetch(`${this.userUrl}/internal/users/pending-approvals`).catch((err) => {
+      this.logger.warn('Failed to fetch pending approvals:', err);
+      return null;
+    });
     if (!res || !res.ok) {
       return { restaurants: [], drivers: [] };
     }

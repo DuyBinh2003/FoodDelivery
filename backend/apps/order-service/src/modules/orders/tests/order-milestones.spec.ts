@@ -47,6 +47,7 @@ describe('Order Milestones (Role-Based Tracking)', () => {
       mockConfigService = {
         getOrThrow: vi.fn((key: string) => {
           if (key === 'services.restaurantUrl') return 'http://localhost:3003';
+          if (key === 'services.userUrl') return 'http://localhost:3001';
           return '';
         }),
       };
@@ -214,6 +215,7 @@ describe('Order Milestones (Role-Based Tracking)', () => {
       mockConfigService = {
         getOrThrow: vi.fn((key: string) => {
           if (key === 'services.restaurantUrl') return 'http://localhost:3003';
+          if (key === 'services.userUrl') return 'http://localhost:3001';
           return '';
         }),
       };

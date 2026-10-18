@@ -1,8 +1,10 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 
 @Injectable()
 export class ElasticsearchRepository implements OnModuleInit {
+  private readonly logger = new Logger(ElasticsearchRepository.name);
+
   constructor(
     @Inject(ElasticsearchService) private readonly elasticsearchService: ElasticsearchService
   ) {}
@@ -12,13 +14,17 @@ export class ElasticsearchRepository implements OnModuleInit {
       await this.createIndices();
     } catch (e: unknown) {
       const err = e as Error;
-      console.warn(`[SearchService] Elasticsearch initial index check failed: ${err.message}. Retrying index setup in 5s...`);
+      this.logger.warn(`Elasticsearch initial index check failed: ${err.message}. Retrying index setup in 5s...`);
       setTimeout(() => {
-        this.createIndices().catch(() => {});
+        this.createIndices().catch((retryErr) => {
+          this.logger.warn(`Retry creating index failed:`, retryErr);
+        });
       }, 5000);
     }
     setTimeout(() => {
-      this.syncFromRestaurantServiceIfEmpty().catch(() => {});
+      this.syncFromRestaurantServiceIfEmpty().catch((syncErr) => {
+        this.logger.warn(`Background sync from restaurant-service failed:`, syncErr);
+      });
     }, 5000);
   }
 
@@ -106,8 +112,13 @@ export class ElasticsearchRepository implements OnModuleInit {
         index: 'restaurants',
         id: id,
       });
-    } catch (_e) {
-      // Ignore not found errors
+    } catch (error: unknown) {
+      const err = error as { meta?: { statusCode?: number }; statusCode?: number; message?: string };
+      if (err?.meta?.statusCode === 404 || err?.statusCode === 404) {
+        this.logger.debug(`Restaurant ${id} not found in Elasticsearch index, skipping removal`);
+      } else {
+        this.logger.warn(`Failed to remove restaurant ${id} from Elasticsearch index:`, error);
+      }
     }
   }
 
