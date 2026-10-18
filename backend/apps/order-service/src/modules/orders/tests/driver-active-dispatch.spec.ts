@@ -1,3 +1,12 @@
+/**
+ * @file driver-active-dispatch.spec.ts
+ * @description Kiểm thử luồng điều phối và nhận cuốc xe bám sát trạng thái hoạt động (ONLINE & APPROVED) của tài xế
+ * @trace docs/services/order-service.md # /orders/driver/available & /orders/:id/driver-claim
+ * @trace docs/services/user-service.md # /internal/drivers/:userId/status
+ * @trace docs/architecture/async-order-processing-flow.md # Phase 3: Driver Fanout & Atomic Claim
+ * @plan driver_active_status_check_plan.md # Verification Plan
+ */
+
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { ForbiddenException } from '@nestjs/common';
 import { GetAvailableDriverTripsUseCase } from '@/modules/orders/usecases/get-available-driver-trips.usecase.js';
