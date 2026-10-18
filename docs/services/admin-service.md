@@ -40,8 +40,29 @@ Tất cả các API dưới đây đều yêu cầu Authentication (JWT) và Aut
 | `/admin/approvals/restaurant/:id/reject` | `POST` | Từ chối hồ sơ nhà hàng. Chuyển status thành `REJECTED`. |
 | `/admin/approvals/driver/:id/approve` | `POST` | Xác nhận duyệt hồ sơ tài xế. Chuyển status thành `APPROVED`. |
 | `/admin/approvals/driver/:id/reject` | `POST` | Từ chối hồ sơ tài xế. Chuyển status thành `REJECTED`. |
-| `/admin/configs` | `GET` | Lấy toàn bộ danh sách cấu hình hệ thống (Tax, Commission). |
-| `/admin/configs` | `PUT` | Cập nhật giá trị của một cấu hình (`key`, `value`). |
+| `/admin/configs` | `GET` | Lấy toàn bộ danh sách cấu hình hệ thống (Finance, Operations, Pagination, System Flags). |
+| `/admin/configs` | `PUT` | Cập nhật giá trị đơn lẻ của một cấu hình (`key`, `value`). |
+| `/admin/configs/bulk` | `PUT` | Cập nhật hàng loạt nhiều cấu hình hệ thống (`configs: Array<{ key, value }>`) trong một transaction nguyên tử. |
+
+## Hệ Thống Cấu Hình Toàn Diện (`m_system_config`)
+Bảng `m_system_config` trong schema `public` lưu trữ 11 biến số nền tảng phục vụ 4 nhóm chuyên sâu:
+
+1. **💰 Tài chính & Thuế (Finance & Rates):**
+   - `RESTAURANT_COMMISSION_RATE` (Mặc định: `20%`): Tỷ lệ hoa hồng chiết khấu nhà hàng.
+   - `DRIVER_FEE_RATE` (Mặc định: `10%`): Tỷ lệ phí nền tảng trích thu từ cuốc xe tài xế.
+   - `TAX_RATE` (Mặc định: `8%`): Thuế suất VAT áp dụng cho giao dịch.
+   - `BASE_DELIVERY_FEE_VND` (Mặc định: `15.000 VNĐ`): Mức cước phí giao hàng cơ sở tối thiểu.
+   - `MIN_ORDER_AMOUNT_VND` (Mặc định: `20.000 VNĐ`): Giá trị đơn hàng tối thiểu khách được phép đặt.
+2. **🛵 Vận hành & Điều phối (Operations & Dispatch):**
+   - `MAX_DELIVERY_RADIUS_KM` (Mặc định: `15 km`): Bán kính giao hàng tối đa giữa quán và khách.
+   - `DRIVER_ACCEPT_TIMEOUT_SECONDS` (Mặc định: `30s`): Thời gian đếm ngược tài xế phản hồi nhận cuốc.
+   - `AUTO_CANCEL_UNACCEPTED_ORDER_MINUTES` (Mặc định: `15 phút`): Thời gian tự hủy đơn nếu không có quán hoặc tài xế nhận.
+3. **📄 Phân trang & Giới hạn (Pagination & Limits):**
+   - `DEFAULT_PAGE_SIZE` (Mặc định: `15 dòng/trang`): Kích thước phân trang mặc định cho các danh sách (Orders, Users, Drivers, Restaurants, Wallet).
+   - `MAX_EXPORT_LIMIT` (Mặc định: `500 dòng`): Giới hạn tối đa số bản ghi khi trích xuất dữ liệu.
+4. **🛡️ Hệ thống & Bảo mật (System Flags):**
+   - `MAINTENANCE_MODE` (Mặc định: `false`): Chế độ bảo trì hệ thống toàn sàn.
+   - `AUTO_APPROVE_PARTNERS` (Mặc định: `false`): Tự động phê duyệt hồ sơ đối tác khi đăng ký mới.
 
 ## Database Schema
 - **Bảng `m_system_config` (Schema `public`):** `id`, `config_key`, `config_value`, `description`.

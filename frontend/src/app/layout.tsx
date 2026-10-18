@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { UserSocketProvider } from "@/components/providers/user-socket-provider";
 import { Toaster } from "react-hot-toast";
+import { RoleRouteGuard } from "@/components/guards/role-route-guard";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -41,7 +42,9 @@ export default function RootLayout({
         {/* Main content */}
         <QueryProvider>
           <UserSocketProvider>
-            {children}
+            <RoleRouteGuard>
+              {children}
+            </RoleRouteGuard>
           </UserSocketProvider>
           <Toaster position="top-right" />
         </QueryProvider>

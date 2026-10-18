@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ShoppingBag, Search, RefreshCw, Eye, X, ChevronLeft, ChevronRight, Navigation, MapPin } from 'lucide-react';
 import { adminApi } from '@/features/admin/api/admin-api';
 import { AdminOrder, AdminPaginatedResponse } from '@/features/admin/types';
+import { PageSizeSelector } from '@/features/admin/components/page-size-selector';
 
 const STATUS_TABS = [
   { key: 'ALL', label: 'Tất cả' },
@@ -20,6 +21,7 @@ export default function AdminOrdersPage() {
   const [status, setStatus] = useState('ALL');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
 
   const {
@@ -28,8 +30,8 @@ export default function AdminOrdersPage() {
     isRefetching,
     refetch,
   } = useQuery<AdminPaginatedResponse<AdminOrder>>({
-    queryKey: ['admin', 'orders', status, search, page],
-    queryFn: () => adminApi.getOrders({ status, search, page, limit: 15 }),
+    queryKey: ['admin', 'orders', status, search, page, pageSize],
+    queryFn: () => adminApi.getOrders({ status, search, page, limit: pageSize }),
   });
 
   const formatVND = (value: number | string) => {
@@ -233,11 +235,20 @@ export default function AdminOrdersPage() {
         </div>
 
         {/* Pagination Footer */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-400">
+        <div className="p-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
+          <div className="flex items-center gap-4">
             <span>
               Tổng số <span className="text-white font-medium">{ordersResponse?.total || 0}</span> đơn hàng
             </span>
+            <PageSizeSelector
+              pageSize={pageSize}
+              onChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+            />
+          </div>
+          {totalPages > 1 && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -257,8 +268,8 @@ export default function AdminOrdersPage() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Order Details Modal */}

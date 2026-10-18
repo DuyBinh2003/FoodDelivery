@@ -5,9 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import { Wallet, Store, Bike, RefreshCw, FileText, CheckCircle2, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
 import { adminApi } from '@/features/admin/api/admin-api';
 import { PlatformTreasurySummary, TreasuryTransactionItem } from '@/features/admin/types';
+import { PageSizeSelector } from '@/features/admin/components/page-size-selector';
 
 export default function AdminWalletPage() {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
   const [selectedTxn, setSelectedTxn] = useState<TreasuryTransactionItem | null>(null);
 
   const {
@@ -16,8 +18,8 @@ export default function AdminWalletPage() {
     isRefetching,
     refetch,
   } = useQuery<PlatformTreasurySummary>({
-    queryKey: ['admin', 'wallet', page],
-    queryFn: () => adminApi.getWalletSummary(page, 15),
+    queryKey: ['admin', 'wallet', page, pageSize],
+    queryFn: () => adminApi.getWalletSummary(page, pageSize),
   });
 
   const formatVND = (value: number) => {
@@ -28,7 +30,7 @@ export default function AdminWalletPage() {
     }).format(value);
   };
 
-  const totalPages = Math.ceil((treasury?.total_transactions_count || 0) / 15) || 1;
+  const totalPages = Math.ceil((treasury?.total_transactions_count || 0) / pageSize) || 1;
 
   return (
     <div className="space-y-8 pb-12">
@@ -208,11 +210,20 @@ export default function AdminWalletPage() {
         </div>
 
         {/* Pagination Footer */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-400">
+        <div className="p-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
+          <div className="flex items-center gap-4">
             <span>
-              Trang <span className="text-white font-medium">{page}</span> / {totalPages}
+              Tổng số <span className="text-white font-medium">{treasury?.total_transactions_count || 0}</span> bút toán
             </span>
+            <PageSizeSelector
+              pageSize={pageSize}
+              onChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+            />
+          </div>
+          {totalPages > 1 && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -221,6 +232,9 @@ export default function AdminWalletPage() {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
+              <span className="text-zinc-300 font-medium">
+                {page} / {totalPages}
+              </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
@@ -229,8 +243,8 @@ export default function AdminWalletPage() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Transaction Details Modal */}

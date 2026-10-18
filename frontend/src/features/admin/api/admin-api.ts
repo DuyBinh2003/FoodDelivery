@@ -7,6 +7,7 @@ import {
   AdminDriver,
   AdminRestaurant,
   AdminPaginatedResponse,
+  SystemConfigItem,
 } from '@/features/admin/types';
 
 export const adminApi = {
@@ -72,5 +73,16 @@ export const adminApi = {
     if (params.status && params.status !== 'ALL') query.set('status', params.status);
     if (params.search) query.set('search', params.search);
     return apiClient<AdminPaginatedResponse<AdminRestaurant>>(`/admin/restaurants?${query.toString()}`);
+  },
+
+  getConfigs(): Promise<SystemConfigItem[]> {
+    return apiClient<SystemConfigItem[]>('/admin/configs');
+  },
+
+  updateBulkConfigs(configs: Array<{ key: string; value: string }>): Promise<SystemConfigItem[]> {
+    return apiClient<SystemConfigItem[]>('/admin/configs/bulk', {
+      method: 'PUT',
+      body: { configs },
+    });
   },
 };

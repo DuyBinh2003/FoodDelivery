@@ -77,9 +77,34 @@ graph TD
 - **Nhà hàng đối tác** (`/admin/restaurants`):
   - Quản lý danh sách quán ăn, địa chỉ, trạng thái mở bán thời gian thực (`is_active`), xếp hạng sao.
 
+### 2.5. Cài Đặt Hệ Thống Đa Chuyên Mục (Modern System Control)
+- **Đường dẫn**: `/admin/settings`
+- **Bố cục giao diện**: Phân nhóm 4 Tabs chuyên nghiệp theo chuẩn **UI/UX Pro Max**:
+  1. 💰 *Tài Chính & Thuế (Finance)*: Hoa hồng nhà hàng (`RESTAURANT_COMMISSION_RATE`), phí tài xế (`DRIVER_FEE_RATE`), thuế VAT (`TAX_RATE`), cước cơ sở (`BASE_DELIVERY_FEE_VND`), đơn hàng tối thiểu (`MIN_ORDER_AMOUNT_VND`).
+  2. 🛵 *Vận Hành & Điều Phối (Operations)*: Bán kính giao hàng tối đa (`MAX_DELIVERY_RADIUS_KM`), timeout nhận cuốc (`DRIVER_ACCEPT_TIMEOUT_SECONDS`), timeout tự hủy đơn (`AUTO_CANCEL_UNACCEPTED_ORDER_MINUTES`).
+  3. 📄 *Phân Trang & Hiển Thị (Pagination)*: Kích thước trang mặc định (`DEFAULT_PAGE_SIZE`), giới hạn xuất dữ liệu (`MAX_EXPORT_LIMIT`).
+  4. 🛡️ *Hệ Thống & Bảo Mật (System Flags)*: Chế độ bảo trì toàn sàn (`MAINTENANCE_MODE`), tự động duyệt đối tác (`AUTO_APPROVE_PARTNERS`).
+- **Cơ chế Lưu hàng loạt (Atomic Bulk Update)**: Endpoint `PUT /admin/configs/bulk` lưu nguyên tử toàn bộ thay đổi trong 1 database transaction kèm thông báo Toast, theo dõi trạng thái thay đổi (`isDirty`) và hỗ trợ nút hoàn tác.
+
+### 2.6. Bộ Điều Khiển Kích Thước Trang Linh Hoạt (Dynamic Page Size Selector)
+- Tất cả các trang danh sách quản trị (`/admin/orders`, `/admin/users`, `/admin/restaurants`, `/admin/wallet`) đều được tích hợp component `PageSizeSelector`.
+- Cho phép quản trị viên chủ động chọn số lượng bản ghi hiển thị: **10**, **15**, **20**, **50**, hoặc **100** dòng / trang.
+- Tự động reset về trang 1 khi thay đổi page size, tự động tính toán lại tổng số trang (`totalPages`).
+
 ---
 
-## 🔒 3. Bảo Mật & Phân Quyền
-Mọi API phục vụ Admin Portal đều bắt buộc xác thực:
-1. `JwtAuthGuard`: Kiểm tra tính hợp lệ của JSON Web Token trong Cookie / Header Authorization.
-2. `RolesGuard`: Chỉ cho phép tài khoản có vai trò `ADMIN` truy cập, chặn hoàn toàn người dùng thông thường (`USER`) và chuyển hướng an toàn.
+## 🔒 3. Bảo Mật, Cô Lập Layout & Chặn Tuyến 2 Chiều (Bidirectional Route Guards)
+
+### 3.1. Cô Lập Layout Admin Tuyệt Đối
+- Thanh điều hướng khách hàng (`Navbar`) tự động ẩn hoàn toàn khi truy cập bất kỳ route nào thuộc `/admin/*`.
+- Cổng Admin sở hữu hệ thống Sidebar và Topbar riêng biệt, tránh xung đột nhận diện thương hiệu và ngăn rò rỉ các thành phần dành riêng cho khách.
+
+### 3.2. Kiểm Soát Phân Quyền 2 Chiều (`RoleRouteGuard`)
+Cơ chế bảo vệ tuyến 2 chiều được áp dụng toàn cục:
+1. **Chặn Admin truy cập trang người dùng**:
+   - Khi tài khoản có vai trò `role === 'ADMIN'`, nếu người dùng cố tình chuyển hướng hoặc gõ URL trang khách (`/`, `/menu`, `/orders`, `/checkout`, `/restaurant/*`...), hệ thống sẽ lập tức chặn hiển thị và tự động chuyển hướng về `/admin/dashboard`.
+2. **Chặn Người dùng thường truy cập trang quản trị**:
+   - Khách vãng lai chưa đăng nhập: Tự động chuyển hướng về `/login`.
+   - Người dùng đã đăng nhập nhưng không có vai trò `ADMIN` (`USER`, `DRIVER`...): Tự động chuyển hướng về `/` kèm cảnh báo không có quyền truy cập.
+3. **Backend Guards**:
+   - Toàn bộ controller tại `admin-service` được bảo vệ bởi `JwtAuthGuard` và `RolesGuard` với phân quyền nghiêm ngặt `Role.ADMIN`.

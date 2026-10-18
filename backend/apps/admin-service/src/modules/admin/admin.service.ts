@@ -4,6 +4,25 @@ import { Repository } from 'typeorm';
 import { SystemConfig } from '@/modules/admin/entities/system-config.entity.js';
 import { ReviewApprovalDto, ApprovalStatus } from '@/modules/admin/dto/review-approval.dto.js';
 
+export const DEFAULT_SYSTEM_CONFIGS: Array<{
+  config_key: string;
+  config_value: string;
+  description: string;
+}> = [
+  { config_key: 'RESTAURANT_COMMISSION_RATE', config_value: '20', description: 'Tỷ lệ hoa hồng chiết khấu nhà hàng (%)' },
+  { config_key: 'DRIVER_FEE_RATE', config_value: '10', description: 'Tỷ lệ phí nền tảng trích từ cuốc xe tài xế (%)' },
+  { config_key: 'TAX_RATE', config_value: '8', description: 'Thuế suất VAT (%)' },
+  { config_key: 'BASE_DELIVERY_FEE_VND', config_value: '15000', description: 'Cước phí giao hàng cơ sở tối thiểu (VNĐ)' },
+  { config_key: 'MIN_ORDER_AMOUNT_VND', config_value: '20000', description: 'Giá trị đơn hàng tối thiểu để đặt món (VNĐ)' },
+  { config_key: 'MAX_DELIVERY_RADIUS_KM', config_value: '15', description: 'Bán kính giao hàng tối đa giữa quán và khách (km)' },
+  { config_key: 'DRIVER_ACCEPT_TIMEOUT_SECONDS', config_value: '30', description: 'Thời gian đếm ngược tài xế bấm nhận cuốc (giây)' },
+  { config_key: 'AUTO_CANCEL_UNACCEPTED_ORDER_MINUTES', config_value: '15', description: 'Thời gian tự hủy đơn nếu không có quán/tài xế nhận (phút)' },
+  { config_key: 'DEFAULT_PAGE_SIZE', config_value: '15', description: 'Kích thước trang mặc định cho các bảng danh sách' },
+  { config_key: 'MAX_EXPORT_LIMIT', config_value: '500', description: 'Giới hạn tối đa số bản ghi khi trích xuất dữ liệu' },
+  { config_key: 'MAINTENANCE_MODE', config_value: 'false', description: 'Bật/tắt chế độ bảo trì toàn hệ sinh thái' },
+  { config_key: 'AUTO_APPROVE_PARTNERS', config_value: 'false', description: 'Tự động duyệt hồ sơ đối tác quán & tài xế khi đăng ký' },
+];
+
 @Injectable()
 export class AdminService {
   private readonly logger = new Logger(AdminService.name);
@@ -279,16 +298,61 @@ export class AdminService {
   }
 
   async getConfigs() {
-    return this.configRepo.find();
+    const existing = await this.configRepo.find();
+    const existingKeys = new Set(existing.map((c) => c.config_key));
+
+    const missingConfigs = DEFAULT_SYSTEM_CONFIGS.filter((def) => !existingKeys.has(def.config_key));
+    if (missingConfigs.length > 0) {
+      for (const missing of missingConfigs) {
+        try {
+          const entity = this.configRepo.create({
+            config_key: missing.config_key,
+            config_value: missing.config_value,
+            description: missing.description,
+          });
+          const saved = await this.configRepo.save(entity);
+          existing.push(saved);
+        } catch (err) {
+          this.logger.warn(`Failed to seed missing config ${missing.config_key}:`, err);
+        }
+      }
+    }
+
+    return existing;
   }
 
   async updateConfig(key: string, value: string) {
     let config = await this.configRepo.findOne({ where: { config_key: key } });
     if (!config) {
-      config = this.configRepo.create({ config_key: key, config_value: value });
+      const defaultDef = DEFAULT_SYSTEM_CONFIGS.find((d) => d.config_key === key);
+      config = this.configRepo.create({
+        config_key: key,
+        config_value: value,
+        description: defaultDef?.description || `Cấu hình ${key}`,
+      });
     } else {
       config.config_value = value;
     }
     return this.configRepo.save(config);
+  }
+
+  async updateBulkConfigs(items: Array<{ key: string; value: string }>) {
+    const results: SystemConfig[] = [];
+    for (const item of items) {
+      let config = await this.configRepo.findOne({ where: { config_key: item.key } });
+      if (!config) {
+        const defaultDef = DEFAULT_SYSTEM_CONFIGS.find((d) => d.config_key === item.key);
+        config = this.configRepo.create({
+          config_key: item.key,
+          config_value: item.value,
+          description: defaultDef?.description || `Cấu hình ${item.key}`,
+        });
+      } else {
+        config.config_value = item.value;
+      }
+      const saved = await this.configRepo.save(config);
+      results.push(saved);
+    }
+    return results;
   }
 }

@@ -5,6 +5,7 @@ import { RolesGuard } from '@/common/guards/roles.guard.js';
 import { Roles } from '@/common/decorators/roles.decorator.js';
 import { UserRole } from '@/common/enums/user-role.enum.js';
 import { ReviewApprovalDto } from '@/modules/admin/dto/review-approval.dto.js';
+import { UpdateBulkConfigsDto } from '@/modules/admin/dto/update-system-config.dto.js';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -140,6 +141,11 @@ export class AdminController {
   @Get('configs')
   getConfigs() {
     return this.adminService.getConfigs();
+  }
+
+  @Put('configs/bulk')
+  updateBulkConfigs(@Body() dto: UpdateBulkConfigsDto) {
+    return this.adminService.updateBulkConfigs(dto.configs);
   }
 
   @Put('configs')

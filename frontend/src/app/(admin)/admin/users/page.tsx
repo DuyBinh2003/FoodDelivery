@@ -5,11 +5,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Users, Bike, Search, RefreshCw, CheckCircle2, Clock, XCircle, ChevronLeft, ChevronRight, Shield } from 'lucide-react';
 import { adminApi } from '@/features/admin/api/admin-api';
 import { AdminUser, AdminDriver, AdminPaginatedResponse } from '@/features/admin/types';
+import { PageSizeSelector } from '@/features/admin/components/page-size-selector';
 
 export default function AdminUsersPage() {
   const [tab, setTab] = useState<'CUSTOMERS' | 'DRIVERS'>('CUSTOMERS');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   // Query Users
   const {
@@ -18,8 +20,8 @@ export default function AdminUsersPage() {
     isRefetching: refetchingUsers,
     refetch: refetchUsers,
   } = useQuery<AdminPaginatedResponse<AdminUser>>({
-    queryKey: ['admin', 'users', search, page],
-    queryFn: () => adminApi.getUsers({ search, page, limit: 15 }),
+    queryKey: ['admin', 'users', search, page, pageSize],
+    queryFn: () => adminApi.getUsers({ search, page, limit: pageSize }),
     enabled: tab === 'CUSTOMERS',
   });
 
@@ -30,8 +32,8 @@ export default function AdminUsersPage() {
     isRefetching: refetchingDrivers,
     refetch: refetchDrivers,
   } = useQuery<AdminPaginatedResponse<AdminDriver>>({
-    queryKey: ['admin', 'drivers', search, page],
-    queryFn: () => adminApi.getDrivers({ search, page, limit: 15 }),
+    queryKey: ['admin', 'drivers', search, page, pageSize],
+    queryFn: () => adminApi.getDrivers({ search, page, limit: pageSize }),
     enabled: tab === 'DRIVERS',
   });
 
@@ -289,11 +291,20 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Pagination Footer */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-400">
+        <div className="p-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
+          <div className="flex items-center gap-4">
             <span>
-              Trang <span className="text-white font-medium">{page}</span> / {totalPages}
+              Tổng số <span className="text-white font-medium">{tab === 'CUSTOMERS' ? usersResponse?.total || 0 : driversResponse?.total || 0}</span> {tab === 'CUSTOMERS' ? 'khách hàng' : 'tài xế'}
             </span>
+            <PageSizeSelector
+              pageSize={pageSize}
+              onChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+            />
+          </div>
+          {totalPages > 1 && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -302,6 +313,9 @@ export default function AdminUsersPage() {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
+              <span className="text-zinc-300 font-medium">
+                {page} / {totalPages}
+              </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
@@ -310,8 +324,8 @@ export default function AdminUsersPage() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

@@ -129,3 +129,27 @@ export interface AdminRestaurant {
   rating: number;
   created_at: string;
 }
+
+export interface SystemConfigItem {
+  id?: string;
+  config_key: string;
+  config_value: string;
+  description: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type ConfigCategory = 'FINANCE' | 'OPERATIONS' | 'PAGINATION' | 'SYSTEM';
+
+export interface ConfigDefinition {
+  key: string;
+  label: string;
+  description: string;
+  category: ConfigCategory;
+  type: 'number' | 'text' | 'boolean' | 'select';
+  unit?: string;
+  options?: Array<{ label: string; value: string }>;
+  min?: number;
+  max?: number;
+  step?: number;
+}

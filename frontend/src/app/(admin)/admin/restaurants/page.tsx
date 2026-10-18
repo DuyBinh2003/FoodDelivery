@@ -5,11 +5,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Store, Search, RefreshCw, Star, CheckCircle2, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import { adminApi } from '@/features/admin/api/admin-api';
 import { AdminRestaurant, AdminPaginatedResponse } from '@/features/admin/types';
+import { PageSizeSelector } from '@/features/admin/components/page-size-selector';
 
 export default function AdminRestaurantsPage() {
   const [status, setStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   const {
     data: restaurantsResponse,
@@ -17,13 +19,13 @@ export default function AdminRestaurantsPage() {
     isRefetching,
     refetch,
   } = useQuery<AdminPaginatedResponse<AdminRestaurant>>({
-    queryKey: ['admin', 'restaurants', status, search, page],
+    queryKey: ['admin', 'restaurants', status, search, page, pageSize],
     queryFn: () =>
       adminApi.getRestaurants({
         status: status !== 'ALL' ? status : undefined,
         search,
         page,
-        limit: 15,
+        limit: pageSize,
       }),
   });
 
@@ -203,11 +205,20 @@ export default function AdminRestaurantsPage() {
         </div>
 
         {/* Pagination Footer */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-400">
+        <div className="p-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
+          <div className="flex items-center gap-4">
             <span>
               Tổng số <span className="text-white font-medium">{restaurantsResponse?.total || 0}</span> quán ăn
             </span>
+            <PageSizeSelector
+              pageSize={pageSize}
+              onChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+            />
+          </div>
+          {totalPages > 1 && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -227,8 +238,8 @@ export default function AdminRestaurantsPage() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
