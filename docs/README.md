@@ -46,9 +46,11 @@ docs/
 │   ├── partner/                       # Phân hệ Đối tác Nhà hàng (Merchant Portal)
 │   │   ├── merchant-partner-portal.md # Bảng điều khiển đối tác quán ăn, bật/tắt nhận đơn, quản lý menu
 │   │   └── restaurant-registration-flow.md # Luồng nộp đơn, duyệt quán, realtime notifications qua WS
-│   └── driver/                        # Phân hệ Đối tác Tài xế (Driver Portal)
-│       ├── driver-portal.md           # Cổng thông tin tài xế, smart navbar, bật/tắt nhận chuyến
-│       └── driver-registration-flow.md # Luồng đăng ký tài xế, chặn trùng lặp 1-1, duyệt hồ sơ admin
+│   ├── driver/                        # Phân hệ Đối tác Tài xế (Driver Portal)
+│   │   ├── driver-portal.md           # Cổng thông tin tài xế, smart navbar, bật/tắt nhận chuyến
+│   │   └── driver-registration-flow.md # Luồng đăng ký tài xế, chặn trùng lặp 1-1, duyệt hồ sơ admin
+│   └── admin/                         # Phân hệ Quản trị Viên (Admin Enterprise Portal)
+│       └── admin-portal.md            # Cổng thông tin Admin: Ví doanh thu sàn, Recharts dashboard, quản trị giao dịch & master data
 │
 └── frontend/                          # 🎨 Kiến trúc, Tiêu chuẩn & Hướng dẫn Frontend (Next.js App Router)
     ├── README.md                      # Index chuyên mục frontend
@@ -90,7 +92,7 @@ docs/
 | **Kiến trúc & Hạ tầng** | [`docs/architecture/`](./architecture/README.md) | Bản vẽ hệ thống, NGINX Gateway, Docker Compose, Schema Database, Event-Driven, Search Index. |
 | **Microservices & APIs** | [`docs/services/`](./services/README.md) | Đặc tả 7 dịch vụ độc lập, danh sách REST API, port mapping, database schemas, internal RPC. |
 | **Chiến lược & Nghiệp vụ** | [`docs/business/`](./business/README.md) | Business roadmap, các Epics tính năng, mô hình vận hành và phân loại nghiệp vụ. |
-| **Tính năng & Luồng UX** | [`docs/features/`](./features/README.md) | Tài liệu tính năng phân theo đối tượng người dùng: Khách hàng (Customer), Quán ăn (Partner), Tài xế (Driver). |
+| **Tính năng & Luồng UX** | [`docs/features/`](./features/README.md) | Tài liệu tính năng phân theo đối tượng người dùng: Khách hàng (Customer), Quán ăn (Partner), Tài xế (Driver), Quản trị viên (Admin). |
 | **Frontend Patterns** | [`docs/frontend/`](./frontend/README.md) | Quy chuẩn Next.js App Router, caching strategy, apiClient wrapper, UI/UX tokens. |
 
 ---

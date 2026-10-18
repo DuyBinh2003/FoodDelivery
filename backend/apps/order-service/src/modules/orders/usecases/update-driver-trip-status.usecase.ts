@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
@@ -8,6 +8,8 @@ import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
 
 @Injectable()
 export class UpdateDriverTripStatusUseCase {
+  private readonly logger = new Logger(UpdateDriverTripStatusUseCase.name);
+
   constructor(
     @Inject(OrderRedisRepository)
     private readonly orderRedisRepo: OrderRedisRepository,
@@ -18,6 +20,31 @@ export class UpdateDriverTripStatusUseCase {
     @Inject(SqsService)
     private readonly sqsService: SqsService,
   ) {}
+
+  private async settleTripCommission(orderId: string, driverId: string, totalAmount: number | string) {
+    const paymentUrl = process.env.PAYMENT_SERVICE_URL;
+    if (!paymentUrl) {
+      this.logger.warn('[UpdateDriverTripStatusUseCase] PAYMENT_SERVICE_URL not configured, skipping trip settlement');
+      return;
+    }
+    try {
+      const res = await fetch(`${paymentUrl}/internal/ledger/settle-trip`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          driverId,
+          tripAmount: totalAmount || 25000,
+          feeRate: 10,
+        }),
+      });
+      if (!res.ok) {
+        this.logger.warn(`[UpdateDriverTripStatusUseCase] Payment-service returned status ${res.status} when settling trip for order ${orderId}`);
+      }
+    } catch (error: unknown) {
+      this.logger.warn(`[UpdateDriverTripStatusUseCase] Failed to reach payment-service for trip settlement:`, error);
+    }
+  }
 
   async execute(params: {
     driverId: string;
@@ -53,6 +80,11 @@ export class UpdateDriverTripStatusUseCase {
           newStatus: OrderStatus.COMPLETED,
           changedAt: new Date().toISOString(),
           changedBy: `driver:${params.driverId}`,
+        });
+
+        // Bút toán chiết khấu cuốc xe tài xế sang ví nền tảng (bất đồng bộ)
+        this.settleTripCommission(params.orderId, params.driverId, savedOrder.total_amount).catch((err: unknown) => {
+          this.logger.warn(`Failed background trip settlement for order ${params.orderId}:`, err);
         });
 
         return savedOrder;
@@ -107,6 +139,12 @@ export class UpdateDriverTripStatusUseCase {
       changedAt: new Date().toISOString(),
       changedBy: `driver:${params.driverId}`,
     });
+
+    if (params.status === OrderStatus.COMPLETED) {
+      this.settleTripCommission(params.orderId, params.driverId, saved.total_amount).catch((err: unknown) => {
+        this.logger.warn(`Failed background trip settlement for order ${params.orderId}:`, err);
+      });
+    }
 
     return saved;
   }

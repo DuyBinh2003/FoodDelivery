@@ -97,10 +97,14 @@ Hệ thống Food Delivery được thiết kế toàn diện, phục vụ 4 nh�
 - **Quản lý ví 4 chủ thể**: Khách hàng, Tài xế, Nhà hàng và Nền tảng Platform (`m_wallet_account`, `m_wallet_balance`).
 - **Đối soát COD & Quản trị rủi ro**: Cơ chế cấn trừ tự động cho các cuốc xe tiền mặt (COD), quản lý thấu chi/số dư âm an toàn và tự động khóa nhận cuốc (`isDriverInactive`) khi tài xế vượt ngưỡng âm cho phép.
 
-### 5. 👑 Phân Hệ Quản Trị & Vận Hành Hệ Thống (Admin & Ops)
-- **Bảng điều khiển chỉ số (Admin Dashboard)**: Thống kê số lượng người dùng, tài xế hoạt động, nhà hàng, tổng sản lượng đơn hàng và tổng giá trị giao dịch GMV toàn hệ sinh thái.
-- **Cổng phê duyệt đối tác (Approvals Portal)**: Thẩm định hồ sơ mở quán và đăng ký tài xế; duyệt/từ chối kèm lý do và kích hoạt tài khoản đối tác tự động.
+### 5. 👑 Phân Hệ Quản Trị & Vận Hành Hệ Thống (Admin Enterprise Portal)
+- **Bảng điều khiển trực quan hóa (Admin Dashboard with Recharts)**: Bộ 5 thẻ KPI tài chính & vận hành (Doanh thu sàn, GMV, đơn hàng, người dùng, tài xế), biểu đồ vùng AreaChart xu hướng GMV vs Doanh thu chiết khấu theo dải ngày (7 ngày, 30 ngày, toàn thời gian), biểu đồ tròn DonutChart phân bổ cơ cấu nguồn thu và tỷ lệ trạng thái đơn hàng.
+- **Ví Doanh Thu Sàn & Chiết Khấu Tự Động (Platform Treasury Wallet)**: Quản lý ví tài chính nền tảng liên kết tài khoản kế toán kép `SYS_REVENUE_PLATFORM_COMMISSION`; tự động trích nợ chiết khấu đơn hàng quán ăn (15-20%) và khấu trừ 10% hoa hồng cuốc xe tài xế (`settle-trip`); truy xuất sổ cái kép và popup phân tích bút toán định khoản Nợ/Có minh bạch.
+- **Quản lý giao dịch tập trung (Transactions Management)**: Đối soát toàn diện đơn hàng & cuốc xe tài xế, hiển thị cự ly di chuyển GPS thực tế (`distance_km`), thông tin khách - tài - quán, xem chi tiết giỏ hàng và trạng thái vòng đời đơn.
+- **Quản lý dữ liệu chủ (Master Data Management)**: Tra cứu và quản lý khách hàng thành viên, đối tác tài xế (biển số xe, giấy phép, trạng thái trực tuyến), và nhà hàng đối tác (địa chỉ, rating, bật/tắt mở quán).
+- **Cổng phê duyệt đối tác & Cấu hình (Approvals & Settings)**: Thẩm định hồ sơ mở quán và đăng ký tài xế; duyệt/từ chối kèm lý do và kích hoạt tài khoản đối tác tự động.
 - **Khả năng chịu tải & Xử lý lỗi toàn diện**:
+  - Cơ chế **Graceful Degradation**: Fallback snapshot an toàn khi các dịch vụ nội bộ gián đoạn mà không làm crash UI dashboard.
   - Tầng đệm Queue-Based Load Leveling (AWS SQS FIFO) và bộ nhớ đệm In-flight Cache (Redis TTL 24h) chống nghẽn DB giờ cao điểm.
   - Trì hoãn ghi cơ sở dữ liệu (**Deferred Persistence**): Chỉ ghi nhận giao dịch xuống PostgreSQL khi đơn hoàn tất hoặc hủy đối soát.
   - Kiến trúc Full-Stack Error Handling: Bộ lọc ngoại lệ toàn cục `GlobalExceptionFilter` (Backend), Error Boundary phân cấp (Frontend), Fail-Fast ENV validation và 100% kiểm thử tự động với Vitest.
@@ -156,7 +160,7 @@ FoodDelivery/
 │   ├── architecture/       # Kiến trúc & Hạ tầng hệ thống
 │   ├── services/           # Đặc tả 7 Microservices & API Contracts
 │   ├── business/           # Chiến lược & Lộ trình sản phẩm
-│   ├── features/           # Đặc tả tính năng (Customer, Partner, Driver)
+│   ├── features/           # Đặc tả tính năng (Customer, Partner, Driver, Admin)
 │   └── frontend/           # Quy chuẩn kiến trúc & UI/UX Next.js
 ├── gateway/
 │   └── nginx.conf          # NGINX API Gateway Config

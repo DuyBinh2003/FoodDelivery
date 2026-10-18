@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Param, Body, NotFoundException, Inject, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, NotFoundException, Inject, ParseUUIDPipe, Query } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@/modules/users/entities/user.entity.js';
+import { CustomerProfile } from '@/modules/users/entities/customer-profile.entity.js';
 import { DriverProfile, DriverStatus } from '@/modules/users/entities/driver-profile.entity.js';
 import { RegistrationRequest } from '@/modules/users/entities/registration-request.entity.js';
 import { ReviewRegistrationDto, RegistrationStatus } from '@/modules/users/dto/review-registration.dto.js';
@@ -14,6 +15,7 @@ export class UsersInternalController {
 
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(CustomerProfile) private readonly customerProfileRepo: Repository<CustomerProfile>,
     @InjectRepository(DriverProfile) private readonly driverRepo: Repository<DriverProfile>,
     @InjectRepository(RegistrationRequest) private readonly regRepo: Repository<RegistrationRequest>,
     @Inject(UserGateway) private readonly userGateway: UserGateway,
@@ -25,6 +27,121 @@ export class UsersInternalController {
     return {
       totalUsers: await this.userRepo.count(),
       totalDrivers: await this.driverRepo.count()
+    };
+  }
+
+  @Get('users/admin-list')
+  async getUsersAdmin(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('role') role?: string,
+    @Query('search') search?: string,
+  ) {
+    const p = Math.max(1, Number(page) || 1);
+    const l = Math.max(1, Math.min(100, Number(limit) || 20));
+    const offset = (p - 1) * l;
+
+    let query = `
+      SELECT 
+        u.id, 
+        u.email, 
+        u.role, 
+        u.created_at,
+        cp.full_name,
+        cp.phone
+      FROM schema_user.m_user u
+      LEFT JOIN schema_user.m_customer_profile cp ON cp.user_id = u.id AND cp.is_deleted = false
+      WHERE u.is_deleted = false
+    `;
+    const params: unknown[] = [];
+
+    if (role) {
+      params.push(role);
+      query += ` AND u.role = $${params.length}`;
+    }
+
+    if (search) {
+      params.push(`%${search}%`);
+      query += ` AND (u.email ILIKE $${params.length} OR cp.full_name ILIKE $${params.length} OR cp.phone ILIKE $${params.length})`;
+    }
+
+    const countQuery = `SELECT COUNT(*)::int AS count FROM (${query}) AS sub`;
+    const totalRes = await this.userRepo.query(countQuery, params);
+    const total = totalRes[0]?.count || 0;
+
+    params.push(l);
+    query += ` ORDER BY u.created_at DESC LIMIT $${params.length}`;
+    params.push(offset);
+    query += ` OFFSET $${params.length}`;
+
+    const rows = await this.userRepo.query(query, params);
+
+    return {
+      data: rows,
+      total,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(total / l),
+    };
+  }
+
+  @Get('drivers/admin-list')
+  async getDriversAdmin(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    const p = Math.max(1, Number(page) || 1);
+    const l = Math.max(1, Math.min(100, Number(limit) || 20));
+    const offset = (p - 1) * l;
+
+    let query = `
+      SELECT 
+        d.id, 
+        d.user_id,
+        u.email,
+        cp.full_name,
+        cp.phone,
+        d.status, 
+        d.verification_status,
+        d.vehicle_plate, 
+        d.vehicle_type,
+        d.created_at
+      FROM schema_user.m_driver_profile d
+      JOIN schema_user.m_user u ON u.id = d.user_id
+      LEFT JOIN schema_user.m_customer_profile cp ON cp.user_id = d.user_id AND cp.is_deleted = false
+      WHERE d.is_deleted = false
+    `;
+    const params: unknown[] = [];
+
+    if (status) {
+      params.push(status);
+      query += ` AND d.status = $${params.length}`;
+    }
+
+    if (search) {
+      params.push(`%${search}%`);
+      query += ` AND (u.email ILIKE $${params.length} OR cp.full_name ILIKE $${params.length} OR d.vehicle_plate ILIKE $${params.length})`;
+    }
+
+    const countQuery = `SELECT COUNT(*)::int AS count FROM (${query}) AS sub`;
+    const totalRes = await this.driverRepo.query(countQuery, params);
+    const total = totalRes[0]?.count || 0;
+
+    params.push(l);
+    query += ` ORDER BY d.created_at DESC LIMIT $${params.length}`;
+    params.push(offset);
+    query += ` OFFSET $${params.length}`;
+
+    const rows = await this.driverRepo.query(query, params);
+
+    return {
+      data: rows,
+      total,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(total / l),
     };
   }
 

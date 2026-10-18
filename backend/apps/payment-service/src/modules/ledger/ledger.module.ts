@@ -18,11 +18,13 @@ import { RecordLedgerTransactionUseCase } from '@/modules/ledger/usecases/record
 import { GetWalletBalanceUseCase } from '@/modules/ledger/usecases/get-wallet-balance.usecase.js';
 import { TopupWalletUseCase } from '@/modules/ledger/usecases/topup-wallet.usecase.js';
 
-import { ProcessPaymentUseCase } from '@/modules/ledger/usecases/process-payment.usecase.js';
+import { SettleTripCommissionUseCase } from '@/modules/ledger/usecases/settle-trip-commission.usecase.js';
+import { GetPlatformTreasuryUseCase } from '@/modules/ledger/usecases/get-platform-treasury.usecase.js';
 
 import { WalletController } from '@/modules/ledger/wallet.controller.js';
 import { LedgerController } from '@/modules/ledger/ledger.controller.js';
 import { PaymentController } from '@/modules/ledger/payment.controller.js';
+import { LedgerInternalController } from '@/modules/ledger/ledger.internal.controller.js';
 
 @Module({
   imports: [
@@ -36,7 +38,7 @@ import { PaymentController } from '@/modules/ledger/payment.controller.js';
       Outbox,
     ]),
   ],
-  controllers: [WalletController, LedgerController, PaymentController],
+  controllers: [WalletController, LedgerController, PaymentController, LedgerInternalController],
   providers: [
     WalletReadRepository,
     WalletWriteRepository,
@@ -47,6 +49,8 @@ import { PaymentController } from '@/modules/ledger/payment.controller.js';
     GetWalletBalanceUseCase,
     TopupWalletUseCase,
     ProcessPaymentUseCase,
+    SettleTripCommissionUseCase,
+    GetPlatformTreasuryUseCase,
   ],
   exports: [
     WalletReadRepository,
@@ -58,6 +62,8 @@ import { PaymentController } from '@/modules/ledger/payment.controller.js';
     GetWalletBalanceUseCase,
     TopupWalletUseCase,
     ProcessPaymentUseCase,
+    SettleTripCommissionUseCase,
+    GetPlatformTreasuryUseCase,
   ],
 })
 export class LedgerModule {}

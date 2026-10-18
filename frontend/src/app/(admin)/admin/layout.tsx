@@ -5,13 +5,17 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CheckSquare, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Wallet, ShoppingBag, Users, Store, CheckSquare, Settings, LogOut } from 'lucide-react';
 import { AdminSocketProvider } from '@/components/providers/admin-socket-provider';
 
 const ADMIN_NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/approvals', label: 'Xét duyệt (Approvals)', icon: CheckSquare },
-  { href: '/admin/settings', label: 'Cài đặt (Settings)', icon: Settings },
+  { href: '/admin/wallet', label: 'Ví & Doanh thu', icon: Wallet },
+  { href: '/admin/orders', label: 'Đơn hàng & Cuốc xe', icon: ShoppingBag },
+  { href: '/admin/users', label: 'Người dùng & Tài xế', icon: Users },
+  { href: '/admin/restaurants', label: 'Nhà hàng đối tác', icon: Store },
+  { href: '/admin/approvals', label: 'Xét duyệt hồ sơ', icon: CheckSquare },
+  { href: '/admin/settings', label: 'Cài đặt hệ thống', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
