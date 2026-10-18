@@ -120,8 +120,6 @@ export function DriverDashboard() {
             .catch(() => {});
         }
       }, 10000);
-    } else {
-      setAvailableTrips([]);
     }
 
     return () => {

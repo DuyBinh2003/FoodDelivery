@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Clock,
   MapPin,
@@ -157,11 +157,6 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
     };
   }, [restaurantId, fetchOrders, showToast, enrichOrders]);
 
-  useEffect(() => {
-    if (menuItems && menuItems.length > 0) {
-      setOrders((prev) => enrichOrders(prev));
-    }
-  }, [menuItems, enrichOrders]);
 
   const handleUpdateStatus = async (orderId: string, nextStatus: 'COOKING' | 'READY_FOR_PICKUP') => {
     try {
@@ -220,14 +215,18 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
     });
   };
 
-  const filteredOrders = orders.filter((order) => {
-    if (statusFilter === 'ALL') return true;
-    return order.status === statusFilter;
-  });
+  const enrichedOrders = useMemo(() => enrichOrders(orders), [orders, enrichOrders]);
 
-  const pendingCount = orders.filter((o) => o.status === 'PENDING').length;
-  const cookingCount = orders.filter((o) => o.status === 'COOKING').length;
-  const readyCount = orders.filter((o) => o.status === 'READY_FOR_PICKUP').length;
+  const filteredOrders = useMemo(() => {
+    return enrichedOrders.filter((order) => {
+      if (statusFilter === 'ALL') return true;
+      return order.status === statusFilter;
+    });
+  }, [enrichedOrders, statusFilter]);
+
+  const pendingCount = enrichedOrders.filter((o) => o.status === 'PENDING').length;
+  const cookingCount = enrichedOrders.filter((o) => o.status === 'COOKING').length;
+  const readyCount = enrichedOrders.filter((o) => o.status === 'READY_FOR_PICKUP').length;
 
   const getStatusBadge = (status: string) => {
     switch (status) {

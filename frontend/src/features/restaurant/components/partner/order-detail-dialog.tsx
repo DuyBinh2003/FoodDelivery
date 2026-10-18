@@ -15,7 +15,6 @@ import {
   Navigation,
   UtensilsCrossed,
   Loader2,
-  DollarSign,
   Receipt,
   ChefHat,
   Info,
@@ -87,7 +86,6 @@ export function OrderDetailDialog({
   const isReady = order.status === 'READY_FOR_PICKUP';
   const isDelivering = order.status === 'DELIVERING';
   const isCompleted = order.status === 'COMPLETED';
-  const isCancelled = order.status === 'CANCELLED';
 
   const getStatusBadge = () => {
     switch (order.status) {
@@ -236,11 +234,10 @@ export function OrderDetailDialog({
                 return (
                   <div
                     key={idx}
-                    className={`p-3 rounded-xl border flex flex-col justify-between transition-all ${
-                      m.reached
+                    className={`p-3 rounded-xl border flex flex-col justify-between transition-all ${m.reached
                         ? 'bg-zinc-900 border-white/15 text-white'
                         : 'bg-zinc-950/40 border-white/5 text-zinc-500 opacity-60'
-                    }`}
+                      }`}
                   >
                     <span className="text-[11px] font-medium leading-tight">{m.label}</span>
                     <span className="text-xs font-mono font-bold mt-2 text-zinc-300">

@@ -14,7 +14,6 @@ import {
   MessageSquare,
   Sparkles,
   ChefHat,
-  SlidersHorizontal,
 } from 'lucide-react';
 import type { PartnerMenuItem } from '@/features/restaurant/types/partner.types';
 
@@ -247,16 +246,14 @@ export function FoodItemDetailDialog({
           {onToggleAvailability ? (
             <button
               onClick={() => onToggleAvailability(item)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
-                item.is_available
+              className={`px-4 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${item.is_available
                   ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-white/10'
                   : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-              }`}
+                }`}
             >
               <div
-                className={`w-2 h-2 rounded-full ${
-                  item.is_available ? 'bg-zinc-500' : 'bg-emerald-400 animate-pulse'
-                }`}
+                className={`w-2 h-2 rounded-full ${item.is_available ? 'bg-zinc-500' : 'bg-emerald-400 animate-pulse'
+                  }`}
               />
               <span>{item.is_available ? 'Đánh dấu Tạm hết' : 'Kích hoạt Còn món'}</span>
             </button>
