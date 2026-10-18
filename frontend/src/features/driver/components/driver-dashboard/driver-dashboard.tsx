@@ -33,6 +33,8 @@ import { DriverMetricsGrid } from './driver-metrics-grid';
 import { DriverTripsList } from './driver-trips-list';
 import { DriverReviewsTab } from './driver-reviews-tab';
 import { DriverAvailableTrips } from './driver-available-trips';
+import { ErrorState } from '@/components/ui/error-state/error-state';
+import { getErrorMessage } from '@/lib/error-handler';
 
 export function DriverDashboard() {
   const { user, setDriverStatus, refreshProfile } = useAuthStore();
@@ -42,6 +44,7 @@ export function DriverDashboard() {
   const [summary, setSummary] = useState<DriverSummary | null>(null);
   const [reviewsData, setReviewsData] = useState<DriverReviewsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'available' | 'trips' | 'reviews'>('available');
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null
@@ -60,6 +63,7 @@ export function DriverDashboard() {
   const loadData = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const [availableRes, tripsRes, summaryRes, reviewsRes] = await Promise.all([
         isOnline ? getAvailableDriverTrips().catch(() => []) : Promise.resolve([]),
         getDriverTrips().catch(() => []),
@@ -71,8 +75,10 @@ export function DriverDashboard() {
       setTrips(tripsRes);
       setSummary(summaryRes);
       setReviewsData(reviewsRes);
-    } catch {
-      showToast('error', 'Có lỗi khi tải dữ liệu đối tác tài xế');
+    } catch (err) {
+      const msg = getErrorMessage(err, 'Có lỗi khi tải dữ liệu đối tác tài xế');
+      setLoadError(msg);
+      showToast('error', msg);
     } finally {
       setLoading(false);
     }
@@ -149,7 +155,7 @@ export function DriverDashboard() {
       // Quiet background sync
       refreshProfile().catch(() => {});
     } catch (_err) {
-      showToast('error', 'Không thể cập nhật trạng thái hoạt động');
+      showToast('error', getErrorMessage(_err, 'Không thể cập nhật trạng thái hoạt động'));
       throw _err;
     }
   };
@@ -159,8 +165,8 @@ export function DriverDashboard() {
       await updateDriverTripStatus(orderId, 'COMPLETED');
       showToast('success', 'Đã xác nhận hoàn thành cuốc xe thành công!');
       await loadData();
-    } catch {
-      showToast('error', 'Lỗi khi cập nhật trạng thái cuốc xe');
+    } catch (err) {
+      showToast('error', getErrorMessage(err, 'Lỗi khi cập nhật trạng thái cuốc xe'));
     }
   };
 
@@ -171,7 +177,7 @@ export function DriverDashboard() {
       await loadData();
       setActiveTab('trips');
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Chuyến xe đã được tài xế khác nhận';
+      const msg = getErrorMessage(err, 'Chuyến xe đã được tài xế khác nhận');
       showToast('error', msg);
       await loadData();
     }
@@ -345,7 +351,14 @@ export function DriverDashboard() {
           </div>
 
           {/* Active Tab Component */}
-          {activeTab === 'available' ? (
+          {loadError && !loading && availableTrips.length === 0 && trips.length === 0 ? (
+            <ErrorState
+              title="Không thể tải dữ liệu cuốc xe"
+              description={loadError}
+              onRetry={loadData}
+              retryText="Tải lại dữ liệu"
+            />
+          ) : activeTab === 'available' ? (
             <DriverAvailableTrips
               trips={availableTrips}
               loading={loading}

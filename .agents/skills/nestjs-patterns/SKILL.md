@@ -189,30 +189,29 @@ getAdminReport(@Req() req: AuthenticatedRequest) {
 
 ## Exception Filters and Error Shape
 
+Mọi microservice trong hệ thống NestJS BẮT BUỘC phải đăng ký `GlobalExceptionFilter` từ `@/common/filters/index.js` trong file `main.ts`:
+
 ```ts
-@Catch()
-export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost) {
-    const response = host.switchToHttp().getResponse<Response>();
-    const request = host.switchToHttp().getRequest<Request>();
+import { GlobalExceptionFilter } from '@/common/filters/index.js';
 
-    if (exception instanceof HttpException) {
-      return response.status(exception.getStatus()).json({
-        path: request.url,
-        error: exception.getResponse(),
-      });
-    }
-
-    return response.status(500).json({
-      path: request.url,
-      error: 'Internal server error',
-    });
-  }
-}
+app.useGlobalFilters(new GlobalExceptionFilter());
 ```
 
-- Keep one consistent error envelope across the API.
-- Throw framework exceptions for expected client errors; log and wrap unexpected failures centrally.
+- **Định dạng JSON chuẩn (Error Response Envelope)**:
+  ```ts
+  export interface ErrorResponseBody {
+    success: false;
+    statusCode: number;
+    errorCode: string;
+    message: string;
+    errors?: unknown[];
+    timestamp: string;
+    path: string;
+  }
+  ```
+- **Xử lý ValidationPipe**: Tự động trích xuất mảng thông điệp lỗi thành `VALIDATION_ERROR` và mảng `errors`.
+- **An toàn bảo mật**: Tuyệt đối không để lộ stack trace hoặc chi tiết truy vấn database thô ra ngoài client khi gặp lỗi không xác định (Internal Server Error 500). Ghi log đầy đủ tại server.
+- Tham khảo chi tiết tại `docs/architecture/error-handling.md`.
 
 ## Config and Environment Validation
 

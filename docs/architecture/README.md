@@ -15,6 +15,7 @@ Thư mục này chứa toàn bộ các tài liệu thiết kế kiến trúc k�
 | **[`elasticsearch.md`](./elasticsearch.md)** | Thiết kế hệ thống tìm kiếm thông minh: mapping chỉ mục món ăn & nhà hàng, cơ chế đồng bộ dữ liệu và fuzzy search. | Search Service, Backend |
 | **[`frontend-backend-connection.md`](./frontend-backend-connection.md)** | Thiết lập Reverse Proxy NGINX làm API Gateway, xử lý tiền tố URL (`/api/v1/*`), CORS và routing. | Frontend, Gateway, DevOps |
 | **[`async-order-processing-flow.md`](./async-order-processing-flow.md)** | Kiến trúc xử lý đơn hàng bất đồng bộ: Queue-Based Load Leveling (SQS FIFO), In-flight Cache (Redis), và Deferred DB Persistence khi COMPLETED. | Order Service, Delivery, Backend |
+| **[`error-handling.md`](./error-handling.md)** | Kiến trúc xử lý lỗi toàn diện Full-Stack: GlobalExceptionFilter (NestJS), ApiError, Error Boundaries và UI Fallback. | Toàn bộ Team, Frontend, Backend |
 | **[`migration-plan.md`](./migration-plan.md)** | Lịch sử và nhật ký hành trình chuyển đổi thành công từ kiến trúc Monolith sang Microservices chuẩn mực. | Tech Lead, Toàn bộ Team |
 
 ---
