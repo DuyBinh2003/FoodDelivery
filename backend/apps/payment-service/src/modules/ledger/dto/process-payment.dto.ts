@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export enum PaymentMethodType {
   WALLET = 'WALLET',
@@ -21,6 +21,14 @@ export class ProcessPaymentDto {
   @IsString()
   @IsNotEmpty()
   amount!: string;
+
+  @IsOptional()
+  @IsString()
+  subtotal?: string;
+
+  @IsOptional()
+  @IsString()
+  deliveryFee?: string;
 
   @IsEnum(PaymentMethodType)
   @IsNotEmpty()

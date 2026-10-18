@@ -226,10 +226,17 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
       <div className="pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div>
-            <span className="text-xs text-zinc-400 block">Tiền nhận được:</span>
-            <span className="text-lg font-bold text-emerald-400">
-              +{formatCurrency(trip.driver_earnings)}
-            </span>
+            <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+              <span>Cước ship: <strong className="text-zinc-200">{formatCurrency(trip.delivery_fee || 15000)}</strong></span>
+              <span>•</span>
+              <span className="text-red-400/90 font-medium">Phí sàn (10%): -{formatCurrency(trip.platform_fee || 1500)}</span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs text-emerald-400 font-semibold">Tài xế thực nhận:</span>
+              <span className="text-lg font-extrabold text-emerald-400 font-mono">
+                +{formatCurrency(trip.driver_earnings || 13500)}
+              </span>
+            </div>
           </div>
           <div className="h-8 w-px bg-white/10 hidden sm:block" />
           <div className="hidden sm:block">

@@ -358,10 +358,21 @@ export function OrderDetailDialog({
         {/* Footer Financials & Contextual Actions */}
         <div className="p-4 sm:p-5 border-t border-white/10 bg-zinc-900/90 backdrop-blur-md flex flex-wrap items-center justify-between gap-4 shrink-0">
           <div>
-            <span className="text-xs text-zinc-400 block">Tổng tiền đơn hàng:</span>
-            <span className="text-xl font-extrabold text-white font-mono">
-              {formatCurrency(order.total_amount)}
-            </span>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-zinc-400">Tiền món:</span>
+              <span className="font-semibold text-zinc-200">
+                {formatCurrency(Number(order.subtotal) || (Number(order.total_amount) > 15000 ? Number(order.total_amount) - 15000 : Number(order.total_amount)))}
+              </span>
+              <span className="text-emerald-400 font-semibold">
+                (Thực nhận 80%: {formatCurrency(Math.round((Number(order.subtotal) || (Number(order.total_amount) > 15000 ? Number(order.total_amount) - 15000 : Number(order.total_amount))) * 0.8))})
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs text-zinc-400">Tổng khách trả:</span>
+              <span className="text-xl font-extrabold text-white font-mono">
+                {formatCurrency(order.total_amount)}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

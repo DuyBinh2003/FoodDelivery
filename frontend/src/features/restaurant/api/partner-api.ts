@@ -84,6 +84,8 @@ export interface PartnerOrder {
   customer_id: string;
   restaurant_id: string;
   driver_id: string | null;
+  subtotal?: number;
+  delivery_fee?: number;
   total_amount: number;
   status: string;
   delivery_address: string;

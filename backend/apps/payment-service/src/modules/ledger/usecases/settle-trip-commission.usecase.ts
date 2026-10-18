@@ -4,10 +4,10 @@ import { WalletWriteRepository } from '@/modules/ledger/repositories/wallet.writ
 import { LedgerWriteRepository } from '@/modules/ledger/repositories/ledger.write.repository.js';
 import { AccountCategory, EntryType, OwnerType, ReferenceType } from '@/modules/ledger/constants/ledger.enums.js';
 
-export interface SettleTripCommissionDto {
-  orderId: string;
-  driverId: string;
-  tripAmount: number | string;
+export class SettleTripCommissionDto {
+  orderId!: string;
+  driverId!: string;
+  tripAmount!: number | string;
   feeRate?: number;
 }
 
@@ -32,8 +32,8 @@ export class SettleTripCommissionUseCase {
       return null;
     }
 
-    // Tính phí chiết khấu nền tảng (mặc định 10% của cước cuốc xe, làm tròn đến hàng nghìn đồng)
-    const platformFee = Math.max(1000, Math.round((totalTripNum * (feeRate / 100)) / 1000) * 1000);
+    // Tính phí chiết khấu nền tảng (mặc định 10% của cước cuốc xe)
+    const platformFee = Math.round(totalTripNum * (feeRate / 100));
 
     // 1. Lấy hoặc tạo ví tài xế
     let driverWallet = await this.walletReadRepo.getWalletByOwner(dto.driverId, OwnerType.DRIVER);

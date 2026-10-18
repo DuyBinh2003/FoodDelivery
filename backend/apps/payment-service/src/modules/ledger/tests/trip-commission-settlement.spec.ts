@@ -62,15 +62,15 @@ describe('SettleTripCommissionUseCase & GetPlatformTreasuryUseCase', () => {
     };
 
     settleTripCommissionUseCase = new SettleTripCommissionUseCase(
-      mockWalletReadRepo as unknown as Parameters<typeof SettleTripCommissionUseCase.prototype.constructor>[0],
-      mockWalletWriteRepo as unknown as Parameters<typeof SettleTripCommissionUseCase.prototype.constructor>[1],
-      mockLedgerWriteRepo as unknown as Parameters<typeof SettleTripCommissionUseCase.prototype.constructor>[2],
+      mockWalletReadRepo as unknown as ConstructorParameters<typeof SettleTripCommissionUseCase>[0],
+      mockWalletWriteRepo as unknown as ConstructorParameters<typeof SettleTripCommissionUseCase>[1],
+      mockLedgerWriteRepo as unknown as ConstructorParameters<typeof SettleTripCommissionUseCase>[2],
     );
 
     getPlatformTreasuryUseCase = new GetPlatformTreasuryUseCase(
-      mockWalletReadRepo as unknown as Parameters<typeof GetPlatformTreasuryUseCase.prototype.constructor>[0],
-      mockWalletWriteRepo as unknown as Parameters<typeof GetPlatformTreasuryUseCase.prototype.constructor>[1],
-      mockDataSource as unknown as Parameters<typeof GetPlatformTreasuryUseCase.prototype.constructor>[2],
+      mockWalletReadRepo as unknown as ConstructorParameters<typeof GetPlatformTreasuryUseCase>[0],
+      mockWalletWriteRepo as unknown as ConstructorParameters<typeof GetPlatformTreasuryUseCase>[1],
+      mockDataSource as unknown as ConstructorParameters<typeof GetPlatformTreasuryUseCase>[2],
     );
   });
 

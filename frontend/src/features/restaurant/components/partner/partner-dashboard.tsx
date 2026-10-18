@@ -594,9 +594,14 @@ export function PartnerDashboard() {
                       </div>
                     )}
 
-                    {/* Price pill */}
-                    <div className="absolute bottom-2.5 right-2.5 px-3 py-1 rounded-lg text-sm font-bold bg-orange-500 text-white shadow-md shadow-orange-500/30">
-                      {Number(item.price).toLocaleString('vi-VN')} ₫
+                    {/* Price & Net earnings pill */}
+                    <div className="absolute bottom-2.5 right-2.5 flex flex-col items-end gap-1">
+                      <div className="px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-500 text-white shadow-md shadow-orange-500/30">
+                        {Number(item.price).toLocaleString('vi-VN')} ₫
+                      </div>
+                      <div className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30">
+                        Thực nhận: {Math.round(Number(item.price) * 0.8).toLocaleString('vi-VN')} ₫
+                      </div>
                     </div>
                   </div>
 

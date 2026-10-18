@@ -25,6 +25,8 @@ export class GetOrderHistoryUseCase {
       customer_id: inflight.customer_id,
       restaurant_id: inflight.restaurant_id,
       driver_id: inflight.driver_id,
+      subtotal: inflight.subtotal ?? (Number(inflight.total_amount) > 15000 ? Number(inflight.total_amount) - 15000 : Number(inflight.total_amount)),
+      delivery_fee: inflight.delivery_fee ?? 15000,
       total_amount: inflight.total_amount,
       status: inflight.status,
       delivery_address: inflight.delivery_address,

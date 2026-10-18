@@ -79,10 +79,11 @@ export class GetAvailableDriverTripsUseCase {
           }
         }
 
-        const baseFee = 25000;
         const totalNum = Number(order.total_amount) || 0;
-        const commission = Math.round((totalNum * 0.1) / 1000) * 1000;
-        const driverEarnings = baseFee + commission;
+        const subtotal = Number(order.subtotal) || (totalNum > 15000 ? totalNum - 15000 : totalNum);
+        const deliveryFee = Number(order.delivery_fee) || 15000;
+        const platformFee = Math.round(deliveryFee * 0.1);
+        const driverEarnings = deliveryFee - platformFee;
 
         const distanceKm =
           restaurantInfo?.lat != null &&
@@ -101,6 +102,9 @@ export class GetAvailableDriverTripsUseCase {
           id: order.id,
           order_id: order.id,
           status: order.status,
+          subtotal,
+          delivery_fee: deliveryFee,
+          platform_fee: platformFee,
           total_amount: totalNum,
           driver_earnings: driverEarnings,
           pickup_name: restaurantInfo?.name ?? 'Nhà hàng Đối tác',

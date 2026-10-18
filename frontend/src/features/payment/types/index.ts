@@ -45,6 +45,8 @@ export interface ProcessPaymentDto {
   customerId: string;
   restaurantId: string;
   amount: string;
+  subtotal?: string;
+  deliveryFee?: string;
   paymentMethod: PaymentMethod;
   idempotencyKey: string;
 }

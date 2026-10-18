@@ -22,10 +22,12 @@ export class CreateOrderUseCase {
 
   async execute(command: CreateOrderCommand): Promise<Order> {
     const orderId = randomUUID();
-    const totalAmount = command.items.reduce(
+    const subtotal = command.items.reduce(
       (sum, item) => sum + item.quantity * item.unit_price,
       0,
     );
+    const deliveryFee = 15000;
+    const totalAmount = subtotal + deliveryFee;
 
     const now = new Date().toISOString();
     const orderData: InflightOrderData = {
@@ -41,6 +43,8 @@ export class CreateOrderUseCase {
       recipient_phone: command.recipient_phone ?? null,
       note: command.note ?? null,
       payment_method: command.payment_method ?? 'CASH',
+      subtotal,
+      delivery_fee: deliveryFee,
       total_amount: totalAmount,
       items: command.items.map((item) => ({
         id: randomUUID(),
@@ -67,6 +71,8 @@ export class CreateOrderUseCase {
       customer_id: orderData.customer_id,
       restaurant_id: orderData.restaurant_id,
       driver_id: null,
+      subtotal,
+      delivery_fee: deliveryFee,
       total_amount: totalAmount,
       status: OrderStatus.PENDING,
       delivery_address: orderData.delivery_address,

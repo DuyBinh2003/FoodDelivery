@@ -37,7 +37,7 @@ describe('AdminService - System Configurations & Bulk Update', () => {
     process.env.PAYMENT_SERVICE_URL = 'http://localhost:3007';
 
     adminService = new AdminService(
-      mockConfigRepo as unknown as Parameters<typeof AdminService.prototype.constructor>[0],
+      mockConfigRepo as unknown as ConstructorParameters<typeof AdminService>[0],
     );
   });
 

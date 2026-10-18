@@ -40,8 +40,10 @@ export function OrderBillCard({ order, paymentDetails }: OrderBillCardProps) {
     0
   );
 
-  const totalNum = Number(order.total_amount) || itemsTotal;
-  const deliveryFee = totalNum > itemsTotal ? totalNum - itemsTotal : 0;
+  const orderWithFees = order as typeof order & { subtotal?: number; delivery_fee?: number };
+  const subtotal = Number(orderWithFees.subtotal) || itemsTotal;
+  const deliveryFee = Number(orderWithFees.delivery_fee) || (Number(order.total_amount) > subtotal ? Number(order.total_amount) - subtotal : 15000);
+  const totalNum = Number(order.total_amount) || (subtotal + deliveryFee);
 
   return (
     <div className="rounded-2xl bg-zinc-900/80 border border-white/[0.08] p-5 shadow-lg shadow-black/20 backdrop-blur-md space-y-4">
@@ -81,13 +83,13 @@ export function OrderBillCard({ order, paymentDetails }: OrderBillCardProps) {
       {/* Cost Breakdown */}
       <div className="pt-3 border-t border-white/[0.06] space-y-1.5 text-xs text-zinc-400">
         <div className="flex justify-between">
-          <span>Tiền món:</span>
-          <span className="text-zinc-300 font-mono">{formatCurrency(itemsTotal)}</span>
+          <span>Tiền món ăn:</span>
+          <span className="text-zinc-300 font-mono font-medium">{formatCurrency(subtotal)}</span>
         </div>
         <div className="flex justify-between">
           <span>Phí giao hàng:</span>
-          <span className="text-zinc-300 font-mono">
-            {deliveryFee > 0 ? formatCurrency(deliveryFee) : 'Miễn phí'}
+          <span className="text-zinc-300 font-mono font-medium">
+            {formatCurrency(deliveryFee)}
           </span>
         </div>
         <div className="flex justify-between text-sm font-bold text-white pt-2 border-t border-white/[0.06]">

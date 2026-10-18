@@ -27,6 +27,12 @@ export class Order {
   @Column({ type: 'uuid', nullable: true })
   driver_id: string;
 
+  @Column({ type: 'numeric', precision: 15, scale: 2, default: 0 })
+  subtotal: number;
+
+  @Column({ type: 'numeric', precision: 15, scale: 2, default: 15000 })
+  delivery_fee: number;
+
   @Column({ type: 'numeric', precision: 15, scale: 2 })
   total_amount: number;
 

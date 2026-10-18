@@ -88,10 +88,11 @@ export class ProcessPaymentUseCase {
       AccountCategory.REVENUE,
     );
 
-    // 4. Calculate revenue split: 85% restaurant, 15% platform
+    // 4. Calculate revenue split: 80% restaurant of subtotal, 20% platform commission
     const totalNum = Number(dto.amount);
-    const platformFeeNum = Math.min(Math.round(totalNum * 0.15), totalNum);
-    const restaurantAmountNum = totalNum - platformFeeNum;
+    const subtotalNum = dto.subtotal ? Number(dto.subtotal) : totalNum;
+    const restaurantAmountNum = Math.min(Math.round(subtotalNum * 0.80), totalNum);
+    const platformFeeNum = totalNum - restaurantAmountNum;
 
     // 5. Post Journal Transaction (Double-Entry Invariant: DEBIT customer = CREDIT restaurant + CREDIT platform)
     const transactionCode = `PAY-${dto.orderId.slice(0, 8)}-${Date.now()}`;

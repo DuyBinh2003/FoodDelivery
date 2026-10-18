@@ -28,10 +28,12 @@ export class OrderWriteRepository {
     await queryRunner.startTransaction();
 
     try {
-      const totalAmount = command.items.reduce(
+      const subtotal = command.items.reduce(
         (sum, item) => sum + item.quantity * item.unit_price,
         0,
       );
+      const deliveryFee = 15000;
+      const totalAmount = subtotal + deliveryFee;
 
       const order = queryRunner.manager.create(Order, {
         customer_id: command.customer_id,
@@ -39,6 +41,8 @@ export class OrderWriteRepository {
         delivery_address: command.delivery_address,
         note: command.note ?? null,
         payment_method: command.payment_method ?? 'CASH',
+        subtotal,
+        delivery_fee: deliveryFee,
         total_amount: totalAmount,
         status: OrderStatus.PENDING,
       });
@@ -60,6 +64,8 @@ export class OrderWriteRepository {
         orderId: savedOrder.id,
         restaurantId: savedOrder.restaurant_id,
         userId: savedOrder.customer_id,
+        subtotal,
+        deliveryFee,
         totalAmount: totalAmount,
         shippingAddress: savedOrder.delivery_address,
       });
@@ -79,6 +85,10 @@ export class OrderWriteRepository {
     await queryRunner.startTransaction();
 
     try {
+      const subtotal = orderData.subtotal ?? orderData.items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+      const deliveryFee = orderData.delivery_fee ?? 15000;
+      const totalAmount = orderData.total_amount ?? (subtotal + deliveryFee);
+
       const order = queryRunner.manager.create(Order, {
         id: orderData.id,
         customer_id: orderData.customer_id,
@@ -91,7 +101,9 @@ export class OrderWriteRepository {
         recipient_phone: orderData.recipient_phone ?? null,
         note: orderData.note ?? null,
         payment_method: orderData.payment_method ?? 'CASH',
-        total_amount: orderData.total_amount,
+        subtotal,
+        delivery_fee: deliveryFee,
+        total_amount: totalAmount,
         status: orderData.status,
         cooking_at: orderData.cooking_at ? new Date(orderData.cooking_at) : null,
         ready_at: orderData.ready_at ? new Date(orderData.ready_at) : null,

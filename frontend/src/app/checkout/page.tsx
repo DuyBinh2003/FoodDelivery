@@ -189,12 +189,14 @@ export default function CheckoutPage() {
       const createdOrder = await createOrder(orderPayload);
 
       // 2. Process payment in payment-service
-      const idempotencyKey = `pay-${createdOrder.id}-${Date.now()}`;
+      const idempotencyKey = `pay-${createdOrder.id}`;
       await processOrderPayment({
         orderId: createdOrder.id,
         customerId,
         restaurantId,
         amount: total.toString(),
+        subtotal: subtotal.toString(),
+        deliveryFee: shippingFee.toString(),
         paymentMethod,
         idempotencyKey,
       });
@@ -472,17 +474,23 @@ export default function CheckoutPage() {
 
             {/* Price Summary */}
             <section className="bg-zinc-900 border border-white/5 rounded-3xl p-5 space-y-3">
+              <h2 className="text-white font-semibold mb-2">Chi tiết thanh toán</h2>
               <div className="flex justify-between text-zinc-400 text-sm">
-                <span>Tạm tính</span>
-                <span>{formatVND(subtotal)}</span>
+                <span>Tiền món ăn (Tạm tính)</span>
+                <span className="text-zinc-200 font-medium font-mono">{formatVND(subtotal)}</span>
               </div>
               <div className="flex justify-between text-zinc-400 text-sm">
-                <span>Phí giao hàng</span>
-                <span>{formatVND(shippingFee)}</span>
+                <span className="flex items-center gap-1.5">
+                  Phí giao hàng (Cố định)
+                  <span className="text-[10px] bg-orange-500/15 text-orange-400 px-1.5 py-0.5 rounded font-semibold border border-orange-500/20">
+                    Mặc định
+                  </span>
+                </span>
+                <span className="text-zinc-200 font-medium font-mono">{formatVND(shippingFee)}</span>
               </div>
               <div className="pt-3 border-t border-white/10 flex justify-between items-center">
                 <span className="text-white font-bold">Tổng thanh toán</span>
-                <span className="text-xl font-extrabold text-orange-500">{formatVND(total)}</span>
+                <span className="text-xl font-extrabold text-orange-500 font-mono">{formatVND(total)}</span>
               </div>
             </section>
           </>
