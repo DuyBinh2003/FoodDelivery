@@ -8,9 +8,11 @@ const __dirname = dirname(__filename);
 
 dotenv.config({ path: join(__dirname, '../.env') });
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgresql://postgres:password@localhost:5432/food_delivery';
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error('[ConfigError] Thiếu biến môi trường DATABASE_URL trong backend/.env');
+  process.exit(1);
+}
 
 const pool = new pg.Pool({ connectionString });
 

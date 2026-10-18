@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
@@ -10,6 +10,8 @@ export interface GetOrderQuery {
 
 @Injectable()
 export class GetOrderUseCase {
+  private readonly logger = new Logger(GetOrderUseCase.name);
+
   constructor(
     @Inject(OrderRedisRepository) private readonly orderRedisRepo: OrderRedisRepository,
     @Inject(OrderReadRepository) private readonly orderReadRepo: OrderReadRepository,
@@ -29,22 +31,39 @@ export class GetOrderUseCase {
         const res = await fetch(`${restUrl}/internal/restaurants/${targetRestaurantId}/details`);
         if (res.ok) {
           restaurantInfo = (await res.json().catch(() => null)) as { name: string; address?: string };
+        } else {
+          this.logger.warn(`Restaurant-service returned status ${res.status} for restaurant ${targetRestaurantId}`);
         }
-      } catch (_e) {
-        // Ignore fetch error
+      } catch (error: unknown) {
+        this.logger.warn(`Failed to fetch restaurant details for order ${query.orderId}:`, error);
       }
     }
 
     const targetDriverId = inflight ? inflight.driver_id : null;
     let driverInfo: { id: string; name: string; phone?: string; vehicle_plate?: string; vehicle_type?: string } | null = null;
     if (targetDriverId) {
-      driverInfo = {
-        id: targetDriverId,
-        name: 'Nguyễn Văn Tài (Tài xế FoodDelivery)',
-        phone: '0901 234 567',
-        vehicle_plate: '59-X1 888.88',
-        vehicle_type: 'Honda AirBlade (Đỏ Đen)',
-      };
+      try {
+        const userUrl = this.configService.getOrThrow<string>('services.userUrl');
+        const res = await fetch(`${userUrl}/internal/drivers/${targetDriverId}/status`);
+        if (res.ok) {
+          const driverStatus = (await res.json().catch(() => null)) as {
+            vehicle_plate?: string;
+            vehicle_type?: string;
+          } | null;
+          driverInfo = {
+            id: targetDriverId,
+            name: 'Tài xế giao hàng',
+            vehicle_plate: driverStatus?.vehicle_plate || undefined,
+            vehicle_type: driverStatus?.vehicle_type || undefined,
+          };
+        }
+      } catch (error: unknown) {
+        this.logger.warn(`Failed to fetch driver info for driver ${targetDriverId}:`, error);
+        driverInfo = {
+          id: targetDriverId,
+          name: 'Tài xế giao hàng',
+        };
+      }
     }
 
     if (inflight) {
@@ -96,20 +115,37 @@ export class GetOrderUseCase {
         const res = await fetch(`${restUrl}/internal/restaurants/${order.restaurant_id}/details`);
         if (res.ok) {
           restaurantInfo = (await res.json().catch(() => null)) as { name: string; address?: string };
+        } else {
+          this.logger.warn(`Restaurant-service returned status ${res.status} for restaurant ${order.restaurant_id}`);
         }
-      } catch (_e) {
-        // Ignore fetch error
+      } catch (error: unknown) {
+        this.logger.warn(`Failed to fetch restaurant details for order ${query.orderId}:`, error);
       }
     }
 
     if (order.driver_id && !driverInfo) {
-      driverInfo = {
-        id: order.driver_id,
-        name: 'Nguyễn Văn Tài (Tài xế FoodDelivery)',
-        phone: '0901 234 567',
-        vehicle_plate: '59-X1 888.88',
-        vehicle_type: 'Honda AirBlade (Đỏ Đen)',
-      };
+      try {
+        const userUrl = this.configService.getOrThrow<string>('services.userUrl');
+        const res = await fetch(`${userUrl}/internal/drivers/${order.driver_id}/status`);
+        if (res.ok) {
+          const driverStatus = (await res.json().catch(() => null)) as {
+            vehicle_plate?: string;
+            vehicle_type?: string;
+          } | null;
+          driverInfo = {
+            id: order.driver_id,
+            name: 'Tài xế giao hàng',
+            vehicle_plate: driverStatus?.vehicle_plate || undefined,
+            vehicle_type: driverStatus?.vehicle_type || undefined,
+          };
+        }
+      } catch (error: unknown) {
+        this.logger.warn(`Failed to fetch driver info for driver ${order.driver_id}:`, error);
+        driverInfo = {
+          id: order.driver_id,
+          name: 'Tài xế giao hàng',
+        };
+      }
     }
 
     return {

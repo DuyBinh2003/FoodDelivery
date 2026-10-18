@@ -64,3 +64,11 @@ features/orders/
 ## 6. CSS & Styling
 - Tuân thủ quy chuẩn UI/UX của dự án (Tham chiếu skill `ui-ux-pro-max`).
 - Hạn chế viết CSS inline cứng. Dùng TailwindCSS (nếu cấu hình) kết hợp với các biến số design system (design tokens) để đảm bảo giao diện đồng bộ.
+
+## 7. Quy chuẩn Xử lý Lỗi và Giao diện Dự phòng (Error Handling & Fallback UI)
+- **App Router Error Boundaries**: Cấp root luôn có `error.tsx`, `global-error.tsx`, và `not-found.tsx`. Các trang giao diện lỗi phải cung cấp nút "Thử lại" (Retry/Reset) và "Quay về trang chủ" để người dùng không bị kẹt.
+- **Không hiển thị lỗi Dev cho người dùng**: Tuyệt đối không hiển thị trực tiếp `err.message` thô (như "API Error: Bad Request (400)" hay URL mạng). Luôn sử dụng `getErrorMessage(error)` hoặc `notifyApiError(error)` từ `@/lib/error-handler` để hiển thị thông điệp tiếng Việt dễ hiểu.
+- **Component ErrorState**: Khi một khối dữ liệu (Tab, Danh sách, Card) tải thất bại, không để màn hình trắng hoặc tải vô tận; bắt buộc hiển thị component `ErrorState` (`@/components/ui/error-state/error-state`) kèm nút Thử lại (`onRetry`).
+- **Xử lý 401 Unauthorized**: `apiClient` tự động xóa token và chuyển hướng an toàn về `/login?expired=1&redirect=...`.
+- Tham khảo chi tiết tại `docs/architecture/error-handling.md`.
+

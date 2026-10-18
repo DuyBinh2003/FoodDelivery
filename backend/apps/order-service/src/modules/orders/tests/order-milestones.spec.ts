@@ -47,6 +47,7 @@ describe('Order Milestones (Role-Based Tracking)', () => {
       mockConfigService = {
         getOrThrow: vi.fn((key: string) => {
           if (key === 'services.restaurantUrl') return 'http://localhost:3003';
+          if (key === 'services.userUrl') return 'http://localhost:3001';
           return '';
         }),
       };
@@ -214,6 +215,7 @@ describe('Order Milestones (Role-Based Tracking)', () => {
       mockConfigService = {
         getOrThrow: vi.fn((key: string) => {
           if (key === 'services.restaurantUrl') return 'http://localhost:3003';
+          if (key === 'services.userUrl') return 'http://localhost:3001';
           return '';
         }),
       };
@@ -233,6 +235,8 @@ describe('Order Milestones (Role-Based Tracking)', () => {
         restaurant_id: 'rest-1',
         driver_id: 'driver-1',
         delivery_address: '99 Nguyen Hue',
+        note: null,
+        payment_method: 'CASH',
         total_amount: 120000,
         status: OrderStatus.READY_FOR_PICKUP,
         items: [],
@@ -316,6 +320,7 @@ describe('Order Milestones (Role-Based Tracking)', () => {
           status: OrderStatus.COOKING,
           delivery_address: '12 Ton Duc Thang',
           note: 'Không cay',
+          payment_method: 'CASH',
           items: [],
           cooking_at: cookingTime,
           ready_at: null,

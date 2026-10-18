@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
@@ -32,6 +32,8 @@ export interface RestaurantOrderDto {
 
 @Injectable()
 export class GetRestaurantOrdersUseCase {
+  private readonly logger = new Logger(GetRestaurantOrdersUseCase.name);
+
   constructor(
     @Inject(OrderRedisRepository)
     private readonly orderRedisRepo: OrderRedisRepository,
@@ -56,9 +58,11 @@ export class GetRestaurantOrdersUseCase {
             menuMap.set(m.id, m);
           });
         }
+      } else {
+        this.logger.warn(`Menu fetch returned status ${res.status} for restaurant ${restaurantId}`);
       }
-    } catch (_e) {
-      // Ignore fetch error
+    } catch (error: unknown) {
+      this.logger.warn(`Failed to fetch menu items for restaurant ${restaurantId}:`, error);
     }
 
     // 1. Quét các đơn đang xử lý trên Redis (PENDING, COOKING, READY_FOR_PICKUP, DELIVERING)

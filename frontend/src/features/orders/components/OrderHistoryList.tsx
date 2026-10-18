@@ -113,7 +113,7 @@ export const OrderHistoryList = () => {
     const cartItems = order.items.map((item: OrderItem) => ({
       id: item.menu_item_id || item.id, // ID unique trong giỏ
       item_id: item.menu_item_id, // ID thật của món
-      name: item.name || 'Menu Item',
+      name: item.name || 'Món ăn',
       price: Number(item.unit_price),
       quantity: item.quantity,
     }));
@@ -143,7 +143,7 @@ export const OrderHistoryList = () => {
             <div>
               <CardTitle className="text-xl font-semibold text-white flex items-center gap-2">
                 <Utensils className="w-5 h-5 text-zinc-500" />
-                {order.restaurant_name || 'Restaurant'}
+                {order.restaurant_name || 'Nhà hàng'}
               </CardTitle>
               <div className="text-sm text-zinc-400 mt-2 flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
@@ -159,14 +159,14 @@ export const OrderHistoryList = () => {
                   <div key={item.id} className="flex justify-between items-center text-sm">
                     <span className="font-medium text-zinc-300 flex items-center gap-2">
                       <span className="bg-white/10 text-zinc-400 px-2 py-0.5 rounded text-xs">{item.quantity}x</span>
-                      {item.name || 'Item'}
+                      {item.name || 'Món ăn'}
                     </span>
                     <span className="text-zinc-400">{formatCurrency(Number(item.unit_price))}</span>
                   </div>
                 ))}
               </div>
               <div className="border-t border-white/5 mt-2 pt-4 flex justify-between font-bold text-lg items-center">
-                <span className="flex items-center gap-2 text-white"><Receipt className="w-5 h-5 text-zinc-500" /> Total</span>
+                <span className="flex items-center gap-2 text-white"><Receipt className="w-5 h-5 text-zinc-500" /> Tổng tiền</span>
                 <span className="text-orange-500 text-xl">{formatCurrency(Number(order.total_amount))}</span>
               </div>
             </div>

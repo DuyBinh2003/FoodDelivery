@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
@@ -18,6 +19,8 @@ export interface ClaimDriverTripCommand {
 
 @Injectable()
 export class ClaimDriverTripUseCase {
+  private readonly logger = new Logger(ClaimDriverTripUseCase.name);
+
   constructor(
     @Inject(OrderRedisRepository)
     private readonly orderRedisRepo: OrderRedisRepository,
@@ -50,9 +53,10 @@ export class ClaimDriverTripUseCase {
       } else {
         throw new ForbiddenException('Không tìm thấy thông tin tài xế hợp lệ');
       }
-    } catch (err: unknown) {
-      if (err instanceof ForbiddenException) throw err;
-      throw new ForbiddenException('Không thể xác thực trạng thái tài xế vào lúc này.');
+    } catch (error: unknown) {
+      if (error instanceof ForbiddenException) throw error;
+      this.logger.error(`Error verifying driver status for driver ${driverId}:`, error);
+      throw new ForbiddenException('Không thể xác thực trạng thái tài xế vào lúc này.', { cause: error });
     }
 
     // 2. Thực hiện Atomic Claim trên Redis

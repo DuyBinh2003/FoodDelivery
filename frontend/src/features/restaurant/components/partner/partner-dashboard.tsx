@@ -77,9 +77,18 @@ export function PartnerDashboard() {
       setError(null);
 
       const [resData, catsData, tagsData] = await Promise.all([
-        getMyRestaurant().catch(() => null),
-        getAvailableCategories().catch(() => []),
-        getAvailableTags().catch(() => []),
+        getMyRestaurant().catch((err) => {
+          console.warn('[PartnerDashboard] Failed to fetch restaurant:', err);
+          return null;
+        }),
+        getAvailableCategories().catch((err) => {
+          console.warn('[PartnerDashboard] Failed to fetch categories:', err);
+          return [];
+        }),
+        getAvailableTags().catch((err) => {
+          console.warn('[PartnerDashboard] Failed to fetch tags:', err);
+          return [];
+        }),
       ]);
 
       if (!resData) {
@@ -104,9 +113,18 @@ export function PartnerDashboard() {
     async function init() {
       try {
         const [resData, catsData, tagsData] = await Promise.all([
-          getMyRestaurant().catch(() => null),
-          getAvailableCategories().catch(() => []),
-          getAvailableTags().catch(() => []),
+          getMyRestaurant().catch((err) => {
+            console.warn('[PartnerDashboard] Failed to fetch restaurant:', err);
+            return null;
+          }),
+          getAvailableCategories().catch((err) => {
+            console.warn('[PartnerDashboard] Failed to fetch categories:', err);
+            return [];
+          }),
+          getAvailableTags().catch((err) => {
+            console.warn('[PartnerDashboard] Failed to fetch tags:', err);
+            return [];
+          }),
         ]);
         if (!isMounted) return;
         if (!resData) {
@@ -725,16 +743,8 @@ export function PartnerDashboard() {
           setIsMenuModalOpen(true);
         }}
         onToggleAvailability={handleToggleItemAvailability}
-        customerComment={
-          viewingMenuItem?.name.toLowerCase().includes('phở') || viewingMenuItem?.name.toLowerCase().includes('bún')
-            ? 'Ít hành lá, nước lèo để riêng, thêm tương ớt và chanh tươi'
-            : 'Ít đường, nhiều đá viên riêng, bọc kỹ mang về'
-        }
-        customerOptions={
-          viewingMenuItem?.name.toLowerCase().includes('phở') || viewingMenuItem?.name.toLowerCase().includes('bún')
-            ? ['Ít hành', 'Nước dùng riêng', 'Thêm tương ớt']
-            : ['Ít đường', 'Đá riêng']
-        }
+        customerComment={null}
+        customerOptions={null}
       />
     </div>
   );

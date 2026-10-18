@@ -51,9 +51,9 @@ export function OrderDriverCard({ driver }: OrderDriverCardProps) {
             </h3>
             <div className="flex items-center gap-2 mt-1 text-xs text-zinc-300">
               <span className="font-semibold text-zinc-100 bg-white/10 px-2 py-0.5 rounded border border-white/10 font-mono tracking-wider">
-                {driver.vehicle_plate || '59-X1 888.88'}
+                {driver.vehicle_plate || 'Chưa cập nhật biển số'}
               </span>
-              <span className="text-zinc-400">• {driver.vehicle_type || 'Honda AirBlade'}</span>
+              <span className="text-zinc-400">• {driver.vehicle_type || 'Chưa cập nhật loại xe'}</span>
             </div>
           </div>
         </div>

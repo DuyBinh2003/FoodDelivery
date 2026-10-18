@@ -33,6 +33,8 @@ import { DriverMetricsGrid } from './driver-metrics-grid';
 import { DriverTripsList } from './driver-trips-list';
 import { DriverReviewsTab } from './driver-reviews-tab';
 import { DriverAvailableTrips } from './driver-available-trips';
+import { ErrorState } from '@/components/ui/error-state/error-state';
+import { getErrorMessage } from '@/lib/error-handler';
 
 export function DriverDashboard() {
   const { user, setDriverStatus, refreshProfile } = useAuthStore();
@@ -42,6 +44,7 @@ export function DriverDashboard() {
   const [summary, setSummary] = useState<DriverSummary | null>(null);
   const [reviewsData, setReviewsData] = useState<DriverReviewsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'available' | 'trips' | 'reviews'>('available');
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null
@@ -60,19 +63,36 @@ export function DriverDashboard() {
   const loadData = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const [availableRes, tripsRes, summaryRes, reviewsRes] = await Promise.all([
-        isOnline ? getAvailableDriverTrips().catch(() => []) : Promise.resolve([]),
-        getDriverTrips().catch(() => []),
-        getDriverSummary().catch(() => null),
-        getDriverReviews().catch(() => null),
+        isOnline
+          ? getAvailableDriverTrips().catch((err) => {
+              console.warn('[DriverDashboard] Failed to fetch available trips:', err);
+              return [];
+            })
+          : Promise.resolve([]),
+        getDriverTrips().catch((err) => {
+          console.warn('[DriverDashboard] Failed to fetch trips:', err);
+          return [];
+        }),
+        getDriverSummary().catch((err) => {
+          console.warn('[DriverDashboard] Failed to fetch summary:', err);
+          return null;
+        }),
+        getDriverReviews().catch((err) => {
+          console.warn('[DriverDashboard] Failed to fetch reviews:', err);
+          return null;
+        }),
       ]);
 
       setAvailableTrips(availableRes);
       setTrips(tripsRes);
       setSummary(summaryRes);
       setReviewsData(reviewsRes);
-    } catch {
-      showToast('error', 'Có lỗi khi tải dữ liệu đối tác tài xế');
+    } catch (err) {
+      const msg = getErrorMessage(err, 'Có lỗi khi tải dữ liệu đối tác tài xế');
+      setLoadError(msg);
+      showToast('error', msg);
     } finally {
       setLoading(false);
     }
@@ -84,10 +104,24 @@ export function DriverDashboard() {
     const fetchInitialData = async () => {
       try {
         const [availableRes, tripsRes, summaryRes, reviewsRes] = await Promise.all([
-          isOnline ? getAvailableDriverTrips().catch(() => []) : Promise.resolve([]),
-          getDriverTrips().catch(() => []),
-          getDriverSummary().catch(() => null),
-          getDriverReviews().catch(() => null),
+          isOnline
+            ? getAvailableDriverTrips().catch((err) => {
+                console.warn('[DriverDashboard] Failed to fetch available trips:', err);
+                return [];
+              })
+            : Promise.resolve([]),
+          getDriverTrips().catch((err) => {
+            console.warn('[DriverDashboard] Failed to fetch trips:', err);
+            return [];
+          }),
+          getDriverSummary().catch((err) => {
+            console.warn('[DriverDashboard] Failed to fetch summary:', err);
+            return null;
+          }),
+          getDriverReviews().catch((err) => {
+            console.warn('[DriverDashboard] Failed to fetch reviews:', err);
+            return null;
+          }),
         ]);
 
         if (!isMounted) return;
@@ -95,9 +129,10 @@ export function DriverDashboard() {
         setTrips(tripsRes);
         setSummary(summaryRes);
         setReviewsData(reviewsRes);
-      } catch {
+      } catch (err: unknown) {
         if (isMounted) {
-          showToast('error', 'Có lỗi khi tải dữ liệu đối tác tài xế');
+          console.error('[DriverDashboard] Initial load error:', err);
+          showToast('error', getErrorMessage(err, 'Có lỗi khi tải dữ liệu đối tác tài xế'));
         }
       } finally {
         if (isMounted) {
@@ -117,7 +152,9 @@ export function DriverDashboard() {
             .then((res) => {
               if (isMounted) setAvailableTrips(res);
             })
-            .catch(() => {});
+            .catch((err) => {
+              console.warn('[DriverDashboard] Polling available trips failed:', err);
+            });
         }
       }, 10000);
     }
@@ -138,7 +175,9 @@ export function DriverDashboard() {
         // Vừa chuyển sang ONLINE -> fetch ngay danh sách chuyến khả dụng
         getAvailableDriverTrips()
           .then((res) => setAvailableTrips(res))
-          .catch(() => {});
+          .catch((err) => {
+            console.warn('[DriverDashboard] Failed to fetch trips after going online:', err);
+          });
       }
       showToast(
         'success',
@@ -147,10 +186,12 @@ export function DriverDashboard() {
           : 'Đã chuyển sang NGOẠI TUYẾN. Tạm nghỉ nhận đơn.'
       );
       // Quiet background sync
-      refreshProfile().catch(() => {});
-    } catch (_err) {
-      showToast('error', 'Không thể cập nhật trạng thái hoạt động');
-      throw _err;
+      refreshProfile().catch((err) => {
+        console.warn('[DriverDashboard] Background profile refresh failed:', err);
+      });
+    } catch (error) {
+      showToast('error', getErrorMessage(error, 'Không thể cập nhật trạng thái hoạt động'));
+      throw error;
     }
   };
 
@@ -159,8 +200,8 @@ export function DriverDashboard() {
       await updateDriverTripStatus(orderId, 'COMPLETED');
       showToast('success', 'Đã xác nhận hoàn thành cuốc xe thành công!');
       await loadData();
-    } catch {
-      showToast('error', 'Lỗi khi cập nhật trạng thái cuốc xe');
+    } catch (err) {
+      showToast('error', getErrorMessage(err, 'Lỗi khi cập nhật trạng thái cuốc xe'));
     }
   };
 
@@ -171,7 +212,7 @@ export function DriverDashboard() {
       await loadData();
       setActiveTab('trips');
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Chuyến xe đã được tài xế khác nhận';
+      const msg = getErrorMessage(err, 'Chuyến xe đã được tài xế khác nhận');
       showToast('error', msg);
       await loadData();
     }
@@ -276,8 +317,8 @@ export function DriverDashboard() {
             <div className="lg:w-auto w-full">
               <DriverStatusSwitch
                 status={currentStatus}
-                vehiclePlate={user?.driverProfile?.vehicle_plate || '59-S2 888.88'}
-                vehicleType={user?.driverProfile?.vehicle_type || 'Honda Wave Alpha'}
+                vehiclePlate={user?.driverProfile?.vehicle_plate || 'Chưa cập nhật'}
+                vehicleType={user?.driverProfile?.vehicle_type || 'Chưa cập nhật'}
                 onToggle={handleToggleStatus}
               />
             </div>
@@ -345,7 +386,14 @@ export function DriverDashboard() {
           </div>
 
           {/* Active Tab Component */}
-          {activeTab === 'available' ? (
+          {loadError && !loading && availableTrips.length === 0 && trips.length === 0 ? (
+            <ErrorState
+              title="Không thể tải dữ liệu cuốc xe"
+              description={loadError}
+              onRetry={loadData}
+              retryText="Tải lại dữ liệu"
+            />
+          ) : activeTab === 'available' ? (
             <DriverAvailableTrips
               trips={availableTrips}
               loading={loading}

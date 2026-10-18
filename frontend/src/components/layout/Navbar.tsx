@@ -23,7 +23,9 @@ export function Navbar() {
     setMounted(true);
 
     if (isAuthenticated) {
-      refreshProfile().catch(() => {});
+      refreshProfile().catch((err) => {
+        console.warn('[Navbar] Failed to refresh user profile:', err);
+      });
     }
 
     const handleClickOutside = (event: MouseEvent) => {

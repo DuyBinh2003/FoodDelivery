@@ -5,6 +5,8 @@ import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
+import { getRequiredEnv } from '@/lib/env';
+
 interface RegistrationResultEvent {
   id: string;
   type: 'RESTAURANT' | 'DRIVER';
@@ -19,7 +21,7 @@ export function UserSocketProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!user?.id) return;
 
-    const wsUrl = process.env.NEXT_PUBLIC_USER_WS_URL || 'http://localhost:3001/user';
+    const wsUrl = getRequiredEnv('NEXT_PUBLIC_USER_WS_URL');
 
     const socket = io(wsUrl, {
       query: { userId: user.id },

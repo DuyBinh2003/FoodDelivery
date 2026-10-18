@@ -1,4 +1,4 @@
-import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User } from '@/modules/users/entities/user.entity.js';
@@ -16,6 +16,8 @@ export interface CreateUserPayload {
 
 @Injectable()
 export class UserWriteRepository {
+  private readonly logger = new Logger(UserWriteRepository.name);
+
   constructor(
     @InjectRepository(CustomerProfile)
     private readonly customerProfileRepo: Repository<CustomerProfile>,
@@ -48,9 +50,10 @@ export class UserWriteRepository {
 
       await queryRunner.commitTransaction();
       return savedUser;
-    } catch (_err) {
+    } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException('Could not create user and profile');
+      this.logger.error('Failed to create user and profile in transaction:', error);
+      throw new BadRequestException('Could not create user and profile', { cause: error });
     } finally {
       await queryRunner.release();
     }

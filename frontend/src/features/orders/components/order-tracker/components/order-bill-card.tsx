@@ -67,7 +67,7 @@ export function OrderBillCard({ order, paymentDetails }: OrderBillCardProps) {
                   {item.quantity}x
                 </span>
                 <span className="text-zinc-200 font-medium truncate">
-                  {item.name || 'Món ăn đặc sản'}
+                  {item.name || 'Món ăn'}
                 </span>
               </div>
               <span className="font-semibold text-zinc-300 font-mono shrink-0">

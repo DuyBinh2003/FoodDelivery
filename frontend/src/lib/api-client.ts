@@ -1,4 +1,8 @@
-const DEFAULT_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_API_TIMEOUT) || 10000;
+import { getRequiredEnv } from './env';
+
+const DEFAULT_TIMEOUT_MS = process.env.NEXT_PUBLIC_API_TIMEOUT
+  ? Number(process.env.NEXT_PUBLIC_API_TIMEOUT)
+  : 10000;
 
 function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } {
   // If full URL is passed
@@ -22,38 +26,38 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
   const pathWithoutApi = isApiPrefix ? rawPath.slice(4) : rawPath;
   const firstSegment = pathWithoutApi.split('/')[0];
 
-  let baseUrl = 'http://localhost:3000';
+  let baseUrl = '';
 
   switch (firstSegment) {
     case 'users':
     case 'auth':
-      baseUrl = process.env.NEXT_PUBLIC_USER_SERVICE_URL || 'http://localhost:3001';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_USER_SERVICE_URL');
       break;
     case 'admin':
-      baseUrl = process.env.NEXT_PUBLIC_ADMIN_SERVICE_URL || 'http://localhost:3002';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_ADMIN_SERVICE_URL');
       break;
     case 'restaurants':
-      baseUrl = process.env.NEXT_PUBLIC_RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_RESTAURANT_SERVICE_URL');
       break;
     case 'orders':
-      baseUrl = process.env.NEXT_PUBLIC_ORDER_SERVICE_URL || 'http://localhost:3004';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_ORDER_SERVICE_URL');
       break;
     case 'delivery':
-      baseUrl = process.env.NEXT_PUBLIC_DELIVERY_SERVICE_URL || 'http://localhost:3005';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_DELIVERY_SERVICE_URL');
       break;
     case 'search':
-      baseUrl = process.env.NEXT_PUBLIC_SEARCH_SERVICE_URL || 'http://localhost:3006';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_SEARCH_SERVICE_URL');
       break;
     case 'wallets':
     case 'payment':
     case 'ledger':
-      baseUrl = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || 'http://localhost:3007';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_PAYMENT_SERVICE_URL');
       break;
     default:
       if (typeof window !== 'undefined') {
         baseUrl = window.location.origin;
       } else {
-        baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+        baseUrl = getRequiredEnv('NEXT_PUBLIC_BACKEND_URL');
       }
       break;
   }
@@ -70,15 +74,90 @@ interface ApiRequestOptions extends Omit<RequestInit, 'body' | 'signal'> {
   timeoutMs?: number;
 }
 
-class ApiError extends Error {
+export interface ApiErrorResponse {
+  success?: boolean;
+  statusCode?: number;
+  errorCode?: string;
+  message?: string;
+  errors?: unknown[];
+  timestamp?: string;
+  path?: string;
+}
+
+export class ApiError extends Error {
+  public status: number;
+  public statusCode: number;
+  public errorCode?: string;
+  public errors?: unknown[];
+  public data?: unknown;
+
   constructor(
-    public status: number,
+    status: number,
     message: string,
-    public data?: unknown,
+    options?: { errorCode?: string; errors?: unknown[]; data?: unknown }
   ) {
     super(message);
     this.name = 'ApiError';
+    this.status = status;
+    this.statusCode = status;
+    this.errorCode = options?.errorCode;
+    this.errors = options?.errors;
+    this.data = options?.data;
   }
+}
+
+function getDefaultStatusMessage(status: number): string {
+  switch (status) {
+    case 400:
+      return 'Yêu cầu không hợp lệ. Vui lòng kiểm tra lại thông tin.';
+    case 401:
+      return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    case 403:
+      return 'Bạn không có quyền thực hiện thao tác này.';
+    case 404:
+      return 'Không tìm thấy dữ liệu hoặc trang yêu cầu.';
+    case 408:
+      return 'Yêu cầu quá thời gian phản hồi (Timeout). Vui lòng thử lại.';
+    case 409:
+      return 'Dữ liệu đã tồn tại hoặc xảy ra xung đột trạng thái.';
+    case 422:
+      return 'Dữ liệu không đúng định dạng quy định.';
+    case 429:
+      return 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.';
+    case 500:
+      return 'Hệ thống đang bận hoặc gặp sự cố xử lý. Vui lòng thử lại sau.';
+    case 502:
+    case 503:
+    case 504:
+      return 'Máy chủ tạm thời gián đoạn hoặc bảo trì. Vui lòng thử lại sau.';
+    default:
+      return 'Đã có lỗi xảy ra trong quá trình xử lý.';
+  }
+}
+
+let isRedirectingToLogin = false;
+
+function handleUnauthorizedSession() {
+  if (typeof window === 'undefined' || isRedirectingToLogin) return;
+
+  const currentPath = window.location.pathname;
+  if (currentPath.startsWith('/login') || currentPath.startsWith('/register')) {
+    return;
+  }
+
+  isRedirectingToLogin = true;
+
+  // Clear authentication cookies
+  document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+
+  try {
+    localStorage.removeItem('food_delivery_user');
+  } catch {}
+
+  const redirectUrl = encodeURIComponent(`${currentPath}${window.location.search}`);
+  setTimeout(() => {
+    window.location.replace(`/login?expired=1&redirect=${redirectUrl}`);
+  }, 1000);
 }
 
 /**
@@ -127,12 +206,24 @@ async function apiClient<T>(
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new ApiError(
-        response.status,
-        `API Error: ${response.statusText} (${response.status})`,
-        errorData,
-      );
+      const errorData = (await response.json().catch(() => null)) as ApiErrorResponse | null;
+
+      if (response.status === 401) {
+        handleUnauthorizedSession();
+      }
+
+      const backendMessage =
+        typeof errorData?.message === 'string' && errorData.message.trim() !== ''
+          ? errorData.message
+          : undefined;
+
+      const resolvedMessage = backendMessage || getDefaultStatusMessage(response.status);
+
+      throw new ApiError(response.status, resolvedMessage, {
+        errorCode: errorData?.errorCode,
+        errors: errorData?.errors,
+        data: errorData,
+      });
     }
 
     return response.json() as Promise<T>;
@@ -140,12 +231,20 @@ async function apiClient<T>(
     if (error instanceof ApiError) {
       throw error;
     }
-    const causeCode = (error as { cause?: { code?: string } })?.cause?.code;
-    const message = error instanceof Error ? error.message : 'Unknown error occurred';
-    const detail = causeCode ? ` (${causeCode})` : '';
-    throw new ApiError(500, `Fetch Error to ${url.origin}${url.pathname}: ${message}${detail}`);
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new ApiError(
+        408,
+        'Yêu cầu quá thời gian chờ (Timeout). Vui lòng kiểm tra lại mạng hoặc thử lại.',
+        { errorCode: 'REQUEST_TIMEOUT' },
+      );
+    }
+    throw new ApiError(
+      503,
+      'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng của bạn.',
+      { errorCode: 'NETWORK_ERROR' },
+    );
   }
 }
 
-export { apiClient, ApiError };
+export { apiClient };
 export type { ApiRequestOptions };

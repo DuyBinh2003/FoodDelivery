@@ -37,6 +37,9 @@ jobs:
       - name: Run Tests
         run: npm run test
 
+      - name: Build Project
+        run: npm run build
+
   # ==========================================
   # 2. CONTINUOUS INTEGRATION (CI) - FRONTEND
   # ==========================================
@@ -60,6 +63,9 @@ jobs:
 
       - name: Install Dependencies
         run: npm install # Dùng npm install thay vì npm ci để tránh lỗi nếu chưa có package-lock.json
+
+      - name: Setup Environment Variables
+        run: cp .env.example .env.local
 
       - name: Run Linter
         run: npm run lint

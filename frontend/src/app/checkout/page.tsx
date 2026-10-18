@@ -19,10 +19,6 @@ import {
   Sparkles,
   MessageSquare,
 } from 'lucide-react';
-
-const FALLBACK_CUSTOMER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-const FALLBACK_RESTAURANT_ID = 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -40,8 +36,11 @@ export default function CheckoutPage() {
   const hasValidatedRef = useRef(false);
   const fetchedCustomerIdRef = useRef<string | null>(null);
 
-  const customerId = user?.id || FALLBACK_CUSTOMER_ID;
-  const customerName = user?.name || 'Nguyễn Văn A';
+  const customerId = user?.id || '';
+  const customerName = user?.name || user?.email || 'Khách hàng';
+  const customerPhone = (user?.customerProfile?.phone as string) || '';
+  const customerAddress =
+    (user?.customerProfile?.address as string) || 'Chưa cập nhật địa chỉ giao hàng';
 
   const subtotal = getSubtotal();
   const shippingFee = 15000;
@@ -99,11 +98,21 @@ export default function CheckoutPage() {
       setIsSubmitting(true);
       setErrorMsg(null);
 
+      if (!customerId) {
+        setErrorMsg('Vui lòng đăng nhập để tiến hành đặt hàng.');
+        router.push('/login?redirect=/checkout');
+        return;
+      }
+
+      if (!restaurantId) {
+        setErrorMsg('Không tìm thấy thông tin nhà hàng cho giỏ hàng. Vui lòng chọn lại món.');
+        return;
+      }
+
       // 1. Create order in order-service
-      const targetRestaurantId = restaurantId || FALLBACK_RESTAURANT_ID;
       const orderPayload = {
-        restaurant_id: targetRestaurantId,
-        delivery_address: 'Tòa nhà Landmark 81, 720A Điện Biên Phủ, Phường 22, Bình Thạnh, TP.HCM',
+        restaurant_id: restaurantId,
+        delivery_address: customerAddress,
         note: orderNote.trim() || undefined,
         items: items.map((item) => ({
           menu_item_id: item.item_id,
@@ -122,7 +131,7 @@ export default function CheckoutPage() {
       await processOrderPayment({
         orderId: createdOrder.id,
         customerId,
-        restaurantId: targetRestaurantId,
+        restaurantId,
         amount: total.toString(),
         paymentMethod,
         idempotencyKey,
@@ -187,10 +196,11 @@ export default function CheckoutPage() {
                 Địa chỉ giao hàng
               </h2>
               <div className="bg-zinc-800/40 border border-white/5 rounded-2xl p-4">
-                <p className="text-white font-semibold">{customerName} • 0901234567</p>
-                <p className="text-zinc-400 text-sm mt-1">
-                  Tòa nhà Landmark 81, 720A Điện Biên Phủ, Phường 22, Bình Thạnh, TP.HCM
+                <p className="text-white font-semibold">
+                  {customerName}
+                  {customerPhone ? ` • ${customerPhone}` : ''}
                 </p>
+                <p className="text-zinc-400 text-sm mt-1">{customerAddress}</p>
               </div>
             </section>
 

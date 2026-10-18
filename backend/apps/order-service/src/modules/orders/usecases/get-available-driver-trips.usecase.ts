@@ -1,10 +1,12 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OrderRedisRepository, InflightOrderData } from '@/modules/orders/repositories/order.redis.repository.js';
 import type { DriverTripDto } from '@/modules/orders/usecases/get-driver-trips.usecase.js';
 
 @Injectable()
 export class GetAvailableDriverTripsUseCase {
+  private readonly logger = new Logger(GetAvailableDriverTripsUseCase.name);
+
   constructor(
     @Inject(OrderRedisRepository)
     private readonly orderRedisRepo: OrderRedisRepository,
@@ -30,10 +32,12 @@ export class GetAvailableDriverTripsUseCase {
             return [];
           }
         } else {
+          this.logger.warn(`Driver status check returned status ${statusRes.status} for user ${driverUserId}`);
           return [];
         }
-      } catch (_e) {
+      } catch (error: unknown) {
         // Khi không thể kết nối tới user-service, ngắt an toàn không phát tán đơn
+        this.logger.warn(`Failed to verify driver status for user ${driverUserId}, returning empty available trips:`, error);
         return [];
       }
     }
@@ -56,7 +60,7 @@ export class GetAvailableDriverTripsUseCase {
               `${restaurantUrl}/internal/restaurants/${order.restaurant_id}/details`,
             );
             if (res.ok) {
-              const resData = await res.json().catch(() => null);
+              const resData = (await res.json().catch(() => null)) as { name: string; address: string } | null;
               if (resData) {
                 restaurantInfo = {
                   name: resData.name,
@@ -64,9 +68,11 @@ export class GetAvailableDriverTripsUseCase {
                 };
                 restaurantCache.set(order.restaurant_id, restaurantInfo);
               }
+            } else {
+              this.logger.warn(`Restaurant details check returned status ${res.status} for restaurant ${order.restaurant_id}`);
             }
-          } catch (_e) {
-            // Ignore error
+          } catch (error: unknown) {
+            this.logger.warn(`Failed to fetch restaurant details for order ${order.id}:`, error);
           }
         }
 

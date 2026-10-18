@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import OrderTracker from '@/features/orders/components/order-tracker';
 import type { Order } from '@/features/orders/types';
@@ -13,32 +14,14 @@ export const metadata: Metadata = {
 async function getOrder(id: string, authHeaders?: Record<string, string>): Promise<Order> {
   try {
     const realOrder = await getOrderById(id, { headers: authHeaders });
-    if (realOrder) {
-      return {
-        ...realOrder,
-        restaurant_name: realOrder.restaurant_name || 'Nhà hàng ẩm thực Việt',
-      };
+    if (!realOrder) {
+      notFound();
     }
+    return realOrder;
   } catch (err) {
-    console.warn(`Could not load real order ${id}, using fallback data:`, err);
+    console.error(`Could not load order ${id}:`, err);
+    notFound();
   }
-
-  // Graceful fallback for mock/demo orders
-  return {
-    id: id,
-    customer_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    restaurant_id: 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    restaurant_name: 'Phở Biên Hòa',
-    driver_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12',
-    total_amount: 145000,
-    status: 'PENDING',
-    delivery_address: '789 Trần Hưng Đạo, Q5, TP.HCM',
-    items: [
-      { id: '10eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', menu_item_id: 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', name: 'Phở Bò Tái', quantity: 2, unit_price: 55000 },
-      { id: '10eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', menu_item_id: 'e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', name: 'Gỏi Cuốn Tôm Thịt', quantity: 1, unit_price: 35000 },
-    ],
-    created_at: new Date().toISOString(),
-  };
 }
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {

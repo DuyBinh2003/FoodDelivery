@@ -6,6 +6,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
+import { getRequiredEnv } from '@/lib/env';
+
 export function AdminSocketProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -19,12 +21,7 @@ export function AdminSocketProvider({ children }: { children: React.ReactNode })
 
     if (!user || user.role !== 'ADMIN') return;
 
-    const wsUrl =
-      process.env.NEXT_PUBLIC_ADMIN_WS_URL ||
-      process.env.NEXT_PUBLIC_WS_URL ||
-      (process.env.NEXT_PUBLIC_ADMIN_SERVICE_URL
-        ? `${process.env.NEXT_PUBLIC_ADMIN_SERVICE_URL}/admin`
-        : 'http://localhost:3002/admin');
+    const wsUrl = getRequiredEnv('NEXT_PUBLIC_ADMIN_WS_URL');
 
     const socket = io(wsUrl, {
       auth: { token: token || undefined },

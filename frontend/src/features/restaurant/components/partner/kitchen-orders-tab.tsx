@@ -22,6 +22,8 @@ import {
 import type { PartnerMenuItem } from '@/features/restaurant/types/partner.types';
 import { OrderDetailDialog } from '@/features/restaurant/components/partner/order-detail-dialog';
 import { FoodItemDetailDialog } from '@/features/restaurant/components/partner/food-item-detail-dialog';
+import { ErrorState } from '@/components/ui/error-state/error-state';
+import { getErrorMessage } from '@/lib/error-handler';
 
 interface KitchenOrdersTabProps {
   restaurantId: string;
@@ -89,6 +91,7 @@ const getKitchenMilestoneBadge = (order: PartnerOrder) => {
 export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: KitchenOrdersTabProps) {
   const [orders, setOrders] = useState<PartnerOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'COOKING' | 'READY_FOR_PICKUP' | 'COMPLETED'>('ALL');
   const [selectedOrder, setSelectedOrder] = useState<PartnerOrder | null>(null);
@@ -107,7 +110,9 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
           const resolvedName =
             i.name && !i.name.startsWith('Món ăn #')
               ? i.name
-              : menuItems?.find((m) => m.id === i.menu_item_id)?.name || i.name || 'Món ăn đặc sản';
+              : menuItems?.find((m) => m.id === i.menu_item_id)?.name ||
+                i.name ||
+                `Món ăn #${i.menu_item_id ? i.menu_item_id.slice(0, 6) : ''}`;
           return {
             ...i,
             name: resolvedName,
@@ -120,10 +125,13 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
 
   const fetchOrders = useCallback(async () => {
     try {
+      setFetchError(null);
       const data = await getRestaurantOrders(restaurantId);
       setOrders(enrichOrders(data));
-    } catch {
-      showToast('error', 'Không thể tải danh sách đơn hàng của quán');
+    } catch (err) {
+      const msg = getErrorMessage(err, 'Không thể tải danh sách đơn hàng của quán');
+      setFetchError(msg);
+      showToast('error', msg);
     }
   }, [restaurantId, showToast, enrichOrders]);
 
@@ -131,14 +139,17 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
     let ignore = false;
     const loadInitial = async () => {
       try {
+        setFetchError(null);
         const data = await getRestaurantOrders(restaurantId);
         if (!ignore) {
           setOrders(enrichOrders(data));
           setLoading(false);
         }
-      } catch {
+      } catch (err) {
         if (!ignore) {
-          showToast('error', 'Không thể tải danh sách đơn hàng của quán');
+          const msg = getErrorMessage(err, 'Không thể tải danh sách đơn hàng của quán');
+          setFetchError(msg);
+          showToast('error', msg);
           setLoading(false);
         }
       }
@@ -193,20 +204,14 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
       setSelectedFoodItem({
         id: menuItemId,
         restaurant_id: restaurantId,
-        name: itemName && !itemName.startsWith('Món ăn #') ? itemName : 'Món ăn đặc sản',
+        name: itemName || `Món ăn #${menuItemId ? menuItemId.slice(0, 6) : ''}`,
         price: 0,
         is_available: true,
       });
     }
 
-    const effectiveComment =
-      orderNote || notes || 'Ít hành lá, nước lèo để riêng, thêm tương ớt và chanh tươi';
-    const effectiveOptions =
-      options && options.length > 0
-        ? options
-        : effectiveComment.toLowerCase().includes('hành')
-        ? ['Ít hành', 'Nước dùng riêng', 'Thêm tương ớt']
-        : ['Ít đường', 'Đá riêng'];
+    const effectiveComment = orderNote || notes || '';
+    const effectiveOptions = options && options.length > 0 ? options : [];
 
     setFoodItemContext({
       customerComment: effectiveComment,
@@ -361,6 +366,13 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-orange-500" />
           <p className="text-sm">Đang tải danh sách đơn hàng của quán...</p>
         </div>
+      ) : fetchError && orders.length === 0 ? (
+        <ErrorState
+          title="Không thể tải danh sách đơn hàng"
+          description={fetchError}
+          onRetry={fetchOrders}
+          retryText="Tải lại đơn hàng"
+        />
       ) : filteredOrders.length === 0 ? (
         <div className="py-16 text-center bg-zinc-900/40 border border-white/5 rounded-3xl">
           <UtensilsCrossed className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
