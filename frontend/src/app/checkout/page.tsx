@@ -17,6 +17,7 @@ import {
   Banknote,
   CheckCircle2,
   Sparkles,
+  MessageSquare,
 } from 'lucide-react';
 
 const FALLBACK_CUSTOMER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
@@ -34,6 +35,7 @@ export default function CheckoutPage() {
   const [isTopupModalOpen, setIsTopupModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [orderNote, setOrderNote] = useState('');
 
   const hasValidatedRef = useRef(false);
   const fetchedCustomerIdRef = useRef<string | null>(null);
@@ -102,10 +104,14 @@ export default function CheckoutPage() {
       const orderPayload = {
         restaurant_id: targetRestaurantId,
         delivery_address: 'Tòa nhà Landmark 81, 720A Điện Biên Phủ, Phường 22, Bình Thạnh, TP.HCM',
+        note: orderNote.trim() || undefined,
         items: items.map((item) => ({
           menu_item_id: item.item_id,
+          name: item.name,
           quantity: Number(item.quantity),
           unit_price: Number(item.price),
+          options: item.options || [],
+          notes: item.options && item.options.length > 0 ? item.options.join(', ') : undefined,
         })),
       };
 
@@ -323,6 +329,25 @@ export default function CheckoutPage() {
                   </div>
                 ))}
               </div>
+            </section>
+
+            {/* Customer Note / Message for Restaurant & Driver */}
+            <section className="bg-zinc-900 border border-white/5 rounded-3xl p-5 space-y-3">
+              <h2 className="text-white font-semibold flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-orange-500" />
+                Ghi chú cho nhà hàng & tài xế
+              </h2>
+              <p className="text-xs text-zinc-400">
+                Thêm yêu cầu chế biến (ví dụ: ít hành, nước dùng để riêng, không cay) hoặc lưu ý giao hàng
+              </p>
+              <textarea
+                value={orderNote}
+                onChange={(e) => setOrderNote(e.target.value)}
+                placeholder="Ví dụ: Ít hành lá, nước lèo để riêng, thêm tương ớt..."
+                rows={2}
+                maxLength={300}
+                className="w-full bg-zinc-800/60 border border-white/10 rounded-2xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition-colors resize-none"
+              />
             </section>
 
             {/* Price Summary */}

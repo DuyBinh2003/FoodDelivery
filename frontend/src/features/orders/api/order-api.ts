@@ -8,8 +8,11 @@ export interface CreateOrderPayload {
   payment_method?: 'CASH' | 'MOMO' | 'VNPAY';
   items: Array<{
     menu_item_id: string;
+    name?: string;
     quantity: number;
     unit_price: number;
+    options?: string[];
+    notes?: string;
   }>;
 }
 

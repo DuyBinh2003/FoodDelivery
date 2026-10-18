@@ -1,4 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 
@@ -24,6 +25,8 @@ export interface RestaurantOrderDto {
     name?: string;
     quantity: number;
     unit_price: number;
+    options?: string[];
+    notes?: string;
   }>;
 }
 
@@ -34,10 +37,29 @@ export class GetRestaurantOrdersUseCase {
     private readonly orderRedisRepo: OrderRedisRepository,
     @Inject(OrderReadRepository)
     private readonly orderReadRepo: OrderReadRepository,
+    @Inject(ConfigService)
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(params: { restaurantId: string }): Promise<RestaurantOrderDto[]> {
     const { restaurantId } = params;
+
+    // Cache menu item details from restaurant-service
+    const restaurantUrl = this.configService.getOrThrow<string>('services.restaurantUrl');
+    const menuMap = new Map<string, { id: string; name: string; price?: number; description?: string; image_url?: string }>();
+    try {
+      const res = await fetch(`${restaurantUrl}/internal/restaurants/${restaurantId}/menu`);
+      if (res.ok) {
+        const menuItems = await res.json().catch(() => []);
+        if (Array.isArray(menuItems)) {
+          menuItems.forEach((m) => {
+            menuMap.set(m.id, m);
+          });
+        }
+      }
+    } catch (_e) {
+      // Ignore fetch error
+    }
 
     // 1. Quét các đơn đang xử lý trên Redis (PENDING, COOKING, READY_FOR_PICKUP, DELIVERING)
     const inflightOrders = await this.orderRedisRepo.getRestaurantInflightOrders(restaurantId);
@@ -73,9 +95,11 @@ export class GetRestaurantOrdersUseCase {
       items: o.items.map((i) => ({
         id: i.id,
         menu_item_id: i.menu_item_id,
-        name: i.name,
+        name: i.name || menuMap.get(i.menu_item_id)?.name || 'Món ăn đặc sản',
         quantity: i.quantity,
         unit_price: Number(i.unit_price) || 0,
+        options: (i as any).options,
+        notes: (i as any).notes,
       })),
     }));
 
@@ -99,8 +123,11 @@ export class GetRestaurantOrdersUseCase {
       items: (o.items || []).map((i) => ({
         id: i.id,
         menu_item_id: i.menu_item_id,
+        name: (i as any).name || menuMap.get(i.menu_item_id)?.name || 'Món ăn đặc sản',
         quantity: i.quantity,
         unit_price: Number(i.unit_price) || 0,
+        options: (i as any).options,
+        notes: (i as any).notes,
       })),
     }));
 

@@ -75,6 +75,8 @@ export interface PartnerOrderItem {
   name?: string;
   quantity: number;
   unit_price: number;
+  options?: string[];
+  notes?: string;
 }
 
 export interface PartnerOrder {

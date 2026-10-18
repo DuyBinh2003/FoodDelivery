@@ -77,6 +77,8 @@ export class GetOrderUseCase {
           name: i.name || 'Món ăn đặc sản',
           quantity: i.quantity,
           unit_price: i.unit_price,
+          options: i.options,
+          notes: i.notes,
           created_at: new Date(inflight.created_at),
         })),
       } as unknown as Order;

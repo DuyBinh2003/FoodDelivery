@@ -44,6 +44,8 @@ export class CreateOrderUseCase {
         name: item.name,
         quantity: item.quantity,
         unit_price: item.unit_price,
+        options: item.options,
+        notes: item.notes,
       })),
       created_at: now,
       updated_at: now,

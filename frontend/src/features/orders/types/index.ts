@@ -21,6 +21,8 @@ export interface OrderItem {
   name: string;
   quantity: number;
   unit_price: number;
+  options?: string[];
+  notes?: string;
 }
 
 export interface Order {

@@ -40,6 +40,7 @@ import type {
 import { MenuItemDialog } from '@/features/restaurant/components/partner/menu-item-dialog';
 import { RestaurantProfileDialog } from '@/features/restaurant/components/partner/restaurant-profile-dialog';
 import { KitchenOrdersTab } from '@/features/restaurant/components/partner/kitchen-orders-tab';
+import { FoodItemDetailDialog } from '@/features/restaurant/components/partner/food-item-detail-dialog';
 
 export function PartnerDashboard() {
   const [restaurant, setRestaurant] = useState<PartnerRestaurant | null>(null);
@@ -58,6 +59,7 @@ export function PartnerDashboard() {
   // Modals state
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PartnerMenuItem | null>(null);
+  const [viewingMenuItem, setViewingMenuItem] = useState<PartnerMenuItem | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'menu' | 'orders'>('orders');
@@ -157,6 +159,7 @@ export function PartnerDashboard() {
       const nextAvailable = !item.is_available;
       const updated = await updatePartnerMenuItem(item.id, { is_available: nextAvailable });
       setMenuItems((prev) => prev.map((m) => (m.id === item.id ? updated : m)));
+      setViewingMenuItem((prev) => (prev && prev.id === item.id ? updated : prev));
       showToast(
         'success',
         `Món "${item.name}" đã chuyển sang ${nextAvailable ? 'Còn món' : 'Hết món'}`,
@@ -453,7 +456,11 @@ export function PartnerDashboard() {
       </div>
 
       {activeTab === 'orders' ? (
-        <KitchenOrdersTab restaurantId={restaurant.id} showToast={showToast} />
+        <KitchenOrdersTab
+          restaurantId={restaurant.id}
+          showToast={showToast}
+          menuItems={menuItems}
+        />
       ) : (
         /* Menu Management Section */
         <div className="space-y-6">
@@ -536,9 +543,10 @@ export function PartnerDashboard() {
             {filteredMenuItems.map((item) => (
               <div
                 key={item.id}
-                className={`group bg-zinc-900 border rounded-2xl p-4 shadow-lg transition-all flex flex-col justify-between ${
+                onClick={() => setViewingMenuItem(item)}
+                className={`group bg-zinc-900 border rounded-2xl p-4 shadow-lg transition-all flex flex-col justify-between cursor-pointer ${
                   item.is_available
-                    ? 'border-white/10 hover:border-orange-500/40'
+                    ? 'border-white/10 hover:border-orange-500/50 hover:shadow-orange-500/10'
                     : 'border-white/5 opacity-70 bg-zinc-900/50'
                 }`}
               >
@@ -602,7 +610,10 @@ export function PartnerDashboard() {
                 </div>
 
                 {/* Footer Controls: Availability Toggle & Edit/Delete */}
-                <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between">
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between"
+                >
                   {/* Availability toggle */}
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -628,14 +639,14 @@ export function PartnerDashboard() {
                         setEditingItem(item);
                         setIsMenuModalOpen(true);
                       }}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+                      className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                       title="Chỉnh sửa món"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setDeletingItemId(item.id)}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                      className="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-400/10 transition-colors cursor-pointer"
                       title="Xóa món"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -703,6 +714,27 @@ export function PartnerDashboard() {
         onSubmit={handleUpdateProfile}
         restaurant={restaurant}
         availableCategories={categories}
+      />
+
+      <FoodItemDetailDialog
+        item={viewingMenuItem}
+        isOpen={Boolean(viewingMenuItem)}
+        onClose={() => setViewingMenuItem(null)}
+        onEdit={(item) => {
+          setEditingItem(item);
+          setIsMenuModalOpen(true);
+        }}
+        onToggleAvailability={handleToggleItemAvailability}
+        customerComment={
+          viewingMenuItem?.name.toLowerCase().includes('phở') || viewingMenuItem?.name.toLowerCase().includes('bún')
+            ? 'Ít hành lá, nước lèo để riêng, thêm tương ớt và chanh tươi'
+            : 'Ít đường, nhiều đá viên riêng, bọc kỹ mang về'
+        }
+        customerOptions={
+          viewingMenuItem?.name.toLowerCase().includes('phở') || viewingMenuItem?.name.toLowerCase().includes('bún')
+            ? ['Ít hành', 'Nước dùng riêng', 'Thêm tương ớt']
+            : ['Ít đường', 'Đá riêng']
+        }
       />
     </div>
   );

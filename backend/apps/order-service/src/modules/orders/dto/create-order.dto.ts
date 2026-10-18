@@ -36,6 +36,15 @@ export class CreateOrderItemDto {
   @IsNumber()
   @Min(0)
   unit_price: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  options?: string[];
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }
 
 export class CreateOrderDto {

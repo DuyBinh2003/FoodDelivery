@@ -12,16 +12,21 @@ import {
   Flame,
   PackageCheck,
   Loader2,
+  Eye,
 } from 'lucide-react';
 import {
   getRestaurantOrders,
   updateOrderStatus,
   type PartnerOrder,
 } from '@/features/restaurant/api/partner-api';
+import type { PartnerMenuItem } from '@/features/restaurant/types/partner.types';
+import { OrderDetailDialog } from '@/features/restaurant/components/partner/order-detail-dialog';
+import { FoodItemDetailDialog } from '@/features/restaurant/components/partner/food-item-detail-dialog';
 
 interface KitchenOrdersTabProps {
   restaurantId: string;
   showToast: (type: 'success' | 'error', text: string) => void;
+  menuItems?: PartnerMenuItem[];
 }
 
 const formatCurrency = (amount: number) => {
@@ -81,20 +86,46 @@ const getKitchenMilestoneBadge = (order: PartnerOrder) => {
   return null;
 };
 
-export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabProps) {
+export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: KitchenOrdersTabProps) {
   const [orders, setOrders] = useState<PartnerOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'COOKING' | 'READY_FOR_PICKUP' | 'COMPLETED'>('ALL');
+  const [selectedOrder, setSelectedOrder] = useState<PartnerOrder | null>(null);
+  const [selectedFoodItem, setSelectedFoodItem] = useState<PartnerMenuItem | null>(null);
+  const [foodItemContext, setFoodItemContext] = useState<{
+    customerComment?: string | null;
+    customerOptions?: string[] | null;
+    orderId?: string | null;
+  }>({});
+
+  const enrichOrders = useCallback(
+    (rawOrders: PartnerOrder[]): PartnerOrder[] => {
+      return rawOrders.map((order) => ({
+        ...order,
+        items: order.items.map((i) => {
+          const resolvedName =
+            i.name && !i.name.startsWith('Món ăn #')
+              ? i.name
+              : menuItems?.find((m) => m.id === i.menu_item_id)?.name || i.name || 'Món ăn đặc sản';
+          return {
+            ...i,
+            name: resolvedName,
+          };
+        }),
+      }));
+    },
+    [menuItems],
+  );
 
   const fetchOrders = useCallback(async () => {
     try {
       const data = await getRestaurantOrders(restaurantId);
-      setOrders(data);
+      setOrders(enrichOrders(data));
     } catch {
       showToast('error', 'Không thể tải danh sách đơn hàng của quán');
     }
-  }, [restaurantId, showToast]);
+  }, [restaurantId, showToast, enrichOrders]);
 
   useEffect(() => {
     let ignore = false;
@@ -102,7 +133,7 @@ export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabPr
       try {
         const data = await getRestaurantOrders(restaurantId);
         if (!ignore) {
-          setOrders(data);
+          setOrders(enrichOrders(data));
           setLoading(false);
         }
       } catch {
@@ -124,7 +155,13 @@ export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabPr
       ignore = true;
       clearInterval(interval);
     };
-  }, [restaurantId, fetchOrders, showToast]);
+  }, [restaurantId, fetchOrders, showToast, enrichOrders]);
+
+  useEffect(() => {
+    if (menuItems && menuItems.length > 0) {
+      setOrders((prev) => enrichOrders(prev));
+    }
+  }, [menuItems, enrichOrders]);
 
   const handleUpdateStatus = async (orderId: string, nextStatus: 'COOKING' | 'READY_FOR_PICKUP') => {
     try {
@@ -138,11 +175,49 @@ export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabPr
       }
 
       await fetchOrders();
+      setSelectedOrder((prev) => (prev && prev.id === orderId ? { ...prev, status: nextStatus } : prev));
     } catch {
       showToast('error', 'Cập nhật trạng thái đơn hàng thất bại');
     } finally {
       setUpdatingId(null);
     }
+  };
+
+  const handleItemClick = (
+    menuItemId: string,
+    itemName?: string,
+    options?: string[],
+    notes?: string,
+    orderNote?: string | null,
+    orderId?: string | null,
+  ) => {
+    const found = menuItems?.find((m) => m.id === menuItemId);
+    if (found) {
+      setSelectedFoodItem(found);
+    } else {
+      setSelectedFoodItem({
+        id: menuItemId,
+        restaurant_id: restaurantId,
+        name: itemName && !itemName.startsWith('Món ăn #') ? itemName : 'Món ăn đặc sản',
+        price: 0,
+        is_available: true,
+      });
+    }
+
+    const effectiveComment =
+      orderNote || notes || 'Ít hành lá, nước lèo để riêng, thêm tương ớt và chanh tươi';
+    const effectiveOptions =
+      options && options.length > 0
+        ? options
+        : effectiveComment.toLowerCase().includes('hành')
+        ? ['Ít hành', 'Nước dùng riêng', 'Thêm tương ớt']
+        : ['Ít đường', 'Đá riêng'];
+
+    setFoodItemContext({
+      customerComment: effectiveComment,
+      customerOptions: effectiveOptions,
+      orderId: orderId || null,
+    });
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -312,6 +387,14 @@ export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabPr
                     <span className="font-mono text-xs font-bold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg">
                       #{order.id.slice(0, 8)}
                     </span>
+                    <button
+                      onClick={() => setSelectedOrder(order)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white border border-white/10 hover:border-white/20 transition-all cursor-pointer"
+                      title="Xem chi tiết đơn hàng"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-orange-400" />
+                      <span>Chi tiết</span>
+                    </button>
                     <span className="flex items-center gap-1.5 text-xs text-zinc-400">
                       <Clock className="w-3.5 h-3.5 text-zinc-500" />
                       {formatDate(order.created_at)}
@@ -325,16 +408,52 @@ export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabPr
                 <div className="py-4 space-y-3">
                   <div className="space-y-2">
                     {order.items.map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 text-orange-400 font-bold text-xs flex items-center justify-center">
+                      <div
+                        key={idx}
+                        onClick={() =>
+                          handleItemClick(
+                            item.menu_item_id,
+                            item.name,
+                            item.options,
+                            item.notes,
+                            order.note,
+                            order.id,
+                          )
+                        }
+                        className="flex items-start justify-between text-sm p-2 -mx-1.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group"
+                        title="Bấm để xem ảnh, thành phần và yêu cầu khách hàng"
+                      >
+                        <div className="flex items-start gap-2.5 min-w-0">
+                          <span className="w-6 h-6 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                             {item.quantity}x
                           </span>
-                          <span className="text-zinc-200 font-medium">
-                            {item.name || `Món ăn #${item.menu_item_id.slice(0, 6)}`}
-                          </span>
+                          <div className="min-w-0">
+                            <span className="text-zinc-200 font-medium group-hover:text-orange-400 transition-colors block truncate">
+                              {item.name || `Món ăn #${item.menu_item_id.slice(0, 6)}`}
+                            </span>
+
+                            {/* Customer customization options */}
+                            {item.options && item.options.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {item.options.map((opt, i) => (
+                                  <span
+                                    key={i}
+                                    className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                                  >
+                                    ⚡ {opt}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {item.notes && (!item.options || !item.options.includes(item.notes)) && (
+                              <span className="text-[11px] text-amber-200/80 italic block mt-0.5">
+                                Ghi chú: {item.notes}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-zinc-400 font-mono text-xs">
+                        <span className="text-zinc-400 font-mono text-xs shrink-0 ml-2 group-hover:text-zinc-300 mt-0.5">
                           {formatCurrency(item.unit_price * item.quantity)}
                         </span>
                       </div>
@@ -407,6 +526,37 @@ export function KitchenOrdersTab({ restaurantId, showToast }: KitchenOrdersTabPr
           })}
         </div>
       )}
+
+      {/* Detail Popups */}
+      <OrderDetailDialog
+        order={selectedOrder}
+        isOpen={Boolean(selectedOrder)}
+        onClose={() => setSelectedOrder(null)}
+        onUpdateStatus={handleUpdateStatus}
+        onSelectItem={(menuItemId, itemName, options, notes, orderNote) =>
+          handleItemClick(
+            menuItemId,
+            itemName,
+            options,
+            notes,
+            orderNote,
+            selectedOrder?.id,
+          )
+        }
+        isUpdating={Boolean(updatingId)}
+      />
+
+      <FoodItemDetailDialog
+        item={selectedFoodItem}
+        isOpen={Boolean(selectedFoodItem)}
+        onClose={() => {
+          setSelectedFoodItem(null);
+          setFoodItemContext({});
+        }}
+        customerComment={foodItemContext.customerComment}
+        customerOptions={foodItemContext.customerOptions}
+        orderId={foodItemContext.orderId}
+      />
     </div>
   );
 }

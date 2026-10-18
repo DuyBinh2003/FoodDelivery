@@ -278,6 +278,9 @@ describe('Order Milestones (Role-Based Tracking)', () => {
     let mockOrderReadRepo: {
       findWithFilters: ReturnType<typeof vi.fn>;
     };
+    let mockConfigService: {
+      getOrThrow: ReturnType<typeof vi.fn>;
+    };
 
     beforeEach(() => {
       mockOrderRedisRepo = {
@@ -286,10 +289,17 @@ describe('Order Milestones (Role-Based Tracking)', () => {
       mockOrderReadRepo = {
         findWithFilters: vi.fn(),
       };
+      mockConfigService = {
+        getOrThrow: vi.fn((key: string) => {
+          if (key === 'services.restaurantUrl') return 'http://localhost:3003';
+          return '';
+        }),
+      };
 
       useCase = new GetRestaurantOrdersUseCase(
         mockOrderRedisRepo as unknown as any,
         mockOrderReadRepo as unknown as any,
+        mockConfigService as unknown as any,
       );
     });
 
