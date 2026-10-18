@@ -26,3 +26,13 @@ Kỹ năng này tập hợp các quy định bắt buộc cho toàn bộ dự á
 - **Cấu trúc phân cấp chuẩn**: Tuân thủ tuyệt đối cấu trúc phân cấp tại `docs/` (`architecture/`, `services/`, `business/`, `features/<actor>/`, `frontend/`).
 - **Templates & Checklist**: Bắt buộc đọc và tuân thủ `.agents/skills/documentation-policy/SKILL.md` để áp dụng đúng template chuẩn, bảng API, schema database và đồng bộ các file `README.md` mục lục.
 
+## 5. Quy Chuẩn Không Sử Dụng Fallback Ngầm (No Hidden Fallbacks Policy)
+- **Cấm Fallback Biến Môi Trường Ngầm**: Tuyệt đối không dùng fallback ngầm cho biến môi trường cấu hình (ví dụ: `process.env.URL || 'http://localhost:3001'`). Mọi biến môi trường bắt buộc phải:
+  1. Khai báo đầy đủ trong `.env.example` và tài liệu cấu hình.
+  2. Áp dụng cơ chế **Fail-Fast**: Ném lỗi cấu hình rõ ràng (`ConfigError`) ngay khi khởi động hoặc truy cập nếu thiếu biến, không âm thầm chạy với giá trị localhost mặc định làm lộ cổng hoặc che giấu lỗi môi trường.
+- **Cấm Chèn Dữ Liệu Bịa Đặt / Dữ Liệu Giả Trong UI**:
+  - Tuyệt đối không chèn dữ liệu mẫu (ví dụ: biển số xe giả `59-X1...`, tên giả `Nguyễn Văn A`, ghi chú món giả `Ít hành lá...`, tên món giả `Món ăn đặc sản`) vào code giao diện thông qua toán tử `||`.
+  - Dữ liệu hiển thị phải phản ánh trung thực:
+    - Nếu trường không có dữ liệu: Hiển thị trạng thái rỗng trung thực (ví dụ `"Chưa cập nhật"`, `"Không có ghi chú"`) hoặc sử dụng render có điều kiện (conditional rendering) để ẩn trường đó đi.
+
+

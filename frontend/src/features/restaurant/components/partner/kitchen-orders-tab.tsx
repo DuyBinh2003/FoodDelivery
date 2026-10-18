@@ -110,7 +110,9 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
           const resolvedName =
             i.name && !i.name.startsWith('Món ăn #')
               ? i.name
-              : menuItems?.find((m) => m.id === i.menu_item_id)?.name || i.name || 'Món ăn đặc sản';
+              : menuItems?.find((m) => m.id === i.menu_item_id)?.name ||
+                i.name ||
+                `Món ăn #${i.menu_item_id ? i.menu_item_id.slice(0, 6) : ''}`;
           return {
             ...i,
             name: resolvedName,
@@ -202,20 +204,14 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
       setSelectedFoodItem({
         id: menuItemId,
         restaurant_id: restaurantId,
-        name: itemName && !itemName.startsWith('Món ăn #') ? itemName : 'Món ăn đặc sản',
+        name: itemName || `Món ăn #${menuItemId ? menuItemId.slice(0, 6) : ''}`,
         price: 0,
         is_available: true,
       });
     }
 
-    const effectiveComment =
-      orderNote || notes || 'Ít hành lá, nước lèo để riêng, thêm tương ớt và chanh tươi';
-    const effectiveOptions =
-      options && options.length > 0
-        ? options
-        : effectiveComment.toLowerCase().includes('hành')
-        ? ['Ít hành', 'Nước dùng riêng', 'Thêm tương ớt']
-        : ['Ít đường', 'Đá riêng'];
+    const effectiveComment = orderNote || notes || '';
+    const effectiveOptions = options && options.length > 0 ? options : [];
 
     setFoodItemContext({
       customerComment: effectiveComment,

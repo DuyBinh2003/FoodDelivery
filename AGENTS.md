@@ -12,6 +12,7 @@ Tất cả các yêu cầu về:
 - Code TypeScript (Strictness, không dùng `any`)
 - Import đường dẫn tuyệt đối (`@/`)
 - Viết Document (`docs/`)
+- Cấm fallback biến môi trường ngầm và cấm dùng dữ liệu mẫu giả trong UI (No Hidden Fallbacks)
 **Hành động tham chiếu**: Bắt buộc đọc `.agents/skills/general-project-policy/SKILL.md` cho mọi task.
 
 ## 3. QUY CHUẨN ĐẶT TÊN (Naming Convention)

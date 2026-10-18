@@ -725,16 +725,8 @@ export function PartnerDashboard() {
           setIsMenuModalOpen(true);
         }}
         onToggleAvailability={handleToggleItemAvailability}
-        customerComment={
-          viewingMenuItem?.name.toLowerCase().includes('phở') || viewingMenuItem?.name.toLowerCase().includes('bún')
-            ? 'Ít hành lá, nước lèo để riêng, thêm tương ớt và chanh tươi'
-            : 'Ít đường, nhiều đá viên riêng, bọc kỹ mang về'
-        }
-        customerOptions={
-          viewingMenuItem?.name.toLowerCase().includes('phở') || viewingMenuItem?.name.toLowerCase().includes('bún')
-            ? ['Ít hành', 'Nước dùng riêng', 'Thêm tương ớt']
-            : ['Ít đường', 'Đá riêng']
-        }
+        customerComment={null}
+        customerOptions={null}
       />
     </div>
   );

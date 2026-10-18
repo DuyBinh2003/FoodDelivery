@@ -179,32 +179,33 @@ export function FoodItemDetailDialog({
               )}
             </div>
 
-            {/* Customization Options Badges (e.g. Ít hành, Nước dùng để riêng) */}
+            {/* Customization Options Badges */}
             <div className="space-y-2.5">
-              <div className="flex flex-wrap gap-1.5">
-                {(customerOptions && customerOptions.length > 0
-                  ? customerOptions
-                  : ['Ít hành', 'Nước dùng để riêng', 'Thêm ớt tươi']
-                ).map((opt, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/25 text-amber-200 border border-amber-500/40 shadow-sm"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{opt}</span>
-                  </span>
-                ))}
-              </div>
+              {customerOptions && customerOptions.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {customerOptions.map((opt, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/25 text-amber-200 border border-amber-500/40 shadow-sm"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{opt}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* Order Message / Customer Comment Callout */}
-              <div className="bg-zinc-950/75 border border-amber-500/25 rounded-xl p-3 text-xs text-amber-100 flex items-start gap-2.5">
-                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] uppercase shrink-0 mt-0.5">
-                  Tin nhắn khách
-                </span>
-                <span className="font-medium leading-relaxed italic text-amber-100">
-                  &ldquo;{customerComment || 'Ít hành lá, nước lèo để riêng, thêm tương ớt và chanh tươi mang về giúp mình.'}&rdquo;
-                </span>
-              </div>
+              {customerComment && (
+                <div className="bg-zinc-950/75 border border-amber-500/25 rounded-xl p-3 text-xs text-amber-100 flex items-start gap-2.5">
+                  <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] uppercase shrink-0 mt-0.5">
+                    Tin nhắn khách
+                  </span>
+                  <span className="font-medium leading-relaxed italic text-amber-100">
+                    &ldquo;{customerComment}&rdquo;
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -215,7 +216,7 @@ export function FoodItemDetailDialog({
               <span>Mô tả & Thành phần chế biến</span>
             </h4>
             <p className="text-sm text-zinc-200 leading-relaxed whitespace-pre-line">
-              {item.description || 'Thịt tươi tuyển chọn mỗi ngày, gia vị truyền thống, nước dùng hầm xương gia truyền.'}
+              {item.description || 'Chưa có mô tả chi tiết cho món ăn này.'}
             </p>
           </div>
 

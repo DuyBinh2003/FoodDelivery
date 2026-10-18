@@ -282,8 +282,8 @@ export function DriverDashboard() {
             <div className="lg:w-auto w-full">
               <DriverStatusSwitch
                 status={currentStatus}
-                vehiclePlate={user?.driverProfile?.vehicle_plate || '59-S2 888.88'}
-                vehicleType={user?.driverProfile?.vehicle_type || 'Honda Wave Alpha'}
+                vehiclePlate={user?.driverProfile?.vehicle_plate || 'Chưa cập nhật'}
+                vehicleType={user?.driverProfile?.vehicle_type || 'Chưa cập nhật'}
                 onToggle={handleToggleStatus}
               />
             </div>

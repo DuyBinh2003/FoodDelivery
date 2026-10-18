@@ -1,5 +1,15 @@
 import type { NextConfig } from "next";
 
+function requireEnv(key: string): string {
+  const val = process.env[key];
+  if (!val || val.trim() === '') {
+    throw new Error(
+      `[Next.js ConfigError] Thiếu biến môi trường bắt buộc: "${key}". Vui lòng khai báo trong .env.local.`
+    );
+  }
+  return val;
+}
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -33,31 +43,31 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/search/:path*',
-        destination: `${process.env.NEXT_PUBLIC_SEARCH_SERVICE_URL || 'http://localhost:3006'}/search/:path*`,
+        destination: `${requireEnv('NEXT_PUBLIC_SEARCH_SERVICE_URL')}/search/:path*`,
       },
       {
         source: '/api/restaurants/:path*',
-        destination: `${process.env.NEXT_PUBLIC_RESTAURANT_SERVICE_URL || 'http://localhost:3003'}/restaurants/:path*`,
+        destination: `${requireEnv('NEXT_PUBLIC_RESTAURANT_SERVICE_URL')}/restaurants/:path*`,
       },
       {
         source: '/api/orders/:path*',
-        destination: `${process.env.NEXT_PUBLIC_ORDER_SERVICE_URL || 'http://localhost:3004'}/orders/:path*`,
+        destination: `${requireEnv('NEXT_PUBLIC_ORDER_SERVICE_URL')}/orders/:path*`,
       },
       {
         source: '/api/users/:path*',
-        destination: `${process.env.NEXT_PUBLIC_USER_SERVICE_URL || 'http://localhost:3001'}/users/:path*`,
+        destination: `${requireEnv('NEXT_PUBLIC_USER_SERVICE_URL')}/users/:path*`,
       },
       {
         source: '/api/auth/:path*',
-        destination: `${process.env.NEXT_PUBLIC_USER_SERVICE_URL || 'http://localhost:3001'}/auth/:path*`,
+        destination: `${requireEnv('NEXT_PUBLIC_USER_SERVICE_URL')}/auth/:path*`,
       },
       {
         source: '/api/admin/:path*',
-        destination: `${process.env.NEXT_PUBLIC_ADMIN_SERVICE_URL || 'http://localhost:3002'}/admin/:path*`,
+        destination: `${requireEnv('NEXT_PUBLIC_ADMIN_SERVICE_URL')}/admin/:path*`,
       },
       {
         source: '/api/delivery/:path*',
-        destination: `${process.env.NEXT_PUBLIC_DELIVERY_SERVICE_URL || 'http://localhost:3005'}/delivery/:path*`,
+        destination: `${requireEnv('NEXT_PUBLIC_DELIVERY_SERVICE_URL')}/delivery/:path*`,
       },
     ];
   },

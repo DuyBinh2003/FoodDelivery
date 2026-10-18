@@ -1,4 +1,8 @@
-const DEFAULT_TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_API_TIMEOUT) || 10000;
+import { getRequiredEnv } from './env';
+
+const DEFAULT_TIMEOUT_MS = process.env.NEXT_PUBLIC_API_TIMEOUT
+  ? Number(process.env.NEXT_PUBLIC_API_TIMEOUT)
+  : 10000;
 
 function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } {
   // If full URL is passed
@@ -22,38 +26,38 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
   const pathWithoutApi = isApiPrefix ? rawPath.slice(4) : rawPath;
   const firstSegment = pathWithoutApi.split('/')[0];
 
-  let baseUrl = 'http://localhost:3000';
+  let baseUrl = '';
 
   switch (firstSegment) {
     case 'users':
     case 'auth':
-      baseUrl = process.env.NEXT_PUBLIC_USER_SERVICE_URL || 'http://localhost:3001';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_USER_SERVICE_URL');
       break;
     case 'admin':
-      baseUrl = process.env.NEXT_PUBLIC_ADMIN_SERVICE_URL || 'http://localhost:3002';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_ADMIN_SERVICE_URL');
       break;
     case 'restaurants':
-      baseUrl = process.env.NEXT_PUBLIC_RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_RESTAURANT_SERVICE_URL');
       break;
     case 'orders':
-      baseUrl = process.env.NEXT_PUBLIC_ORDER_SERVICE_URL || 'http://localhost:3004';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_ORDER_SERVICE_URL');
       break;
     case 'delivery':
-      baseUrl = process.env.NEXT_PUBLIC_DELIVERY_SERVICE_URL || 'http://localhost:3005';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_DELIVERY_SERVICE_URL');
       break;
     case 'search':
-      baseUrl = process.env.NEXT_PUBLIC_SEARCH_SERVICE_URL || 'http://localhost:3006';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_SEARCH_SERVICE_URL');
       break;
     case 'wallets':
     case 'payment':
     case 'ledger':
-      baseUrl = process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL || 'http://localhost:3007';
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_PAYMENT_SERVICE_URL');
       break;
     default:
       if (typeof window !== 'undefined') {
         baseUrl = window.location.origin;
       } else {
-        baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+        baseUrl = getRequiredEnv('NEXT_PUBLIC_BACKEND_URL');
       }
       break;
   }
