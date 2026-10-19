@@ -102,9 +102,6 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
     orderId?: string | null;
   }>({});
 
-  const showToastRef = useRef(showToast);
-  showToastRef.current = showToast;
-
   const enrichOrders = useCallback(
     (rawOrders: PartnerOrder[]): PartnerOrder[] => {
       return rawOrders.map((order) => ({
@@ -134,12 +131,15 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
     } catch (err) {
       const msg = getErrorMessage(err, 'Không thể tải danh sách đơn hàng của quán');
       setFetchError(msg);
-      showToastRef.current('error', msg);
+      showToast('error', msg);
     }
-  }, [restaurantId, enrichOrders]);
+  }, [restaurantId, enrichOrders, showToast]);
 
   const fetchOrdersRef = useRef(fetchOrders);
-  fetchOrdersRef.current = fetchOrders;
+
+  useEffect(() => {
+    fetchOrdersRef.current = fetchOrders;
+  }, [fetchOrders]);
 
   useEffect(() => {
     let ignore = false;
