@@ -1,9 +1,10 @@
 # Kế Hoạch Triển Khai: Nâng Cấp Giao Diện Trang Chủ (Homepage Revamp)
 
-> Trạng thái: `[DRAFT]`  
+> Trạng thái: `[COMPLETED]`  
 > Mã Task: `customer-homepage-revamp`  
 > Phân hệ: `customer` / `frontend`  
 > Tham chiếu Issue: [#67](https://github.com/DuyBinh2003/FoodDelivery/issues/67)  
+> Pull Request: [#68](https://github.com/DuyBinh2003/FoodDelivery/pull/68)  
 > Phụ trách: Master Orchestrator & Planner  
 
 ---
@@ -158,7 +159,7 @@ sequenceDiagram
 ---
 
 ## 5. Local CI Gate Checklist
-- [ ] Frontend Lint Check: `npm run lint` (ESLint: 0 warnings, 0 errors).
-- [ ] Frontend Type Check: `npx tsc --noEmit` (0 errors).
-- [ ] Frontend Unit Tests: `npm test` (100% pass trên toàn bộ test suites, gồm `home-feed.test.ts`).
-- [ ] Frontend Build Check: `npm run build` (Next.js Turbopack biên dịch thành công 100%).
+- [x] Frontend Lint Check: `npm run lint` (ESLint: 0 warnings, 0 errors).
+- [x] Frontend Type Check: `npx tsc --noEmit` (0 errors).
+- [x] Frontend Unit Tests: `npm test` (100% pass trên 20 test suites / 61 tests, gồm `home-feed.test.ts`).
+- [x] Frontend Build Check: `npm run build` (Next.js Turbopack biên dịch thành công 100%).

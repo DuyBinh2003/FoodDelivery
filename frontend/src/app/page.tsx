@@ -1,96 +1,302 @@
-import Link from 'next/link';
-import { UtensilsCrossed, ArrowRight, Zap, Shield, MapPin } from 'lucide-react';
+'use client';
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  RotateCcw,
+  Zap,
+  Tag,
+  Star,
+  Sparkles,
+} from 'lucide-react';
+import { HomeHeader } from '@/features/home/components/home-header';
+import { BannerCarousel } from '@/features/home/components/banner-carousel';
+import { CategoryGrid } from '@/features/home/components/category-grid';
+import { RestaurantFeedSection } from '@/features/home/components/restaurant-feed-section';
+import { AllRestaurantsInfinite } from '@/features/home/components/all-restaurants-infinite';
+import { NotificationDrawer } from '@/features/home/components/notification-drawer';
+import { BottomNavigationBar } from '@/features/home/components/bottom-navigation-bar';
+import {
+  BannerSkeleton,
+  CategoryGridSkeleton,
+  RestaurantFeedSkeleton,
+  RestaurantGridSkeleton,
+} from '@/features/home/components/home-skeletons';
+import { useLocationStore } from '@/features/home/store/useLocationStore';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { useCartStore } from '@/features/cart/store/useCartStore';
+import { getUserAddresses } from '@/features/address/api/address-api';
+import { getOrderHistory } from '@/features/orders/api/order-api';
+import { apiClient } from '@/lib/api-client';
+import type { Order } from '@/features/orders/types';
+import {
+  enrichRestaurantsWithLocation,
+  filterNearYouRestaurants,
+  filterPromoRestaurants,
+  filterTopRatedRestaurants,
+  filterRestaurantsByCategory,
+  type HomeRestaurantItem,
+  type EnrichedRestaurantItem,
+} from '@/features/home/utils/home-feed.utils';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { currentLocation, syncUserAddresses } = useLocationStore();
+  const { isAuthenticated } = useAuthStore();
+  const { addItem, clearCart } = useCartStore();
+
+  const [restaurants, setRestaurants] = useState<HomeRestaurantItem[]>([]);
+  const [pastOrders, setPastOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
+
+  // 1. Tải danh sách nhà hàng và dữ liệu khởi tạo
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchHomeData = async () => {
+      try {
+        setLoading(true);
+
+        const restaurantsPromise = apiClient<HomeRestaurantItem[]>('/restaurants').catch((err) => {
+          console.warn('[HomePage] Failed to fetch restaurants:', err);
+          return [];
+        });
+
+        const addressesPromise = isAuthenticated
+          ? getUserAddresses().catch((err) => {
+              console.warn('[HomePage] Failed to fetch user addresses:', err);
+              return [];
+            })
+          : Promise.resolve([]);
+
+        const ordersPromise = isAuthenticated
+          ? getOrderHistory().catch((err) => {
+              console.warn('[HomePage] Failed to fetch order history:', err);
+              return [];
+            })
+          : Promise.resolve([]);
+
+        const [restaurantsRes, addressesRes, ordersRes] = await Promise.all([
+          restaurantsPromise,
+          addressesPromise,
+          ordersPromise,
+        ]);
+
+        if (!isMounted) return;
+
+        setRestaurants(restaurantsRes || []);
+
+        if (addressesRes && addressesRes.length > 0) {
+          syncUserAddresses(addressesRes);
+        }
+
+        if (ordersRes && Array.isArray(ordersRes)) {
+          setPastOrders(ordersRes);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchHomeData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, syncUserAddresses]);
+
+  // 2. Tính toán khoảng cách (km) và ETA (phút) dựa trên tọa độ hiện tại
+  const enrichedRestaurants = useMemo(() => {
+    return enrichRestaurantsWithLocation(
+      restaurants,
+      currentLocation.lat,
+      currentLocation.lng,
+    );
+  }, [restaurants, currentLocation.lat, currentLocation.lng]);
+
+  // 3. Phân bổ các danh sách đề xuất (Feeds)
+  const nearYouRestaurants = useMemo(() => {
+    return filterNearYouRestaurants(enrichedRestaurants, 3.5, 25);
+  }, [enrichedRestaurants]);
+
+  const promoRestaurants = useMemo(() => {
+    return filterPromoRestaurants(enrichedRestaurants);
+  }, [enrichedRestaurants]);
+
+  const topRatedRestaurants = useMemo(() => {
+    return filterTopRatedRestaurants(enrichedRestaurants, 4.5);
+  }, [enrichedRestaurants]);
+
+  const categoryFilteredRestaurants = useMemo(() => {
+    return filterRestaurantsByCategory(enrichedRestaurants, selectedCategory);
+  }, [enrichedRestaurants, selectedCategory]);
+
+  // Lọc các quán người dùng đã từng đặt (Order Again)
+  const orderAgainRestaurants = useMemo(() => {
+    if (!isAuthenticated || pastOrders.length === 0) return [];
+
+    const orderedRestaurantIds = new Set(
+      pastOrders.map((o) => o.restaurant_id).filter(Boolean),
+    );
+
+    return enrichedRestaurants.filter((r) => orderedRestaurantIds.has(r.id));
+  }, [isAuthenticated, pastOrders, enrichedRestaurants]);
+
+  // Tìm đơn hàng đang hoạt động (active order) để hiển thị ping trên Bottom Nav
+  const activeOrder = useMemo(() => {
+    return pastOrders.find(
+      (o) =>
+        o.status === 'ACCEPTED' ||
+        o.status === 'COOKING' ||
+        o.status === 'READY_FOR_PICKUP' ||
+        o.status === 'DELIVERING',
+    );
+  }, [pastOrders]);
+
+  // Xử lý khi bấm nút "Đặt lại" trên đơn cũ
+  const handleOrderAgain = useCallback(
+    (restaurant: EnrichedRestaurantItem) => {
+      const pastOrder = pastOrders.find((o) => o.restaurant_id === restaurant.id);
+      if (pastOrder && pastOrder.items && pastOrder.items.length > 0) {
+        clearCart();
+        pastOrder.items.forEach((item) => {
+          addItem(
+            {
+              id: item.menu_item_id || item.id,
+              item_id: item.menu_item_id || item.id,
+              name: item.name || 'Món ăn',
+              price: Number(item.unit_price || 0),
+              quantity: item.quantity || 1,
+              options: item.options || [],
+            },
+            restaurant.id,
+          );
+        });
+        router.push('/checkout');
+      } else {
+        router.push(`/restaurant/${restaurant.id}`);
+      }
+    },
+    [pastOrders, clearCart, addItem, router],
+  );
+
   return (
-    <main className="flex-1 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-1/4 w-72 h-72 bg-orange-500/8 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-red-500/6 rounded-full blur-3xl" />
-        </div>
+    <div className="min-h-screen bg-black text-white flex flex-col selection:bg-amber-500 selection:text-zinc-950">
+      {/* 1. Header & Điều hướng trung tâm */}
+      <HomeHeader
+        onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
+        hasUnreadNotifications={true}
+      />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-medium mb-8">
-            <Zap className="w-3.5 h-3.5" />
-            Microservices Architecture
+      {/* 2. Main Content Area */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-8 pb-28 md:pb-16">
+        {loading ? (
+          <div className="space-y-8">
+            <BannerSkeleton />
+            <CategoryGridSkeleton />
+            <RestaurantFeedSkeleton title="Gần bạn nhất" />
+            <RestaurantFeedSkeleton title="Đang có khuyến mãi" />
+            <RestaurantGridSkeleton />
           </div>
+        ) : (
+          <>
+            {/* 3. Banner Carousel */}
+            <BannerCarousel />
 
-          {/* Heading */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight max-w-3xl mx-auto">
-            Đặt món ngon
-            <span className="bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
-              {' '}giao tận nơi
-            </span>
-          </h1>
+            {/* 4. Food Categories Grid */}
+            <CategoryGrid
+              selectedCategoryId={selectedCategory}
+              onSelectCategory={(id) => setSelectedCategory(id)}
+            />
 
-          <p className="mt-6 text-lg text-zinc-400 max-w-xl mx-auto">
-            Hệ thống đặt đồ ăn trực tuyến với kiến trúc hiện đại. Khám phá hàng trăm món ăn từ các nhà hàng uy tín.
-          </p>
-
-          {/* CTAs */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/menu"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300"
-            >
-              <UtensilsCrossed className="w-4 h-4" />
-              Xem thực đơn
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-            <Link
-              href="/orders/f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-medium text-zinc-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-200"
-            >
-              Theo dõi đơn hàng demo
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              icon: Zap,
-              title: 'Event-Driven',
-              description: 'Xử lý đơn hàng bất đồng bộ qua Amazon SQS. Hệ thống không bao giờ bị nghẽn.',
-              gradient: 'from-orange-500/10 to-amber-500/10',
-              iconColor: 'text-orange-400',
-            },
-            {
-              icon: Shield,
-              title: 'Microservices',
-              description: 'Chia tách User, Restaurant, Order Service. Mỗi service vận hành và scale độc lập.',
-              gradient: 'from-red-500/10 to-rose-500/10',
-              iconColor: 'text-red-400',
-            },
-            {
-              icon: MapPin,
-              title: 'Real-time Tracking',
-              description: 'Theo dõi trạng thái đơn hàng trực tuyến. Biết ngay khi tài xế đang trên đường.',
-              gradient: 'from-pink-500/10 to-fuchsia-500/10',
-              iconColor: 'text-pink-400',
-            },
-          ].map((feature) => (
-            <div
-              key={feature.title}
-              className="group relative p-6 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
-            >
-              <div className={`inline-flex p-2.5 rounded-xl bg-gradient-to-br ${feature.gradient} mb-4`}>
-                <feature.icon className={`w-5 h-5 ${feature.iconColor}`} />
+            {/* In-place Category Active Filter Banner */}
+            {selectedCategory !== 'ALL' && (
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-transparent border border-amber-500/30">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs sm:text-sm font-semibold text-white">
+                    Đang lọc món theo danh mục:{' '}
+                    <strong className="text-amber-400 uppercase">{selectedCategory}</strong>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory('ALL')}
+                  className="text-xs font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
+                >
+                  Xóa bộ lọc
+                </button>
               </div>
-              <h3 className="text-base font-semibold text-white mb-2">{feature.title}</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">{feature.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-    </main>
+            )}
+
+            {/* 5. Khối 1: Đặt Lại Lần Nữa (Chỉ hiện khi đã đăng nhập & có đơn cũ) */}
+            {orderAgainRestaurants.length > 0 && (
+              <RestaurantFeedSection
+                title="Đặt lại lần nữa"
+                subtitle="Những quán quen và món ngon bạn đã từng thưởng thức"
+                icon={RotateCcw}
+                badge="QUÁN QUEN"
+                restaurants={orderAgainRestaurants}
+                showOrderAgainButton={true}
+                onOrderAgain={handleOrderAgain}
+              />
+            )}
+
+            {/* 6. Khối 2: Gần Bạn Nhất (Bán kính <= 3.5km, ETA <= 25 phút) */}
+            <RestaurantFeedSection
+              title="Gần bạn nhất"
+              subtitle="Cự ly dưới 3.5km • Giao nhanh thần tốc trong 20 phút"
+              icon={Zap}
+              badge="GIAO NHANH"
+              restaurants={nearYouRestaurants}
+              viewAllHref="/menu?sort=distance"
+            />
+
+            {/* 7. Khối 3: Đang Có Khuyến Mãi (Freeship & Flash Sale) */}
+            <RestaurantFeedSection
+              title="Đang có khuyến mãi"
+              subtitle="Freeship đơn từ 0Đ và ưu đãi độc quyền hôm nay"
+              icon={Tag}
+              badge="HOT PROMO"
+              restaurants={promoRestaurants}
+              viewAllHref="/menu?promo=true"
+            />
+
+            {/* 8. Khối 4: Quán Ngon Nổi Bật (Rating >= 4.5) */}
+            <RestaurantFeedSection
+              title="Quán ngon nổi bật"
+              subtitle="Được cộng đồng ẩm thực đánh giá cao nhất từ 4.5 sao"
+              icon={Star}
+              badge="TOP RATED"
+              restaurants={topRatedRestaurants}
+              viewAllHref="/menu?sort=rating"
+            />
+
+            {/* 9. Khối Tổng Hợp: Infinite Scroll Grid */}
+            <AllRestaurantsInfinite
+              restaurants={categoryFilteredRestaurants}
+              selectedCategoryName={selectedCategory}
+            />
+          </>
+        )}
+      </main>
+
+      {/* 10. Drawer Thông Báo Khuyến Mãi & Trạng Thái Đơn */}
+      <NotificationDrawer
+        isOpen={isNotificationDrawerOpen}
+        onClose={() => setIsNotificationDrawerOpen(false)}
+      />
+
+      {/* 11. Thanh Điều Hướng Dưới Cùng (Mobile) */}
+      <BottomNavigationBar
+        onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
+        hasUnreadNotifications={true}
+        activeOrderId={activeOrder?.id || null}
+      />
+    </div>
   );
 }
