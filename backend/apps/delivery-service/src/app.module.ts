@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { getDatabaseConfig } from '@/config/database.config.js';
 import configuration from '@/config/configuration.js';
 import { DriversModule } from '@/modules/drivers/drivers.module.js';
+import { TrackingModule } from '@/modules/tracking/tracking.module.js';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { DriversModule } from '@/modules/drivers/drivers.module.js';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => getDatabaseConfig(configService, 'schema_delivery'),
     }),
-    DriversModule
+    DriversModule,
+    TrackingModule,
   ],
 })
 export class AppModule {}

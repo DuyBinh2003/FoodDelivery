@@ -1,15 +1,119 @@
-# Driver Service
+# 🛵 Delivery Service (Driver & Real-time GPS Tracking)
 
-Driver Service chịu trách nhiệm xử lý logic gán tài xế cho đơn hàng. 
-Trong mô hình Event-Driven của FoodDelivery, Driver Service không được gọi trực tiếp bằng REST API khi tạo đơn, mà sẽ hoạt động như một Worker (Consumer) lắng nghe Message Queue (Amazon SQS).
+Dịch vụ `delivery-service` (Port `3005`) chịu trách nhiệm định vị GPS thời gian thực của đối tác tài xế, tính toán khoảng cách đường chim bay (Haversine distance), ước lượng thời gian giao hàng (ETA), phát sóng WebSocket cho khách hàng theo dõi trực tiếp lộ trình đơn hàng và nhận thông báo phân phối cuốc xe qua Amazon SQS.
 
-## Cơ chế hoạt động
-1. Order Service đẩy event `ORDER_CREATED` lên SQS.
-2. `DriversService` trong NestJS sử dụng `sqs-consumer` để liên tục polling các message từ SQS.
-3. Khi nhận được message có type `ORDER_CREATED`:
-   - Phân tích JSON body để lấy `orderId` và `restaurantId`.
-   - Giả lập (mock) quá trình tìm kiếm tài xế gần nhất mất 3 giây.
-   - Gọi cập nhật trạng thái đơn hàng (sử dụng internal call thông qua `OrdersService` sang trạng thái `ACCEPTED`).
+---
 
-## Cấu hình LocalStack
-Để test Driver Service trên local, dự án sử dụng LocalStack thông qua file `docker-compose.yml`. Queue URL và credentials được nạp từ biến môi trường của NestJS (`SQS_ENDPOINT`, `SQS_QUEUE_URL`, v.v...).
+## 1. Thông Tin Kiến Trúc & Cổng Dịch Vụ
+
+- **Service Name**: `delivery-service`
+- **Port**: `3005`
+- **Database Schema**: `schema_delivery` (PostgreSQL)
+- **Cache & Real-time Store**: Redis (`driver:location:*`)
+- **WebSocket Gateway**: `@WebSocketGateway({ namespace: 'delivery', cors: { origin: '*' } })`
+- **Message Broker**: Amazon SQS (`driver-dispatch-queue`) & SNS Fanout
+
+---
+
+## 2. Danh Sách REST APIs
+
+| Phương thức | Đường dẫn | Quyền hạn | Mục đích |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/delivery/orders/:orderId/location` | Public / Khách hàng | Lấy tọa độ GPS mới nhất của tài xế đang giao đơn hàng. |
+| `POST` | `/delivery/orders/:orderId/location` | Tài xế / Internal | Endpoint cập nhật vị trí GPS qua HTTP REST (Dự phòng cho WebSocket). |
+| `POST` | `/delivery/estimate-distance` | Public / Client | Tính toán cự ly đường chim bay (km) và thời gian dự kiến giữa 2 tọa độ bất kỳ. |
+
+### Chi tiết Request / Response mẫu
+
+#### 1. Lấy vị trí GPS đơn hàng: `GET /delivery/orders/:orderId/location`
+- **Response `200 OK`**:
+```json
+{
+  "orderId": "6a9f8b2c-...",
+  "driverId": "9b1c2d3e-...",
+  "lat": 10.77452,
+  "lng": 106.70185,
+  "heading": 85,
+  "speed": 28.5,
+  "remaining_km": 1.2,
+  "eta_minutes": 3,
+  "updatedAt": "2026-10-19T13:00:00.000Z"
+}
+```
+
+#### 2. Cập nhật vị trí GPS: `POST /delivery/orders/:orderId/location`
+- **Request Body**:
+```json
+{
+  "driverId": "9b1c2d3e-...",
+  "lat": 10.77452,
+  "lng": 106.70185,
+  "heading": 85,
+  "speed": 30,
+  "dropoff_lat": 10.77653,
+  "dropoff_lng": 106.70098
+}
+```
+
+#### 3. Ước tính khoảng cách: `POST /delivery/estimate-distance`
+- **Request Body**:
+```json
+{
+  "origin_lat": 10.772545,
+  "origin_lng": 106.702758,
+  "destination_lat": 10.776530,
+  "destination_lng": 106.700980
+}
+```
+- **Response `200 OK`**:
+```json
+{
+  "distance_km": 0.5,
+  "estimated_duration_minutes": 2
+}
+```
+
+---
+
+## 3. Đặc Tả WebSocket Gateway (`/delivery`)
+
+Gateway cung cấp kênh truyền thông hai chiều (Full-Duplex) với độ trễ thấp để khách hàng và tài xế đồng bộ tọa độ tức thì:
+
+### A. Sự kiện Tiếp nhận (Client ➔ Server)
+1. **`order:track`**:
+   - **Payload**: `{ "orderId": "string" }`
+   - **Hành động**: Đưa client vào room `order_<orderId>`, tự động gửi ngay sự kiện `driver:location_current` nếu trong Redis cache đã có tọa độ tài xế.
+2. **`driver:update_location`**:
+   - **Payload**:
+     ```json
+     {
+       "orderId": "string",
+       "driverId": "string",
+       "lat": 10.77452,
+       "lng": 106.70185,
+       "heading": 85,
+       "speed": 30,
+       "dropoff_lat": 10.77653,
+       "dropoff_lng": 106.70098
+     }
+     ```
+   - **Hành động**: Tính `remaining_km` và `eta_minutes`, ghi đè vào Redis và phát sóng ngay lập tức tới toàn bộ client trong room `order_<orderId>`.
+
+### B. Sự kiện Phát đi (Server ➔ Client)
+1. **`driver:location_current`**: Trả về dữ liệu GPS tức thời cho khách hàng ngay khi vừa mở màn hình theo dõi đơn hàng.
+2. **`driver:location_updated`**: Broadcast tọa độ GPS mới nhất kèm cự ly còn lại và ETA mỗi khi tài xế di chuyển.
+
+---
+
+## 4. Chiến Lược Caching Redis (In-Memory Key Schema)
+
+| Key Pattern | Cấu trúc dữ liệu | TTL | Mục đích |
+| :--- | :--- | :---: | :--- |
+| `driver:location:order:<orderId>` | JSON String | 3600s (1h) | Lưu vị trí GPS mới nhất của tài xế đang giao đơn hàng cụ thể. |
+| `driver:location:driver:<driverId>` | JSON String | 3600s (1h) | Lưu vị trí GPS hiện tại của tài xế độc lập theo ID. |
+
+---
+
+## 5. Tương Tác SQS Consumer (Event-Driven Dispatch)
+
+`DriversConsumer` liên tục lắng nghe hàng đợi SQS `driver-dispatch-queue` để nhận thông báo phân phối cuốc xe từ `order-service` khi đơn hàng chuyển sang trạng thái sẵn sàng giao (`ORDER_READY_FOR_PICKUP` hoặc `ORDER_ACCEPTED`).

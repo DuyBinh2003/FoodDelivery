@@ -41,10 +41,18 @@ export interface OrderDriverCardProps {
 }
 
 export interface OrderVisualRouteProps {
+  orderId: string;
   status: OrderStatus;
   restaurantName: string;
+  restaurantAddress?: string;
+  restaurantLat?: number | null;
+  restaurantLng?: number | null;
   deliveryAddress: string;
+  deliveryLat?: number | null;
+  deliveryLng?: number | null;
+  distanceKm?: number | null;
   driverName?: string;
+  driverId?: string | null;
 }
 
 export interface OrderStoreCardProps {
