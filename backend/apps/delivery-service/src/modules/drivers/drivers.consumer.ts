@@ -1,8 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Inject } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Inject, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SQSClient, CreateQueueCommand } from '@aws-sdk/client-sqs';
 import { Consumer } from 'sqs-consumer';
 import { OrderEventTypes, OrderCreatedEvent } from '@/events/index.js';
+import { DispatchService } from '@/modules/dispatch/dispatch.service.js';
 
 @Injectable()
 export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
@@ -11,6 +12,7 @@ export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(ConfigService) private readonly configService: ConfigService,
+    @Optional() @Inject(DispatchService) private readonly dispatchService?: DispatchService,
   ) {}
 
   async onModuleInit() {
@@ -66,6 +68,26 @@ export class DriversConsumer implements OnModuleInit, OnModuleDestroy {
             this.logger.log(
               `[DriversConsumer] Received broadcast ORDER_READY_FOR_PICKUP from SNS Fanout for Order [${orderId}] (${restaurantName}). Available for drivers to claim.`,
             );
+
+            // Tự động kích hoạt thuật toán chia cuốc (Order Routing)
+            if (orderId && this.dispatchService) {
+              await this.dispatchService.dispatchOrder({
+                orderId,
+                restaurantName: body.data?.restaurantName,
+                restaurantAddress: body.data?.restaurantAddress,
+                restaurantLat: body.data?.restaurantLat,
+                restaurantLng: body.data?.restaurantLng,
+                deliveryAddress: body.data?.deliveryAddress,
+                deliveryLat: body.data?.deliveryLat,
+                deliveryLng: body.data?.deliveryLng,
+                distanceKm: body.data?.distanceKm,
+                deliveryFee: body.data?.deliveryFee,
+                driverEarnings: body.data?.driverEarnings,
+                itemsCount: body.data?.itemsCount,
+              }).catch((err: unknown) => {
+                this.logger.error(`Error in dispatchOrder for [${orderId}]:`, err);
+              });
+            }
           }
 
           // 2. Dự phòng sự kiện ORDER_CREATED

@@ -46,8 +46,13 @@ describe('Driver Tracking & Realtime GPS Engine', () => {
       }),
     };
 
+    const mockDispatchService = {
+      acceptTrip: vi.fn(),
+      rejectTrip: vi.fn(),
+    };
+
     trackingService = new TrackingService(mockRedisRepo as unknown as DriverLocationRedisRepository);
-    trackingGateway = new TrackingGateway(trackingService);
+    trackingGateway = new TrackingGateway(trackingService, mockDispatchService as any);
     trackingGateway.server = mockSocketServer as any;
 
     trackingController = new TrackingController(trackingService, trackingGateway);

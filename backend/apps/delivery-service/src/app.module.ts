@@ -5,6 +5,7 @@ import { getDatabaseConfig } from '@/config/database.config.js';
 import configuration from '@/config/configuration.js';
 import { DriversModule } from '@/modules/drivers/drivers.module.js';
 import { TrackingModule } from '@/modules/tracking/tracking.module.js';
+import { DispatchModule } from '@/modules/dispatch/dispatch.module.js';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TrackingModule } from '@/modules/tracking/tracking.module.js';
     }),
     DriversModule,
     TrackingModule,
+    DispatchModule,
   ],
 })
 export class AppModule {}
