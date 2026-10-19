@@ -7,15 +7,13 @@
  *   - Scenarios: Happy Path, Edge Cases, Error / Rejection Flow
  */
 
-import test, { describe, it } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   calculateDiscountFromPoints,
   calculateMaxAllowedPoints,
   validatePointsRedemption,
   calculateTierProgress,
-  POINT_TO_VND_RATE,
-  MIN_POINTS_TO_REDEEM,
 } from '../utils/loyalty-calculator.ts';
 
 describe('Loyalty Frontend Calculations & Validation', () => {

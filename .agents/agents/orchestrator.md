@@ -40,10 +40,10 @@ graph TD
     Gate -->|"Cần điều chỉnh"| Phase1
     Gate -->|"Đồng ý"| Phase2["GIAI ĐOẠN 2: CODER\nTriển khai mã nguồn Backend & Frontend\ntheo đúng Plan"]
     
-    Phase2 --> Phase3["GIAI ĐOẠN 3: TESTER\nViết Vitest 3 nhánh\nChạy npm test kiểm thử"]
+    Phase2 --> Phase3["GIAI ĐOẠN 3: TESTER\nViết test 3 nhánh & Kích hoạt Local CI Gate\n(npm run lint + tsc + test + build)"]
     
-    Phase3 -->|"Test Fail"| Healing1{"Auto-Healing Loop\n(Tối đa 3 vòng)"}
-    Phase3 -->|"100% Pass"| Phase4["GIAI ĐOẠN 4: REVIEWER\nThẩm định độc lập (Read-only)\nBắt lỗi tiềm ẩn & Kiểm tra quy chuẩn"]
+    Phase3 -->|"CI Gate Fail (Lint/Test/Build)"| Healing1{"Auto-Healing Loop\n(Tối đa 3 vòng)"}
+    Phase3 -->|"CI Gate 100% Green"| Phase4["GIAI ĐOẠN 4: REVIEWER\nThẩm định độc lập (Read-only)\nBắt lỗi tiềm ẩn, CI readiness & Quy chuẩn"]
     
     Phase4 -->|"Changes Requested"| Healing2{"Auto-Healing Loop\n(Tối đa 3 vòng)"}
     Healing1 -->|"Feedback lỗi"| Phase2
@@ -52,7 +52,7 @@ graph TD
     Healing1 -->|"Vượt quá 3 lần"| Escalation["Dừng lại & Báo cáo Người dùng"]
     Healing2 -->|"Vượt quá 3 lần"| Escalation
     
-    Phase4 -->|"Approved"| Phase5["GIAI ĐOẠN 5: FINAL SYNC\nCập nhật tài liệu docs/ chuẩn\nBáo cáo nghiệm thu hoàn tất"]
+    Phase4 -->|"Approved & CI Ready"| Phase5["GIAI ĐOẠN 5: FINAL SYNC\nCập nhật tài liệu docs/ chuẩn\nBáo cáo nghiệm thu hoàn tất"]
     Phase5 --> Done(["Nghiệm thu thành công"])
 ```
 
@@ -82,25 +82,30 @@ graph TD
    - Viết code Backend/Frontend bám sát spec.
    - Tuân thủ tuyệt đối: Strict TypeScript (cấm `any`), No Swallowed Exceptions (bảo toàn root cause), No Hidden Fallbacks, import tuyệt đối (`@/...`).
 
-### 4. Giai đoạn 3: Viết test & Kiểm thử (@tester)
+### 4. Giai đoạn 3: Viết test & Cổng kiểm soát CI nội bộ (@tester)
 1. Cập nhật trạng thái plan thành `[TESTING]`.
 2. Phân công vai trò `@tester`:
-   - Viết unit test Vitest bám sát kịch bản test 3 nhánh trong file plan.
+   - Viết unit test Vitest bám sát kịch bản test 3 nhánh trong file plan (Happy, Edge, Error).
    - Bắt buộc có Traceability Header trỏ về `docs/plans/<task>.md`.
-   - Đặt file tại `apps/<service>/src/modules/<module>/tests/<use-case>.spec.ts`.
-   - Chạy lệnh test thực tế qua `run_command` (ví dụ: `npm test -- <path>`).
+   - Đặt file tại `apps/<service>/src/modules/<module>/tests/<use-case>.spec.ts` (Backend) hoặc `src/features/<module>/tests/` (Frontend).
+   - **KÍCH HOẠT CỔNG KIỂM SOÁT CI NỘI BỘ (Local CI Gate)**:
+     - Bước 1 (Linter): Chạy `npm run lint` trên service/frontend bị tác động (phải đạt **0 errors, 0 warnings**).
+     - Bước 2 (Type Check): Chạy `npx tsc --noEmit` (phải đạt **0 errors**).
+     - Bước 3 (Unit Tests): Chạy `npm test` (phải đạt **100% pass**).
+     - Bước 4 (Build Verification): Chạy `npm run build` (phải biên dịch thành công).
 3. **Cơ chế phản hồi (Auto-Healing)**:
-   - Nếu có test fail: Ghi nhận log lỗi, phân tích nguyên nhân và chuyển giao lại cho `@coder` sửa code (tăng biến đếm vòng lặp sửa lỗi).
-   - Lặp lại đến khi **100% test pass**.
+   - Nếu bất kỳ bước nào trong Local CI Gate thất bại: Ghi nhận log lỗi chi tiết, phân tích nguyên nhân và chuyển giao lại cho `@coder` sửa code (tăng biến đếm vòng lặp sửa lỗi).
+   - Lặp lại đến khi **toàn bộ 4 bước CI Gate đều xanh 100%**.
 
-### 5. Giai đoạn 4: Thẩm định độc lập (@reviewer)
+### 5. Giai đoạn 4: Thẩm định độc lập & Kiểm tra CI Readiness (@reviewer)
 1. Cập nhật trạng thái plan thành `[REVIEWING]`.
 2. Phân công vai trò `@reviewer`:
-   - Chạy typecheck và kiểm tra diff so với codebase.
+   - Kiểm toán độc lập git diff so với codebase.
    - Kiểm tra các lỗi tiềm ẩn: Memory leak, race condition, connection leak, N+1 query, unhandled promise rejections.
-   - Kiểm tra vi phạm `AGENTS.md` (ép kiểu ẩu, nuốt exception, đặt tên sai quy chuẩn).
+   - Kiểm tra vi phạm `AGENTS.md` (ép kiểu ẩu, nuốt exception, đặt tên sai quy chuẩn, biến/import thừa).
+   - **Xác nhận CI Readiness**: Bảo đảm mã nguồn đáp ứng toàn bộ các tiêu chí linter/build của GitHub Actions runner (`ci-cd.yml`).
 3. **Cơ chế phản hồi (Auto-Healing)**:
-   - Nếu phát hiện lỗi nghiêm trọng (Critical / High): Chuyển chi tiết lỗi và đoạn code khuyến nghị cho `@coder` sửa, sau đó `@tester` chạy lại bộ test, rồi `@reviewer` audit lại.
+   - Nếu phát hiện lỗi nghiêm trọng (Critical / High) hoặc vi phạm linter/type: Chuyển chi tiết lỗi và đoạn code khuyến nghị cho `@coder` sửa, sau đó `@tester` chạy lại bộ CI Gate, rồi `@reviewer` audit lại.
    - Giới hạn lặp tối đa: **3 vòng lặp (Max 3 iterations)**. Nếu quá 3 vòng vẫn chưa pass, dừng pipeline và báo cáo Người dùng hỗ trợ.
 
 ### 6. Giai đoạn 5: Đồng bộ tài liệu & Bàn giao (Docs Sync & Completion)

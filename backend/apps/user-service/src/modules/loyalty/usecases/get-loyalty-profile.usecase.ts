@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LoyaltyRepository } from '@/modules/loyalty/repositories/loyalty.repository.js';
 import { MembershipTier, TIER_CONFIGS } from '@/modules/loyalty/enums/membership-tier.enum.js';
 import type { LoyaltyWallet } from '@/modules/loyalty/entities/loyalty-wallet.entity.js';
-import type { LoyaltyTransaction } from '@/modules/loyalty/entities/loyalty-transaction.entity.js';
+
 
 export interface NextTierProgress {
   next_tier: MembershipTier | null;

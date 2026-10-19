@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Coins, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Coins, Sparkles, AlertCircle } from 'lucide-react';
 import { useLoyalty } from '@/features/loyalty/hooks/useLoyalty';
 import { LoyaltyTierBadge } from '@/features/loyalty/components/LoyaltyTierBadge';
 
@@ -46,7 +46,7 @@ export const LoyaltyCheckoutSection: React.FC<LoyaltyCheckoutSectionProps> = ({
   };
 
   const handlePointsChange = (val: number) => {
-    let cleanVal = Math.max(0, Math.min(val, maxAllowedPoints));
+    const cleanVal = Math.max(0, Math.min(val, maxAllowedPoints));
     setPointsInput(cleanVal);
 
     if (cleanVal >= 100) {

@@ -9,7 +9,6 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { BadRequestException } from '@nestjs/common';
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
 import type { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import type { SqsService } from '@/common/messaging/sqs.service.js';

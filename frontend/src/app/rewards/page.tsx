@@ -12,13 +12,10 @@ import {
   ShieldCheck,
   ChevronLeft,
   RefreshCw,
-  PlusCircle,
-  HelpCircle,
 } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { useLoyalty } from '@/features/loyalty/hooks/useLoyalty';
 import { LoyaltyTierCard } from '@/features/loyalty/components/LoyaltyTierCard';
-import { LoyaltyTierBadge } from '@/features/loyalty/components/LoyaltyTierBadge';
 import { TIER_DETAILS } from '@/features/loyalty/types/loyalty.types';
 import type { MembershipTier } from '@/features/loyalty/types/loyalty.types';
 
@@ -83,6 +80,16 @@ export default function RewardsPage() {
               <span>Đăng nhập ngay</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
+          </div>
+        ) : error ? (
+          <div className="p-8 rounded-3xl bg-zinc-900/80 border border-red-500/20 text-center space-y-4">
+            <p className="text-sm text-red-400">{error}</p>
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium transition-colors"
+            >
+              Thử lại
+            </button>
           </div>
         ) : isLoading && !profile ? (
           <div className="h-64 rounded-3xl bg-zinc-900 border border-white/10 animate-pulse flex items-center justify-center">

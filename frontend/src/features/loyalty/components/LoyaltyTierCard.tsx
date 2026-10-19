@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, Sparkles, TrendingUp, ShieldCheck } from 'lucide-react';
+import { Sparkles, TrendingUp, ShieldCheck } from 'lucide-react';
 import type { LoyaltyProfileResponse } from '@/features/loyalty/types/loyalty.types';
 import { TIER_DETAILS } from '@/features/loyalty/types/loyalty.types';
 import { LoyaltyTierBadge } from './LoyaltyTierBadge';
