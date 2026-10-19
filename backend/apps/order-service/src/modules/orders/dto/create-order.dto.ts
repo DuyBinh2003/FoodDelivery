@@ -80,6 +80,12 @@ export class CreateOrderDto {
   @IsEnum(PaymentMethod)
   payment_method?: PaymentMethod;
 
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  points_to_use?: number;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)

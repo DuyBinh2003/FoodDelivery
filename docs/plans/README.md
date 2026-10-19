@@ -1,32 +1,60 @@
-# Thư Mục Kế Hoạch Triển Khai (Implementation Plans)
+# 📋 Thư Mục Kế Hoạch Triển Khai (Master Implementation Plans)
 
-Thư mục này lưu trữ các bản kế hoạch triển khai chi tiết (`Implementation Plan`) được tạo ra bởi **Planner Agent** trong vòng tròn khép kín của dự án FoodDelivery.
-
----
-
-## 1. Mục Đích & Nguyên Tắc
-- **Single Source of Truth cho Task**: Mọi quyết định kỹ thuật, danh sách file tác động, và kịch bản test 3 nhánh phải được ghi nhận tại đây trước khi viết code.
-- **Bàn giao dữ liệu xuyên suốt (State Handoff)**: Là cầu nối thông tin giữa các Sub-Agents:
-  - `Planner` ➡️ Khởi tạo và cập nhật kế hoạch.
-  - `Coder` ➡️ Đọc yêu cầu kỹ thuật và triển khai code.
-  - `Tester` ➡️ Đọc kịch bản test và gán Traceability Header vào file test.
-  - `Reviewer` ➡️ Đối chiếu code diff với phạm vi đã cam kết trong plan.
-- **Traceability**: Sau khi task hoàn tất, plan được giữ lại làm lịch sử vết kiến trúc, đồng thời tài liệu chuẩn trong `docs/features/` hoặc `docs/services/` sẽ được cập nhật đồng bộ.
+Thư mục này là **Trung tâm Quản lý & Tra cứu Kế hoạch Triển khai (Implementation Plans)** cho toàn bộ các tính năng, nâng cấp và cải tiến kiến trúc của dự án FoodDelivery.
 
 ---
 
-## 2. Quy Ước Đặt Tên & Trạng Thái
+## 1. Bản Đồ Phân Loại Thư Mục (Taxonomy & Hierarchy)
 
-### Tên File
-- Sử dụng **kebab-case**: `<tên-ngắn-gọn-của-task>.md`
-- Ví dụ: `order-pricing-breakdown.md`, `driver-distance-calculation.md`.
+Để dễ dàng tra cứu, lọc và phân nhóm khi số lượng task tăng lên, toàn bộ kế hoạch triển khai được phân bổ theo 5 nhóm miền nghiệp vụ (Domains / Actors):
 
-### Vòng Đời Trạng Thái (Lifecycle Statuses)
-Mỗi file plan có trường trạng thái ở đầu:
-- `[DRAFT]`: Planner vừa lập xong, đang chờ Người dùng duyệt.
-- `[APPROVED]`: Người dùng đã xác nhận, sẵn sàng cho Coder thực hiện.
-- `[IN_PROGRESS]`: Coder đang triển khai mã nguồn.
-- `[TESTING]`: Tester đang viết và chạy Vitest.
-- `[REVIEWING]`: Reviewer đang audit mã nguồn độc lập.
-- `[AUTO_HEALING]`: Đang trong vòng lặp sửa lỗi tự động giữa Coder và Tester/Reviewer.
-- `[COMPLETED]`: Task đã hoàn thành 100%, test pass và docs đã được đồng bộ.
+```text
+docs/plans/
+├── README.md               # 📌 Master Index & Bảng Tra Cứu Kế Hoạch (File này)
+├── customer/               # 🧑 Khách hàng: Giỏ hàng, Địa chỉ, Tìm kiếm, Đặt món...
+├── driver/                 # 🛵 Tài xế: Nhận cuốc, Lộ trình, Định vị GPS, Ví tài xế...
+├── partner/                # 🏪 Nhà hàng: Màn hình bếp (KDS), Quản lý menu, Giờ mở cửa...
+├── admin/                  # 👑 Quản trị viên: KYC xét duyệt, CS Portal, Báo cáo...
+└── platform/               # ⚙️ Nền tảng lõi: Sổ cái thanh toán, Loyalty Engine, Event Bus, Auth...
+```
+
+---
+
+## 2. Bảng Tra Cứu Kế Hoạch Toàn Hệ Thống (Master Query Matrix)
+
+Bảng này được tự động cập nhật bởi các Sub-Agent (`@planner` & `@orchestrator`) mỗi khi có một kế hoạch mới được đề xuất hoặc hoàn thành:
+
+| Mã Task / Kế Hoạch | Miền / Actor | Issue | Trạng Thái | Mô Tả Tóm Tắt | Link Kế Hoạch |
+| :--- | :---: | :---: | :---: | :--- | :--- |
+| `loyalty-points-rewards-engine` | `platform` | [#19](https://github.com/DuyBinh2003/FoodDelivery/pull/64) | `[COMPLETED]` | Hệ thống tích điểm theo hạng thành viên (1.0x - 2.0x), quy đổi giảm giá giỏ hàng (1 điểm = 10 VND, trần 50%), hoàn điểm tự động khi hủy đơn. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/platform/loyalty-points-rewards-engine.md) |
+| `customer-loyalty-ui` | `customer` | [#19](https://github.com/DuyBinh2003/FoodDelivery/pull/64) | `[COMPLETED]` | Giao diện tiêu điểm thưởng tại Checkout (/checkout), trang Khách hàng thân thiết & Hạng thành viên (/rewards), và mục điều hướng Header. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/customer/customer-loyalty-ui.md) |
+
+---
+
+## 3. Vòng Đời Trạng Thái (Lifecycle Statuses)
+
+Mỗi file kế hoạch có huy hiệu trạng thái tại dòng đầu tiên để phục vụ lọc nhanh:
+
+| Trạng thái | Diễn giải | Giai đoạn phụ trách |
+| :--- | :--- | :--- |
+| `[DRAFT]` | Bản nháp vừa được lập, đang chờ Người dùng phê duyệt tại Approval Checkpoint. | `@planner` |
+| `[APPROVED]` | Kế hoạch đã được phê duyệt, chuẩn bị đưa vào code. | User Approval |
+| `[IN_PROGRESS]` | Đang trong giai đoạn hiện thực hóa mã nguồn Backend / Frontend. | `@coder` |
+| `[TESTING]` | Đang viết test Vitest 3 nhánh (Happy, Edge, Error) và chạy kiểm thử. | `@tester` |
+| `[REVIEWING]` | Đang trong quá trình thẩm định độc lập, rà soát lỗi tiềm ẩn và quy chuẩn. | `@reviewer` |
+| `[AUTO_HEALING]` | Đang trong chu trình tự sửa lỗi giữa Coder và Tester/Reviewer. | Auto-Healing Loop |
+| `[COMPLETED]` | Đã nghiệm thu 100% test pass, hoàn tất code và đồng bộ tài liệu chính thức. | `@orchestrator` |
+
+---
+
+## 4. Hướng Dẫn Dành Cho Sub-Agents Khi Tạo Plan Mới
+
+1. **Xác định đúng thư mục con**:
+   - Nếu tính năng thuộc app Khách hàng ➡️ Tạo tại `docs/plans/customer/<task-name>.md`.
+   - Nếu tính năng thuộc app Tài xế ➡️ Tạo tại `docs/plans/driver/<task-name>.md`.
+   - Nếu tính năng thuộc Portal Nhà hàng ➡️ Tạo tại `docs/plans/partner/<task-name>.md`.
+   - Nếu tính năng thuộc Admin Portal ➡️ Tạo tại `docs/plans/admin/<task-name>.md`.
+   - Nếu tính năng hạ tầng, thanh toán, loyalty hoặc đa service ➡️ Tạo tại `docs/plans/platform/<task-name>.md`.
+2. **Cập nhật Bảng Tra Cứu (Master Query Matrix)**:
+   - Ngay khi tạo file mới ở trạng thái `[DRAFT]`, thêm 1 dòng vào Bảng mục 2 ở trên.
+   - Khi hoàn tất task, cập nhật cột Trạng thái thành `[COMPLETED]`.

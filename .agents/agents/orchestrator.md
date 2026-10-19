@@ -62,7 +62,7 @@ graph TD
 
 ### 1. Giai đoạn 1: Khởi tạo Plan (@planner)
 1. Xác định tên task dạng `kebab-case` (ví dụ: `driver-commission-calculation`).
-2. Khởi tạo file kế hoạch tại `docs/plans/<task>.md` với trạng thái `[DRAFT]`.
+2. Khởi tạo file kế hoạch tại đúng thư mục phân loại: `docs/plans/<customer|driver|partner|admin|platform>/<task>.md` với trạng thái `[DRAFT]`, đồng thời ghi một dòng mới vào Bảng Tra Cứu (Master Query Matrix) tại `docs/plans/README.md`.
 3. Phân công vai trò `@planner`:
    - Khảo sát codebase, microservices liên quan (`backend/apps/`, `frontend/src/`).
    - Tra cứu quy định tại `docs/services/`, `docs/business/`, `docs/architecture/`.
@@ -70,7 +70,7 @@ graph TD
 
 ### 2. Điểm dừng kiểm duyệt (Approval Checkpoint)
 1. Trình bày tóm tắt Implementation Plan cho Người dùng và trỏ link trực tiếp đến file:
-   `docs/plans/<task>.md`.
+   `docs/plans/<category>/<task>.md`.
 2. Sử dụng công cụ hỏi người dùng để xác nhận:
    - Nếu Người dùng yêu cầu chỉnh sửa: `@planner` cập nhật lại file plan.
    - Nếu Người dùng đồng ý: Cập nhật trạng thái file plan thành `[APPROVED]` và lập tức kích hoạt tự động các giai đoạn tiếp theo mà không cần hỏi thêm.

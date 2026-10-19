@@ -31,6 +31,7 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
   switch (firstSegment) {
     case 'users':
     case 'auth':
+    case 'loyalty':
       baseUrl = getRequiredEnv('NEXT_PUBLIC_USER_SERVICE_URL');
       break;
     case 'admin':

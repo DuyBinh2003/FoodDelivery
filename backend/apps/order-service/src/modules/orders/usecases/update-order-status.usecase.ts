@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
@@ -17,6 +17,8 @@ export interface UpdateOrderStatusCommand {
 
 @Injectable()
 export class UpdateOrderStatusUseCase {
+  private readonly logger = new Logger(UpdateOrderStatusUseCase.name);
+
   constructor(
     @Inject(OrderRedisRepository) private readonly orderRedisRepo: OrderRedisRepository,
     @Inject(OrderReadRepository) private readonly orderReadRepo: OrderReadRepository,
@@ -25,6 +27,45 @@ export class UpdateOrderStatusUseCase {
     @Inject(SnsService) private readonly snsService: SnsService,
     @Inject(ConfigService) private readonly configService: ConfigService,
   ) {}
+
+  private async awardLoyaltyPoints(userId: string, orderId: string, subtotal: number | string) {
+    const userUrl = process.env.USER_SERVICE_URL;
+    if (!userUrl) return;
+    try {
+      const qualifyingAmount = Number(subtotal) || 0;
+      if (qualifyingAmount <= 0) return;
+      await fetch(`${userUrl}/internal/loyalty/earn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          order_id: orderId,
+          qualifying_amount: qualifyingAmount,
+          idempotency_key: `earn_order_${orderId}`,
+        }),
+      });
+    } catch (err: unknown) {
+      this.logger.warn(`Failed to award loyalty points for order ${orderId}:`, err);
+    }
+  }
+
+  private async refundLoyaltyPoints(userId: string, orderId: string) {
+    const userUrl = process.env.USER_SERVICE_URL;
+    if (!userUrl) return;
+    try {
+      await fetch(`${userUrl}/internal/loyalty/refund`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          order_id: orderId,
+          idempotency_key: `refund_order_${orderId}`,
+        }),
+      });
+    } catch (err: unknown) {
+      this.logger.warn(`Failed to refund loyalty points for order ${orderId}:`, err);
+    }
+  }
 
   async execute(command: UpdateOrderStatusCommand): Promise<Order> {
     const newStatus = command.dto.status;
@@ -46,7 +87,11 @@ export class UpdateOrderStatusUseCase {
         });
         // Giữ TTL 30 phút trong Redis để tra cứu nhanh rồi tự hủy
         await this.orderRedisRepo.setTtl(command.orderId, 1800);
+        this.awardLoyaltyPoints(inflight.customer_id, command.orderId, inflight.subtotal);
       } else if (newStatus === OrderStatus.CANCELLED) {
+        if (inflight.points_used && inflight.points_used > 0) {
+          this.refundLoyaltyPoints(inflight.customer_id, command.orderId);
+        }
         // ĐƠN BỊ HỦY: Nếu đã thanh toán qua ví/thẻ thì lưu DB để đối soát hoàn tiền
         if (inflight.payment_method !== 'COD') {
           resultOrder = await this.orderWriteRepo.persistCompletedOrder({

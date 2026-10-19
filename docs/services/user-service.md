@@ -20,8 +20,10 @@ Các bảng chính liên quan:
 - `m_customer_profile` (id, user_id, full_name, phone)
 - `m_driver_profile` (id, user_id, status, verification_status, vehicle_plate, vehicle_type, current_location_lat, current_location_lng)
 - `m_user_address` (id, user_id, recipient_name, recipient_phone, label, street_address, ward, district, city, full_address, latitude, longitude, delivery_notes, is_default, created_at, updated_at)
+- `m_loyalty_wallet` (id, user_id, available_points, lifetime_points, tier, created_at, updated_at): Quản lý ví điểm và hạng thành viên (`BRONZE`, `SILVER`, `GOLD`, `PLATINUM`).
+- `t_loyalty_transaction` (id, wallet_id, user_id, transaction_type, points, balance_after, reference_type, reference_id, idempotency_key, description, created_at): Nhật ký giao dịch điểm bất biến (Append-Only ledger).
 
-Mọi thao tác quản lý, tạo mới Profile và Sổ địa chỉ đều được thực hiện thông qua Repository tương ứng (`UserWriteRepository`, `UserAddressRepository`).
+Mọi thao tác quản lý, tạo mới Profile, Sổ địa chỉ và Ví điểm thưởng đều được thực hiện thông qua Repository tương ứng (`UserWriteRepository`, `UserAddressRepository`, `LoyaltyRepository`).
 
 ---
 
@@ -40,6 +42,7 @@ Mọi thao tác quản lý, tạo mới Profile và Sổ địa chỉ đều đ�
 | `/users/addresses/:id` | `PATCH` | `JwtAuthGuard` | Cập nhật thông tin địa chỉ | `{ recipient_name?, recipient_phone?, label?, street_address?, full_address?, latitude?, longitude?, ... }` | `200`, `400`, `401`, `404` |
 | `/users/addresses/:id/default` | `PATCH` | `JwtAuthGuard` | Đặt một địa chỉ làm mặc định | Không | `200`, `401`, `404` |
 | `/users/addresses/:id` | `DELETE` | `JwtAuthGuard` | Xóa địa chỉ khỏi sổ địa chỉ | Không | `200`, `401`, `404` |
+| `/loyalty/my-points` | `GET` | `JwtAuthGuard` | Lấy số dư điểm tích lũy, hạng thành viên, tiến độ thăng hạng và 20 giao dịch gần nhất | Không | `200`, `401` |
 
 ### B. Internal APIs (Giao tiếp nội bộ Docker, NGINX chặn bên ngoài)
 | Endpoint | Method | Service Gọi | Mục đích & Mô tả | Phản hồi |
@@ -50,4 +53,9 @@ Mọi thao tác quản lý, tạo mới Profile và Sổ địa chỉ đều đ�
 | `/internal/drivers/:userId/status` | `GET` | `order-service` | Kiểm tra trạng thái hoạt động của tài xế (`is_active: status === 'ONLINE' && verification_status === 'APPROVED'`) trước khi gửi hoặc nhận cuốc xe | `{ is_driver, id, user_id, status, verification_status, is_active, vehicle_plate, vehicle_type }` |
 | `/internal/users/:id/addresses` | `GET` | `order-service` | Lấy danh sách địa chỉ của người dùng theo UUID | `[ { id, full_address, latitude, longitude, ... } ]` |
 | `/internal/users/:id/default-address` | `GET` | `order-service` | Lấy địa chỉ giao hàng mặc định của người dùng | `{ id, full_address, latitude, longitude, ... }` |
+| `/internal/loyalty/burn` | `POST` | `order-service` | Trừ điểm khi đặt đơn hàng (Kèm `idempotency_key`, trần 50% subtotal) | `{ success, points_burned, discount_amount, remaining_points, transaction_id }` |
+| `/internal/loyalty/earn` | `POST` | `order-service` | Tích điểm cho khách hàng khi đơn `COMPLETED` theo hệ số Hạng | `{ success, points_earned, new_balance, new_tier, transaction_id }` |
+| `/internal/loyalty/refund` | `POST` | `order-service` | Hoàn trả điểm đã sử dụng khi đơn hàng bị hủy `CANCELLED` | `{ success, points_refunded, remaining_points, transaction_id }` |
+| `/internal/loyalty/wallet/:userId` | `GET` | `order-service` | Lấy thông tin ví điểm và hạng thành viên nội bộ | `{ wallet, tier_progress, recent_transactions }` |
+
 

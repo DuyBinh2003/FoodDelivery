@@ -5,6 +5,7 @@ import { getDatabaseConfig } from '@/config/database.config.js';
 import configuration from '@/config/configuration.js';
 import { UsersModule } from '@/modules/users/users.module.js';
 import { AuthModule } from '@/modules/auth/auth.module.js';
+import { LoyaltyModule } from '@/modules/loyalty/loyalty.module.js';
 
 @Module({
   imports: [
@@ -17,7 +18,9 @@ import { AuthModule } from '@/modules/auth/auth.module.js';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => getDatabaseConfig(configService, 'schema_user'),
     }),
-    UsersModule, AuthModule
+    UsersModule,
+    AuthModule,
+    LoyaltyModule,
   ],
 })
 export class AppModule {}
