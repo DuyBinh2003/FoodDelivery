@@ -31,6 +31,7 @@ Bảng này được tự động cập nhật bởi các Sub-Agent (`@planner` 
 | `driver-tracking-realtime-gps` | `driver` | [#28](https://github.com/DuyBinh2003/FoodDelivery/pull/65) | `[COMPLETED]` | Bản đồ tương tác Leaflet đo cự ly giao hàng (km), định vị GPS thời gian thực của tài xế qua WebSocket (/delivery) và tích hợp vào UI Order Tracker. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/driver/driver-tracking-realtime-gps.md) |
 | `street-routing-turn-by-turn-map` | `driver` | [#28](https://github.com/DuyBinh2003/FoodDelivery/pull/65) | `[COMPLETED]` | Định tuyến đường phố thực tế OSRM, hiển thị Polyline bám cua ngã rẽ, thanh chỉ dẫn Turn-by-Turn và nâng cấp GPS Simulator theo đường phố. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/driver/street-routing-turn-by-turn-map.md) |
 | `driver-order-routing-dispatch` | `driver` | [#29](https://github.com/DuyBinh2003/FoodDelivery/pull/66) | `[COMPLETED]` | Thuật toán chia cuốc tự động qua Redis Geospatial, tìm tài xế gần nhất trong bán kính 5km, ping WebSocket với countdown 15s chấp nhận cuốc. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/driver/driver-order-routing-dispatch.md) |
+| `customer-homepage-revamp` | `customer` | [#67](https://github.com/DuyBinh2003/FoodDelivery/issues/67) | `[DRAFT]` | Nâng cấp toàn diện giao diện trang chủ: Bộ chọn địa chỉ GPS, thanh tìm kiếm động, banner carousel, grid danh mục, 4 feed cá nhân hóa, infinite scroll, và bottom navigation. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/customer/customer-homepage-revamp.md) |
 
 ---
 
