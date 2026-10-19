@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react';
 import type {
   Map as LeafletMap,
   Marker as LeafletMarker,
@@ -13,8 +13,20 @@ import {
   LocateFixed,
   Maximize2,
   Clock,
+  CornerUpLeft,
+  CornerUpRight,
+  ArrowUpLeft,
+  ArrowUpRight,
+  Undo2,
+  Navigation,
+  Flag,
+  ArrowUp,
+  ChevronDown,
+  ChevronUp,
+  Route,
 } from 'lucide-react';
 import type { DriverLocationUpdate, OrderStatus } from '@/features/orders/types';
+import type { StreetRouteStep } from '@/features/orders/utils/geo-map.utils';
 
 interface OrderTrackingMapProps {
   status: OrderStatus;
@@ -29,6 +41,13 @@ interface OrderTrackingMapProps {
   driverName?: string;
   driverLocation?: DriverLocationUpdate | null;
   isLiveConnected?: boolean;
+  streetCoordinates?: [number, number][];
+  steps?: StreetRouteStep[];
+  currentStep?: StreetRouteStep | null;
+  nextStep?: StreetRouteStep | null;
+  routeDistanceKm?: number | null;
+  routeDurationMinutes?: number | null;
+  isRoutingFallback?: boolean;
 }
 
 export function OrderTrackingMap({
@@ -44,13 +63,23 @@ export function OrderTrackingMap({
   driverName,
   driverLocation,
   isLiveConnected = false,
+  streetCoordinates,
+  steps,
+  currentStep,
+  nextStep,
+  routeDistanceKm,
+  routeDurationMinutes,
+  isRoutingFallback = false,
 }: OrderTrackingMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<LeafletMap | null>(null);
   const restMarkerRef = useRef<LeafletMarker | null>(null);
   const dropoffMarkerRef = useRef<LeafletMarker | null>(null);
   const driverMarkerRef = useRef<LeafletMarker | null>(null);
+  const polylineGlowRef = useRef<LeafletPolyline | null>(null);
   const polylineRef = useRef<LeafletPolyline | null>(null);
+
+  const [isBannerCollapsed, setIsBannerCollapsed] = useState(false);
 
   const infoRef = useRef({
     restaurantName,
@@ -100,16 +129,21 @@ export function OrderTrackingMap({
   }, [driverLocation, status, restCoords, dropoffCoords]);
 
   // Derived display distance and ETA
-  const activeDistance = driverLocation?.remaining_km ?? totalDistanceKm ?? null;
-  const etaText =
-    driverLocation?.eta_minutes != null
-      ? `${driverLocation.eta_minutes} phút`
-      : '~10 - 15 phút';
+  const activeDistance = routeDistanceKm ?? driverLocation?.remaining_km ?? totalDistanceKm ?? null;
+  const etaText = routeDurationMinutes != null
+    ? `${routeDurationMinutes} phút`
+    : driverLocation?.eta_minutes != null
+    ? `${driverLocation.eta_minutes} phút`
+    : '~10 - 15 phút';
 
-  // Fit bounds to show all markers
+  // Fit bounds to show all markers & route
   const fitAllBounds = useCallback(() => {
     if (!mapInstanceRef.current) return;
-    const points: [number, number][] = [restCoords, dropoffCoords];
+    const points: [number, number][] =
+      streetCoordinates && streetCoordinates.length >= 2
+        ? streetCoordinates
+        : [restCoords, dropoffCoords];
+
     if (currentDriverCoords) {
       points.push(currentDriverCoords);
     }
@@ -118,7 +152,7 @@ export function OrderTrackingMap({
       maxZoom: 16,
       animate: true,
     });
-  }, [restCoords, dropoffCoords, currentDriverCoords]);
+  }, [restCoords, dropoffCoords, currentDriverCoords, streetCoordinates]);
 
   // Focus on Driver marker
   const focusOnDriver = useCallback(() => {
@@ -147,7 +181,7 @@ export function OrderTrackingMap({
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      // OpenStreetMap with styled tile layer
+      // OpenStreetMap Tile Layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19,
@@ -258,20 +292,29 @@ export function OrderTrackingMap({
         </div>
       `);
 
-      // Add Route Polyline
-      const polyline = L.polyline([restCoords, dropoffCoords], {
-        color: '#f97316',
+      // Add Initial Polyline (Glow layer + Core line)
+      const glowPolyline = L.polyline([restCoords, dropoffCoords], {
+        color: '#06b6d4',
+        weight: 8,
+        opacity: 0.3,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(map);
+
+      const mainPolyline = L.polyline([restCoords, dropoffCoords], {
+        color: '#0891b2',
         weight: 4,
-        opacity: 0.8,
-        dashArray: '8, 8',
+        opacity: 0.9,
+        lineCap: 'round',
+        lineJoin: 'round',
       }).addTo(map);
 
       mapInstanceRef.current = map;
       restMarkerRef.current = restMarker;
       dropoffMarkerRef.current = dropoffMarker;
-      polylineRef.current = polyline;
+      polylineGlowRef.current = glowPolyline;
+      polylineRef.current = mainPolyline;
 
-      // Initial Fit Bounds
       map.fitBounds([restCoords, dropoffCoords], { padding: [40, 40], maxZoom: 16 });
     });
 
@@ -283,6 +326,46 @@ export function OrderTrackingMap({
       }
     };
   }, [restCoords, dropoffCoords]);
+
+  // Update Polyline when Street Coordinates change
+  useEffect(() => {
+    if (!mapInstanceRef.current || !polylineRef.current) return;
+
+    if (streetCoordinates && streetCoordinates.length >= 2) {
+      polylineRef.current.setLatLngs(streetCoordinates);
+      polylineRef.current.setStyle({
+        color: '#0891b2',
+        weight: 4,
+        opacity: 0.95,
+        dashArray: undefined,
+      });
+
+      if (polylineGlowRef.current) {
+        polylineGlowRef.current.setLatLngs(streetCoordinates);
+        polylineGlowRef.current.setStyle({
+          color: '#06b6d4',
+          weight: 8,
+          opacity: 0.35,
+        });
+      }
+    } else {
+      // Fallback straight line
+      const fallbackPoints: [number, number][] = currentDriverCoords
+        ? [restCoords, currentDriverCoords, dropoffCoords]
+        : [restCoords, dropoffCoords];
+
+      polylineRef.current.setLatLngs(fallbackPoints);
+      polylineRef.current.setStyle({
+        color: '#f97316',
+        weight: 4,
+        opacity: 0.8,
+        dashArray: '8, 8',
+      });
+      if (polylineGlowRef.current) {
+        polylineGlowRef.current.setLatLngs([]);
+      }
+    }
+  }, [streetCoordinates, currentDriverCoords, restCoords, dropoffCoords]);
 
   // Update Driver Marker Position when Coordinates Change
   useEffect(() => {
@@ -322,7 +405,7 @@ export function OrderTrackingMap({
                 justify-content: center;
                 color: white;
                 transform: rotate(${headingDeg}deg);
-                transition: transform 0.5s ease;
+                transition: transform 0.4s ease;
               ">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="18.5" cy="17.5" r="3.5"/>
@@ -345,31 +428,45 @@ export function OrderTrackingMap({
             mapInstanceRef.current!,
           );
         }
-
-        // Update Polyline
-        if (polylineRef.current) {
-          polylineRef.current.setLatLngs([restCoords, currentDriverCoords, dropoffCoords]);
-        }
       }
     });
-  }, [currentDriverCoords, driverLocation?.heading, restCoords, dropoffCoords]);
+  }, [currentDriverCoords, driverLocation?.heading]);
+
+  // Helper to render Step Maneuver Icon
+  const renderManeuverIcon = (step: StreetRouteStep) => {
+    const mod = step.modifier?.toLowerCase() || '';
+    const type = step.type.toLowerCase();
+
+    if (type === 'arrive') return <Flag className="w-5 h-5 text-emerald-400" />;
+    if (type === 'depart') return <Navigation className="w-5 h-5 text-cyan-400" />;
+    if (mod.includes('uturn')) return <Undo2 className="w-5 h-5 text-amber-400" />;
+    if (mod.includes('sharp right') || mod === 'right')
+      return <CornerUpRight className="w-5 h-5 text-cyan-400" />;
+    if (mod.includes('slight right')) return <ArrowUpRight className="w-5 h-5 text-cyan-400" />;
+    if (mod.includes('sharp left') || mod === 'left')
+      return <CornerUpLeft className="w-5 h-5 text-cyan-400" />;
+    if (mod.includes('slight left')) return <ArrowUpLeft className="w-5 h-5 text-cyan-400" />;
+    return <ArrowUp className="w-5 h-5 text-cyan-400" />;
+  };
+
+  const activeStep = currentStep || (steps && steps.length > 0 ? steps[0] : null);
 
   return (
-    <div className="relative w-full h-[360px] sm:h-[420px] rounded-2xl overflow-hidden border border-white/[0.08] bg-zinc-950 shadow-2xl">
+    <div className="relative w-full h-[380px] sm:h-[440px] rounded-2xl overflow-hidden border border-white/[0.08] bg-zinc-950 shadow-2xl">
       {/* Real-time HUD Indicator Floating Top Left */}
       <div className="absolute top-3 left-3 z-[1000] flex flex-col gap-2 pointer-events-none">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/90 border border-white/10 backdrop-blur-md shadow-xl text-xs text-white">
           <span
             className={`w-2 h-2 rounded-full ${
-              isLiveConnected ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'
+              isLiveConnected ? 'bg-emerald-400 animate-ping' : 'bg-cyan-400'
             }`}
           />
           <span className="font-semibold">
-            {isLiveConnected ? 'Định vị GPS Trực tiếp' : 'Theo dõi Lộ trình'}
+            {isLiveConnected ? 'Định vị GPS Trực tiếp' : 'Định tuyến đường phố'}
           </span>
           {activeDistance != null && (
-            <span className="font-mono px-1.5 py-0.5 rounded-md bg-orange-500/20 text-orange-400 font-bold border border-orange-500/30">
-              {activeDistance} km
+            <span className="font-mono px-1.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30">
+              {activeDistance} km {isRoutingFallback ? '(Chim bay)' : '(Đường bộ)'}
             </span>
           )}
         </div>
@@ -406,6 +503,57 @@ export function OrderTrackingMap({
         </button>
       </div>
 
+      {/* Turn-by-Turn Navigation Guidance Floating Banner */}
+      {activeStep && (
+        <div className="absolute top-16 left-3 right-16 sm:right-auto sm:max-w-md z-[1000] transition-all">
+          <div className="rounded-xl border border-white/15 bg-zinc-900/95 backdrop-blur-xl p-3 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                  {renderManeuverIcon(activeStep)}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1">
+                      <Route className="w-3 h-3" />
+                      Chỉ dẫn tiếp theo
+                    </span>
+                    {activeStep.distance_meters > 0 && (
+                      <span className="text-[11px] font-mono px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-300 font-semibold">
+                        {activeStep.distance_meters} m
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-semibold text-white mt-0.5 line-clamp-2 leading-snug">
+                    {activeStep.instruction}
+                  </p>
+                  {!isBannerCollapsed && nextStep && (
+                    <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 border-t border-white/5 pt-1">
+                      Sau đó: <span className="text-zinc-200">{nextStep.instruction}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {nextStep && (
+                <button
+                  type="button"
+                  onClick={() => setIsBannerCollapsed(!isBannerCollapsed)}
+                  className="p-1 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                  title={isBannerCollapsed ? 'Mở rộng chi tiết' : 'Thu gọn'}
+                >
+                  {isBannerCollapsed ? (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Map DOM Element */}
       <div ref={mapContainerRef} className="w-full h-full z-0 cursor-grab" />
 
@@ -415,23 +563,26 @@ export function OrderTrackingMap({
           <div className="w-6 h-6 rounded-lg bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 shrink-0">
             <Store className="w-3.5 h-3.5" />
           </div>
-          <span className="text-zinc-200 font-medium truncate max-w-[150px] sm:max-w-[200px]">
+          <span className="text-zinc-200 font-medium truncate max-w-[140px] sm:max-w-[200px]">
             {restaurantName}
           </span>
         </div>
 
         <div className="flex items-center gap-2 text-zinc-500 shrink-0">
-          <span className="font-mono text-[11px] text-zinc-400">
+          <span className="font-mono text-[11px] text-cyan-400 font-semibold">
             {activeDistance != null ? `~${activeDistance} km` : 'Đang tính cự ly'}
           </span>
-          <span className="text-zinc-600">➔</span>
+          <span className="text-cyan-500/60">➔</span>
         </div>
 
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
             <Home className="w-3.5 h-3.5" />
           </div>
-          <span className="text-zinc-200 font-medium truncate max-w-[150px] sm:max-w-[200px]" title={deliveryAddress}>
+          <span
+            className="text-zinc-200 font-medium truncate max-w-[140px] sm:max-w-[200px]"
+            title={deliveryAddress}
+          >
             {deliveryAddress}
           </span>
         </div>

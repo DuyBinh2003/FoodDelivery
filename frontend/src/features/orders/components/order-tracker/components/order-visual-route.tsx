@@ -15,6 +15,8 @@ import type { OrderVisualRouteProps } from '../types';
 import { OrderTrackingMap } from './order-tracking-map';
 import { DriverGpsSimulator } from './driver-gps-simulator';
 import { useDriverTracking } from '@/features/orders/hooks/useDriverTracking';
+import { useStreetRouting } from '@/features/orders/hooks/useStreetRouting';
+import type { StreetRouteStep } from '@/features/orders/utils/geo-map.utils';
 
 export function OrderVisualRoute({
   orderId,
@@ -31,6 +33,8 @@ export function OrderVisualRoute({
   driverId,
 }: OrderVisualRouteProps) {
   const [viewMode, setViewMode] = useState<'MAP' | 'TIMELINE'>('MAP');
+  const [currentStep, setCurrentStep] = useState<StreetRouteStep | null>(null);
+  const [nextStep, setNextStep] = useState<StreetRouteStep | null>(null);
 
   const isDelivering = status === 'DELIVERING';
   const isCompleted = status === 'COMPLETED';
@@ -46,6 +50,15 @@ export function OrderVisualRoute({
         : null,
   });
 
+  // Hook fetch OSRM street route
+  const { route: streetRoute } = useStreetRouting({
+    startLat: restaurantLat,
+    startLng: restaurantLng,
+    endLat: deliveryLat,
+    endLng: deliveryLng,
+    enabled: true,
+  });
+
   // Calculate 1D timeline percent
   let vehiclePercent = 10;
   if (status === 'COOKING') vehiclePercent = 15;
@@ -54,7 +67,10 @@ export function OrderVisualRoute({
   if (status === 'COMPLETED') vehiclePercent = 92;
 
   const currentDistance =
-    driverLocation?.remaining_km ?? distanceKm ?? (isDelivering ? 2.4 : null);
+    driverLocation?.remaining_km ??
+    streetRoute?.distance_km ??
+    distanceKm ??
+    (isDelivering ? 2.4 : null);
 
   return (
     <div className="rounded-2xl bg-gradient-to-b from-zinc-900/90 to-zinc-950/90 border border-white/[0.08] p-5 shadow-xl shadow-black/30 backdrop-blur-md space-y-4">
@@ -66,8 +82,8 @@ export function OrderVisualRoute({
             Lộ trình di chuyển & Bản đồ định vị
           </h3>
           {currentDistance != null && (
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 font-semibold border border-orange-500/25">
-              ~{currentDistance} km
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 font-semibold border border-cyan-500/25">
+              ~{currentDistance} km {streetRoute?.is_fallback === false ? '(Đường bộ)' : ''}
             </span>
           )}
         </div>
@@ -118,6 +134,13 @@ export function OrderVisualRoute({
             driverName={driverName}
             driverLocation={driverLocation}
             isLiveConnected={isConnected}
+            streetCoordinates={streetRoute?.coordinates}
+            steps={streetRoute?.steps}
+            currentStep={currentStep}
+            nextStep={nextStep}
+            routeDistanceKm={streetRoute?.distance_km}
+            routeDurationMinutes={streetRoute?.duration_minutes}
+            isRoutingFallback={streetRoute?.is_fallback}
           />
 
           {/* GPS Simulation Controls when Delivering */}
@@ -129,7 +152,13 @@ export function OrderVisualRoute({
               restaurantLng={restaurantLng}
               deliveryLat={deliveryLat}
               deliveryLng={deliveryLng}
+              streetCoordinates={streetRoute?.coordinates}
+              steps={streetRoute?.steps}
               onSendLocationUpdate={sendLocationUpdate}
+              onCurrentStepChange={(curr, next) => {
+                setCurrentStep(curr);
+                setNextStep(next);
+              }}
             />
           )}
         </div>
