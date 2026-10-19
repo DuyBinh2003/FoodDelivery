@@ -1,6 +1,6 @@
 # Kế Hoạch Triển Khai: Thuật Toán Chia Cuốc & Tự Động Điều Phối Đơn Hàng (Order Routing & Auto-Dispatch)
 
-> Trạng thái: `[DRAFT]`  
+> Trạng thái: `[COMPLETED]`  
 > Mã Task: `driver-order-routing-dispatch`  
 > Phân hệ: `driver` / `delivery`  
 > Tham chiếu Issue: [#29](https://github.com/DuyBinh2003/FoodDelivery/issues/29)  
@@ -82,6 +82,7 @@ sequenceDiagram
     - `POST /delivery/driver/status`: Bật Trực tuyến / Ngoại tuyến.
     - `POST /delivery/orders/:orderId/accept`: API nhận đơn.
     - `POST /delivery/orders/:orderId/reject`: API từ chối đơn.
+    - `POST /delivery/dispatch/manual`: API kích hoạt điều phối thủ công.
 - `src/modules/tracking/tracking.gateway.ts` [MODIFY]:
   - Bổ sung phòng room `driver_<driverId>`.
   - Xử lý các sự kiện socket: `driver:join`, `driver:accept_trip`, `driver:reject_trip`.
@@ -99,9 +100,12 @@ sequenceDiagram
 - `hooks/useDriverDispatch.ts` [NEW]:
   - Hook kết nối Socket.IO `/delivery`, join room `driver_<driverId>`, lắng nghe `driver:trip_offer`.
   - Quản lý state cuốc xe đang mời, countdown timer, và gửi request accept/reject.
+- `utils/dispatch.utils.ts` [NEW]:
+  - Hàm thuần túy kiểm tra dữ liệu payload, tính toán countdown và format tiền/khoảng cách.
 - `components/driver-dashboard/driver-dashboard.tsx` [MODIFY]:
   - Tích hợp `useDriverDispatch` và nhúng `IncomingTripModal`.
   - Tự động gửi tọa độ GPS định kỳ khi tài xế đang `ONLINE`.
+  - Hiển thị badge trạng thái sẵn sàng kết nối live GPS.
 
 ---
 
@@ -136,10 +140,10 @@ sequenceDiagram
 ---
 
 ## 5. Local CI Gate Checklist
-- [ ] Backend: `npm run lint` (0 warnings/errors, absolute `@/` imports).
-- [ ] Backend Type Check: `npx tsc --noEmit` (0 errors).
-- [ ] Backend Unit Tests: `npm test` (100% pass trên toàn bộ test suites, gồm `order-dispatch.spec.ts`).
-- [ ] Frontend: `npm run lint` (0 warnings/errors).
-- [ ] Frontend Type Check: `npx tsc --noEmit` (0 errors).
-- [ ] Frontend Tests: `npm test` (100% pass trên toàn bộ test suites).
-- [ ] Frontend Build Check: `npm run build` (Biên dịch thành công 100%).
+- [x] Backend: `npm run lint` (0 warnings/errors, absolute `@/` imports).
+- [x] Backend Type Check: `npx tsc --noEmit` (0 errors).
+- [x] Backend Unit Tests: `npm test` (100% pass trên 15 test suites / 100 tests, gồm `order-dispatch.spec.ts`).
+- [x] Frontend: `npm run lint` (0 warnings/errors).
+- [x] Frontend Type Check: `npx tsc --noEmit` (0 errors).
+- [x] Frontend Tests: `npm test` (100% pass trên 16 test suites / 48 tests, gồm `driver-dispatch.test.ts`).
+- [x] Frontend Build Check: `npm run build` (Biên dịch thành công 100% Next.js Turbopack).

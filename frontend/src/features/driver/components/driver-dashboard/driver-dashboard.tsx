@@ -33,6 +33,8 @@ import { DriverMetricsGrid } from './driver-metrics-grid';
 import { DriverTripsList } from './driver-trips-list';
 import { DriverReviewsTab } from './driver-reviews-tab';
 import { DriverAvailableTrips } from './driver-available-trips';
+import { IncomingTripModal } from './incoming-trip-modal';
+import { useDriverDispatch } from '@/features/driver/hooks/useDriverDispatch';
 import { ErrorState } from '@/components/ui/error-state/error-state';
 import { getErrorMessage } from '@/lib/error-handler';
 
@@ -59,6 +61,37 @@ export function DriverDashboard() {
 
   const currentStatus: DriverStatus = user?.driverProfile?.status || 'OFFLINE';
   const isOnline = currentStatus === 'ONLINE';
+
+  const driverId = user?.driverProfile?.id || user?.id;
+
+  const {
+    incomingOffer,
+    isConnected: isWsConnected,
+    acceptTrip,
+    rejectTrip,
+    handleTimeout,
+  } = useDriverDispatch({
+    driverId,
+    isOnline,
+    onTripAccepted: async (orderId) => {
+      showToast('success', `Đã nhận cuốc đơn #${orderId.slice(0, 8)} thành công!`);
+      await loadData();
+      setActiveTab('trips');
+    },
+  });
+
+  const handleModalAccept = async (orderId: string) => {
+    const success = await acceptTrip(orderId);
+    if (!success) {
+      showToast('error', 'Chuyến xe đã hết hạn hoặc được tài xế khác nhận!');
+      await loadData();
+    }
+  };
+
+  const handleModalReject = async (orderId: string, reason?: string) => {
+    await rejectTrip(orderId, reason);
+    showToast('error', 'Đã từ chối nhận chuyến xe');
+  };
 
   const loadData = async () => {
     try {
@@ -304,6 +337,20 @@ export function DriverDashboard() {
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold mb-3">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Đối tác Tài Xế Chính Thức</span>
+                {isOnline && (
+                  <span
+                    className={`inline-flex items-center gap-1.5 ml-2 pl-2 border-l border-amber-500/30 text-xs ${
+                      isWsConnected ? 'text-emerald-400' : 'text-amber-400'
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        isWsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                      }`}
+                    />
+                    {isWsConnected ? 'Sẵn sàng nhận cuốc (GPS Live)' : 'Đang kết nối trạm...'}
+                  </span>
+                )}
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                 Bảng Điều Khiển Tài Xế
@@ -413,6 +460,14 @@ export function DriverDashboard() {
           )}
         </div>
       </div>
+
+      {/* Incoming Trip Offer Modal (15s Countdown) */}
+      <IncomingTripModal
+        offer={incomingOffer}
+        onAccept={handleModalAccept}
+        onReject={handleModalReject}
+        onTimeout={handleTimeout}
+      />
     </div>
   );
 }
