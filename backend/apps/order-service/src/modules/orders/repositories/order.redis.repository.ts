@@ -30,6 +30,9 @@ export interface InflightOrderData {
   payment_method: string;
   subtotal: number;
   delivery_fee: number;
+  points_used?: number;
+  points_discount?: number;
+  points_earned?: number;
   total_amount: number;
   items: InflightOrderItem[];
   cooking_at?: string | null;

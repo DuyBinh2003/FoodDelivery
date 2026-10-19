@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UtensilsCrossed, Menu, ClipboardList, LogIn, User, LogOut, History, ChevronDown, Bike, Store, MapPin } from 'lucide-react';
+import { UtensilsCrossed, Menu, ClipboardList, LogIn, User, LogOut, History, ChevronDown, Bike, Store, MapPin, Award } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { useEffect, useState, useRef } from 'react';
 
@@ -91,6 +91,15 @@ export function Navbar() {
 
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-3 w-56 bg-zinc-900 border border-white/10 rounded-xl shadow-xl overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 z-50">
+                      <Link
+                        href="/rewards"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-amber-300/90 hover:text-amber-200 hover:bg-amber-500/10 transition-colors"
+                      >
+                        <Award className="w-4 h-4 text-amber-400" />
+                        <span className="font-medium">Điểm & Hạng thành viên</span>
+                      </Link>
+
                       <Link
                         href="/history"
                         onClick={() => setIsDropdownOpen(false)}

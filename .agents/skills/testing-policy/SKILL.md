@@ -181,9 +181,23 @@ Trước khi Agent tuyên bố hoàn thành task hoặc tạo Walkthrough, bắt
 - [ ] **3. Đủ 3 nhánh**: Có test case cho Happy Path, Edge Case và Error/Rejection Flow.
 - [ ] **4. Sử dụng Vitest**: Dùng `describe`, `it`, `expect`, `vi` từ `'vitest'` (không import từ jest).
 - [ ] **5. Không dùng `any` bừa bãi**: Định nghĩa type rõ ràng hoặc ép kiểu an toàn khi mock.
-- [ ] **6. 100% Pass**: Chạy lệnh test tại thư mục backend và xác nhận toàn bộ test suite đều xanh:
+- [ ] **6. 100% Pass Unit Tests**: Chạy lệnh test tại thư mục backend / frontend và xác nhận toàn bộ test suite đều xanh:
   ```bash
-  cd backend
-  npm test
+  cd backend && npm test
+  cd frontend && npm test
   ```
 - [ ] **7. Không làm vỡ test cũ**: Các test suite đã tồn tại của các module khác vẫn phải pass 100%.
+- [ ] **8. Vượt qua Linter (0 warnings, 0 errors)**:
+  ```bash
+  cd backend && npm run lint    # oxlint + check-imports
+  cd frontend && npm run lint   # eslint
+  ```
+- [ ] **9. Typecheck nghiêm ngặt (0 error)**:
+  ```bash
+  cd frontend && npx tsc --noEmit
+  ```
+- [ ] **10. Build thử nghiệm thành công (Build Verification)**:
+  ```bash
+  cd backend && npm run build
+  cd frontend && npm run build
+  ```

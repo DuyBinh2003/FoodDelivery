@@ -34,7 +34,7 @@ Khảo sát, phân tích nghiệp vụ và lập **Bản kế hoạch triển kh
 - Kiểm tra database schema hiện có (Entities, Migrations) theo `database-schema-policy` (các bảng Master `m_`, Transaction `t_`, UUID primary keys).
 
 ### 2. Thiết lập Implementation Plan chi tiết
-Khởi tạo và ghi bản kế hoạch vào đường dẫn: `docs/plans/<task-name>.md` với trạng thái ban đầu là `[DRAFT]`. Bản kế hoạch phải trình bày rõ ràng:
+Khởi tạo và ghi bản kế hoạch vào đúng thư mục miền nghiệp vụ: `docs/plans/<customer|driver|partner|admin|platform>/<task-name>.md` với trạng thái ban đầu là `[DRAFT]`, đồng thời thêm một dòng tra cứu vào Bảng Master Query Matrix tại `docs/plans/README.md`. Bản kế hoạch phải trình bày rõ ràng:
 1. **Bối cảnh & Mục tiêu (Context & Objective)**:
    - Mô tả bài toán cần giải quyết, actor thực hiện (Customer, Driver, Restaurant, Admin).
 2. **Thiết kế kỹ thuật (Technical Specifications)**:

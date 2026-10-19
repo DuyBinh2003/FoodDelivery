@@ -36,6 +36,15 @@ export class Order {
   @Column({ type: 'numeric', precision: 15, scale: 2 })
   total_amount: number;
 
+  @Column({ type: 'integer', default: 0 })
+  points_used: number;
+
+  @Column({ type: 'numeric', precision: 15, scale: 2, default: 0 })
+  points_discount: number;
+
+  @Column({ type: 'integer', default: 0 })
+  points_earned: number;
+
   @Column({ type: 'varchar', length: 50, default: OrderStatus.PENDING })
   status: OrderStatus;
 

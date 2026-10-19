@@ -27,6 +27,7 @@ import {
   getUserAddresses,
   type UserAddress,
 } from '@/features/address';
+import { LoyaltyCheckoutSection } from '@/features/loyalty';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -41,6 +42,8 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [orderNote, setOrderNote] = useState('');
+  const [pointsToUse, setPointsToUse] = useState<number>(0);
+  const [pointsDiscount, setPointsDiscount] = useState<number>(0);
 
   // Address Book state
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
@@ -64,7 +67,7 @@ export default function CheckoutPage() {
 
   const subtotal = getSubtotal();
   const shippingFee = 15000;
-  const total = subtotal + shippingFee;
+  const total = Math.max(0, subtotal - pointsDiscount) + shippingFee;
 
   const availableBalance = Number(walletData?.balance?.available_balance || 0);
   const isBalanceSufficient = availableBalance >= total;
@@ -176,6 +179,7 @@ export default function CheckoutPage() {
         recipient_name: finalRecipientName,
         recipient_phone: finalRecipientPhone,
         note: orderNote.trim() || undefined,
+        points_to_use: pointsToUse > 0 ? pointsToUse : undefined,
         items: items.map((item) => ({
           menu_item_id: item.item_id,
           name: item.name,
@@ -472,6 +476,15 @@ export default function CheckoutPage() {
               />
             </section>
 
+            {/* Loyalty Points Section */}
+            <LoyaltyCheckoutSection
+              subtotal={subtotal}
+              onPointsChange={(points, discount) => {
+                setPointsToUse(points);
+                setPointsDiscount(discount);
+              }}
+            />
+
             {/* Price Summary */}
             <section className="bg-zinc-900 border border-white/5 rounded-3xl p-5 space-y-3">
               <h2 className="text-white font-semibold mb-2">Chi tiết thanh toán</h2>
@@ -479,6 +492,15 @@ export default function CheckoutPage() {
                 <span>Tiền món ăn (Tạm tính)</span>
                 <span className="text-zinc-200 font-medium font-mono">{formatVND(subtotal)}</span>
               </div>
+              {pointsDiscount > 0 && (
+                <div className="flex justify-between text-amber-400 text-sm font-medium animate-in fade-in">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Giảm giá từ điểm ({pointsToUse.toLocaleString('vi-VN')} điểm)
+                  </span>
+                  <span className="font-mono font-bold">-{formatVND(pointsDiscount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-zinc-400 text-sm">
                 <span className="flex items-center gap-1.5">
                   Phí giao hàng (Cố định)

@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
@@ -14,6 +14,8 @@ export interface CreateOrderCommand extends CreateOrderDto {
 
 @Injectable()
 export class CreateOrderUseCase {
+  private readonly logger = new Logger(CreateOrderUseCase.name);
+
   constructor(
     @Inject(OrderRedisRepository) private readonly orderRedisRepo: OrderRedisRepository,
     @Inject(SqsService) private readonly sqsService: SqsService,
@@ -27,7 +29,56 @@ export class CreateOrderUseCase {
       0,
     );
     const deliveryFee = 15000;
-    const totalAmount = subtotal + deliveryFee;
+
+    // Tính toán giảm trừ điểm thưởng (Loyalty Points)
+    let pointsUsed = 0;
+    let pointsDiscount = 0;
+
+    if (command.points_to_use && command.points_to_use > 0) {
+      if (command.points_to_use < 100) {
+        throw new BadRequestException('Số điểm quy đổi tối thiểu là 100 điểm');
+      }
+
+      const maxDiscount = subtotal * 0.5;
+      const requestedDiscount = command.points_to_use * 10;
+      if (requestedDiscount > maxDiscount) {
+        const allowedPoints = Math.floor(maxDiscount / 10);
+        throw new BadRequestException(
+          `Số điểm sử dụng (${command.points_to_use} điểm) vượt quá trần giảm giá cho phép (${allowedPoints} điểm)`,
+        );
+      }
+
+      pointsDiscount = requestedDiscount;
+      pointsUsed = command.points_to_use;
+
+      const userUrl = this.configService.get<string>('services.userUrl') || process.env.USER_SERVICE_URL;
+      if (userUrl) {
+        try {
+          const burnRes = await fetch(`${userUrl}/internal/loyalty/burn`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: command.customer_id,
+              order_id: orderId,
+              points: pointsUsed,
+              max_discount_amount: maxDiscount,
+              idempotency_key: `burn_order_${orderId}`,
+            }),
+          });
+
+          if (!burnRes.ok) {
+            const errData = (await burnRes.json().catch(() => null)) as { message?: string } | null;
+            throw new BadRequestException(errData?.message || 'Không thể sử dụng điểm thưởng vào lúc này');
+          }
+        } catch (error: unknown) {
+          if (error instanceof BadRequestException) throw error;
+          this.logger.error(`Failed to burn points for order ${orderId}`, { cause: error });
+          throw new BadRequestException('Lỗi kết nối khi trừ điểm thưởng', { cause: error });
+        }
+      }
+    }
+
+    const totalAmount = Math.max(0, subtotal - pointsDiscount) + deliveryFee;
 
     const now = new Date().toISOString();
     const orderData: InflightOrderData = {
@@ -45,6 +96,8 @@ export class CreateOrderUseCase {
       payment_method: command.payment_method ?? 'CASH',
       subtotal,
       delivery_fee: deliveryFee,
+      points_used: pointsUsed,
+      points_discount: pointsDiscount,
       total_amount: totalAmount,
       items: command.items.map((item) => ({
         id: randomUUID(),
@@ -73,6 +126,9 @@ export class CreateOrderUseCase {
       driver_id: null,
       subtotal,
       delivery_fee: deliveryFee,
+      points_used: pointsUsed,
+      points_discount: pointsDiscount,
+      points_earned: 0,
       total_amount: totalAmount,
       status: OrderStatus.PENDING,
       delivery_address: orderData.delivery_address,

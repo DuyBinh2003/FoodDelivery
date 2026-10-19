@@ -10,6 +10,7 @@ export interface CreateOrderPayload {
   recipient_phone?: string;
   note?: string;
   payment_method?: 'CASH' | 'MOMO' | 'VNPAY';
+  points_to_use?: number;
   items: Array<{
     menu_item_id: string;
     name?: string;

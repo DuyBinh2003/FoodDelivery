@@ -59,6 +59,16 @@ Mỗi Use Case / Flow bắt buộc phải có ít nhất 3 khối `describe` ho�
   `backend/apps/<service>/src/modules/<module>/tests/<flow-or-usecase>.spec.ts`
 - Mock đầy đủ các dependencies (Repositories, External HTTP clients, Event emitters) để test chạy cô lập và tốc độ nhanh.
 
-### 4. Quy trình nghiệm thu
-- Chạy lệnh test trực tiếp qua `run_command` (Ví dụ: `npm test -- <path-to-test-file>` hoặc `npx vitest run <path-to-test-file>`).
-- Nếu có test fail: Phân tích nguyên nhân (do test case viết sai hay logic code có bug), tinh chỉnh và chạy lại cho đến khi pass hoàn toàn.
+### 4. Quy trình nghiệm thu & Cổng kiểm soát CI nội bộ (Local CI Gate)
+Trước khi báo cáo hoàn thành kiểm thử cho `@orchestrator`, `@tester` **BẮT BUỘC** phải chạy tuần tự bộ 4 lệnh kiểm soát cục bộ (mô phỏng chính xác CI Pipeline):
+1. **Linter Check**:
+   - Backend: `npm run lint` (`oxlint apps/ libs/ test/ && node scripts/check-imports.js`) ➡️ Đạt **0 errors, 0 warnings**.
+   - Frontend: `npm run lint` (`eslint`) ➡️ Đạt **0 errors, 0 warnings**.
+2. **Type Check**:
+   - Chạy `npx tsc --noEmit` trên service/frontend được chỉnh sửa ➡️ Đạt **0 errors**.
+3. **Unit Tests (3 nhánh nghiệp vụ)**:
+   - Chạy `npm test` (hoặc `npx vitest run <file>`) ➡️ Đạt **100% test pass**.
+4. **Build Check**:
+   - Chạy `npm run build` trên service/frontend bị tác động ➡️ Biên dịch thành công.
+
+Nếu bất kỳ bước nào thất bại, `@tester` không được kết luận đạt mà phải kích hoạt ngay **Auto-Healing Loop** chuyển lỗi chi tiết về `@coder` để khắc phục.

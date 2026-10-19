@@ -46,6 +46,33 @@ export class UpdateDriverTripStatusUseCase {
     }
   }
 
+  private async awardLoyaltyPoints(userId: string, orderId: string, subtotal: number | string) {
+    const userUrl = process.env.USER_SERVICE_URL;
+    if (!userUrl) {
+      return;
+    }
+    try {
+      const qualifyingAmount = Number(subtotal) || 0;
+      if (qualifyingAmount <= 0) return;
+
+      const res = await fetch(`${userUrl}/internal/loyalty/earn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          order_id: orderId,
+          qualifying_amount: qualifyingAmount,
+          idempotency_key: `earn_order_${orderId}`,
+        }),
+      });
+      if (!res.ok) {
+        this.logger.warn(`[UpdateDriverTripStatusUseCase] User-service returned status ${res.status} when awarding loyalty points for order ${orderId}`);
+      }
+    } catch (error: unknown) {
+      this.logger.warn(`[UpdateDriverTripStatusUseCase] Failed to reach user-service for loyalty points:`, error);
+    }
+  }
+
   async execute(params: {
     driverId: string;
     orderId: string;
@@ -85,6 +112,11 @@ export class UpdateDriverTripStatusUseCase {
         // Bút toán chiết khấu cuốc xe tài xế sang ví nền tảng (bất đồng bộ)
         this.settleTripCommission(params.orderId, params.driverId, savedOrder.delivery_fee ?? 15000).catch((err: unknown) => {
           this.logger.warn(`Failed background trip settlement for order ${params.orderId}:`, err);
+        });
+
+        // Tích điểm thưởng cho khách hàng (bất đồng bộ)
+        this.awardLoyaltyPoints(savedOrder.customer_id, params.orderId, savedOrder.subtotal).catch((err: unknown) => {
+          this.logger.warn(`Failed background loyalty points award for order ${params.orderId}:`, err);
         });
 
         return savedOrder;
@@ -145,6 +177,10 @@ export class UpdateDriverTripStatusUseCase {
     if (params.status === OrderStatus.COMPLETED) {
       this.settleTripCommission(params.orderId, params.driverId, saved.delivery_fee ?? 15000).catch((err: unknown) => {
         this.logger.warn(`Failed background trip settlement for order ${params.orderId}:`, err);
+      });
+
+      this.awardLoyaltyPoints(saved.customer_id, params.orderId, saved.subtotal).catch((err: unknown) => {
+        this.logger.warn(`Failed background loyalty points award for order ${params.orderId}:`, err);
       });
     }
 
