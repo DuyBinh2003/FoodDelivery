@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -64,12 +64,25 @@ export function PartnerDashboard() {
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'menu' | 'orders'>('orders');
 
-  const showToast = (type: 'success' | 'error', text: string) => {
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const showToast = useCallback((type: 'success' | 'error', text: string) => {
     setToastMessage({ type, text });
-    setTimeout(() => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = setTimeout(() => {
       setToastMessage(null);
     }, 4000);
-  };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const loadData = async () => {
     try {
@@ -594,9 +607,14 @@ export function PartnerDashboard() {
                       </div>
                     )}
 
-                    {/* Price pill */}
-                    <div className="absolute bottom-2.5 right-2.5 px-3 py-1 rounded-lg text-sm font-bold bg-orange-500 text-white shadow-md shadow-orange-500/30">
-                      {Number(item.price).toLocaleString('vi-VN')} ₫
+                    {/* Price & Net earnings pill */}
+                    <div className="absolute bottom-2.5 right-2.5 flex flex-col items-end gap-1">
+                      <div className="px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-500 text-white shadow-md shadow-orange-500/30">
+                        {Number(item.price).toLocaleString('vi-VN')} ₫
+                      </div>
+                      <div className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30">
+                        Thực nhận: {Math.round(Number(item.price) * 0.8).toLocaleString('vi-VN')} ₫
+                      </div>
                     </div>
                   </div>
 

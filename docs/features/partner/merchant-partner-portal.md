@@ -51,6 +51,19 @@ graph TD
   - Danh mục món ăn (`category_id`): Giúp gom nhóm món ăn (Phở, Bún bò, Giải khát...).
   - Nhãn tag (`tag_ids`): Gắn các thuộc tính đặc trưng như `#Món nước`, `#Cay`, `#Bò`, `#Gà`, `#Ăn vặt`.
 
-### 3.3. Bảo Mật & Phân Quyền
+### 3.3. Chiết Khấu Sàn & Bộ Tính Giá Bán 2 Chiều (Bidirectional Pricing Calculator)
+- **Tỷ lệ chiết khấu sàn:** Cố định `20%` trên giá bán niêm yết món ăn (đối tác thực nhận `80%`).
+- **Phân rã dòng tiền thời gian thực:**
+  - Khi chủ quán nhập giá niêm yết (Ví dụ: `50.000 VNĐ`), modal tự động phân tích:
+    - 🏷️ Giá bán cho khách: `50.000 VNĐ`
+    - ✂️ Chiết khấu ứng dụng (20%): `-10.000 VNĐ`
+    - 💰 Quán thực nhận (80%): `+40.000 VNĐ`
+  - Trên thẻ món ăn ở Kênh đối tác, hiển thị song song cả giá bán niêm yết và mức thực nhận (Ví dụ: `50.000 ₫ • Thực nhận: 40.000 ₫`).
+- **Công cụ gợi ý giá theo mức thu về mong muốn:**
+  - Chủ quán nhập mức tiền thực nhận mong muốn (Ví dụ: `40.000 VNĐ`).
+  - Hệ thống tự động tính toán bù trừ chiết khấu sàn theo công thức: `Giá niêm yết = Math.ceil((Mong muốn / 0.8) / 1000) * 1000`.
+  - Cung cấp nút 1-click **"Áp dụng giá này"** để tự động gán vào ô Giá niêm yết.
+
+### 3.4. Bảo Mật & Phân Quyền
 - Tất cả các endpoint quản trị đối tác (`/restaurants/partner/...`) đều yêu cầu Bearer JWT token hợp lệ.
 - Hệ thống luôn kiểm tra `restaurant.owner_id === req.user.id`. Tuyệt đối không cho phép chủ quán này thao tác trên quán của người khác.

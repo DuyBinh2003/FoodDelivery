@@ -28,6 +28,8 @@ export interface InflightOrderData {
   recipient_phone?: string | null;
   note: string | null;
   payment_method: string;
+  subtotal: number;
+  delivery_fee: number;
   total_amount: number;
   items: InflightOrderItem[];
   cooking_at?: string | null;

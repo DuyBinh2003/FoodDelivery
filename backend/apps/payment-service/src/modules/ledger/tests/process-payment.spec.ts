@@ -85,8 +85,46 @@ describe('ProcessPaymentUseCase', () => {
       expect.objectContaining({
         entries: expect.arrayContaining([
           expect.objectContaining({ walletAccountId: 'cust-wallet-id', amount: '100000' }),
-          expect.objectContaining({ walletAccountId: 'rest-wallet-id', amount: '85000' }),
-          expect.objectContaining({ walletAccountId: 'plat-rev-id', amount: '15000' }),
+          expect.objectContaining({ walletAccountId: 'rest-wallet-id', amount: '80000' }),
+          expect.objectContaining({ walletAccountId: 'plat-rev-id', amount: '20000' }),
+        ]),
+      }),
+    );
+  });
+
+  it('should process WALLET payment with distinct subtotal and delivery fee split', async () => {
+    mockPaymentIntentRepo.findOne.mockResolvedValue(null);
+    mockWalletReadRepo.getWalletByOwner
+      .mockResolvedValueOnce({ id: 'cust-wallet-id', owner_id: 'cust-1' })
+      .mockResolvedValueOnce({ id: 'rest-wallet-id', owner_id: 'rest-1' });
+
+    mockWalletWriteRepo.getOrCreateSystemAccount.mockResolvedValue({
+      id: 'plat-rev-id',
+    });
+
+    mockLedgerWriteRepo.postJournalTransaction.mockResolvedValue({
+      transaction: { id: 'txn-subtotal', transaction_code: 'PAY-44444444-456' },
+      entries: [{ id: 'entry-1' }, { id: 'entry-2' }, { id: 'entry-3' }],
+    });
+
+    const result = await useCase.execute({
+      orderId: '44444444-4444-4444-4444-444444444444',
+      customerId: '11111111-1111-4111-a111-111111111111',
+      restaurantId: '22222222-2222-4222-a222-222222222222',
+      amount: '65000',
+      subtotal: '50000',
+      deliveryFee: '15000',
+      paymentMethod: PaymentMethodType.WALLET,
+      idempotencyKey: 'idemp-subtotal-test',
+    });
+
+    expect(result.paymentIntent.status).toBe('SUCCEEDED');
+    expect(mockLedgerWriteRepo.postJournalTransaction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entries: expect.arrayContaining([
+          expect.objectContaining({ walletAccountId: 'cust-wallet-id', amount: '65000' }),
+          expect.objectContaining({ walletAccountId: 'rest-wallet-id', amount: '40000' }),
+          expect.objectContaining({ walletAccountId: 'plat-rev-id', amount: '25000' }),
         ]),
       }),
     );

@@ -223,10 +223,17 @@ export function DriverAvailableTrips({
                 {/* Footer: Driver Earnings & Claim Button */}
                 <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-4 mt-2">
                   <div>
-                    <span className="text-xs text-zinc-400 block">Thu nhập tài xế</span>
-                    <span className="text-xl font-extrabold text-amber-400 font-mono">
-                      +{formatCurrency(trip.driver_earnings)}
-                    </span>
+                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+                      <span>Cước ship: <strong className="text-zinc-200">{formatCurrency(trip.delivery_fee || 15000)}</strong></span>
+                      <span>•</span>
+                      <span className="text-red-400/90 font-medium">Phí sàn (10%): -{formatCurrency(trip.platform_fee || 1500)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-amber-400 font-semibold">Tài xế thực nhận:</span>
+                      <span className="text-lg font-extrabold text-amber-400 font-mono">
+                        +{formatCurrency(trip.driver_earnings || 13500)}
+                      </span>
+                    </div>
                   </div>
 
                   <button

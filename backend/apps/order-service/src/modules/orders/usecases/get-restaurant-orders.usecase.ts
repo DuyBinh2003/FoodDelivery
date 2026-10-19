@@ -8,6 +8,8 @@ export interface RestaurantOrderDto {
   customer_id: string;
   restaurant_id: string;
   driver_id: string | null;
+  subtotal?: number;
+  delivery_fee?: number;
   total_amount: number;
   status: string;
   delivery_address: string;
@@ -80,60 +82,74 @@ export class GetRestaurantOrdersUseCase {
     const filteredDbOrders = dbOrders.filter((o) => !inflightIds.has(o.id));
 
     // Map inflight orders
-    const mappedInflight: RestaurantOrderDto[] = inflightOrders.map((o) => ({
-      id: o.id,
-      customer_id: o.customer_id,
-      restaurant_id: o.restaurant_id,
-      driver_id: o.driver_id,
-      total_amount: Number(o.total_amount) || 0,
-      status: o.status,
-      delivery_address: o.delivery_address,
-      note: o.note,
-      cooking_at: o.cooking_at ? new Date(o.cooking_at) : null,
-      ready_at: o.ready_at ? new Date(o.ready_at) : null,
-      driver_claimed_at: o.driver_claimed_at ? new Date(o.driver_claimed_at) : null,
-      completed_at: o.completed_at ? new Date(o.completed_at) : null,
-      cancelled_at: o.cancelled_at ? new Date(o.cancelled_at) : null,
-      created_at: new Date(o.created_at),
-      updated_at: new Date(o.updated_at),
-      items: o.items.map((i) => ({
-        id: i.id,
-        menu_item_id: i.menu_item_id,
-        name: i.name || menuMap.get(i.menu_item_id)?.name || 'Món ăn đặc sản',
-        quantity: i.quantity,
-        unit_price: Number(i.unit_price) || 0,
-        options: (i as any).options,
-        notes: (i as any).notes,
-      })),
-    }));
+    const mappedInflight: RestaurantOrderDto[] = inflightOrders.map((o) => {
+      const totalNum = Number(o.total_amount) || 0;
+      const subtotal = Number(o.subtotal) || (totalNum > 15000 ? totalNum - 15000 : totalNum);
+      const deliveryFee = Number(o.delivery_fee) || 15000;
+      return {
+        id: o.id,
+        customer_id: o.customer_id,
+        restaurant_id: o.restaurant_id,
+        driver_id: o.driver_id,
+        subtotal,
+        delivery_fee: deliveryFee,
+        total_amount: totalNum,
+        status: o.status,
+        delivery_address: o.delivery_address,
+        note: o.note,
+        cooking_at: o.cooking_at ? new Date(o.cooking_at) : null,
+        ready_at: o.ready_at ? new Date(o.ready_at) : null,
+        driver_claimed_at: o.driver_claimed_at ? new Date(o.driver_claimed_at) : null,
+        completed_at: o.completed_at ? new Date(o.completed_at) : null,
+        cancelled_at: o.cancelled_at ? new Date(o.cancelled_at) : null,
+        created_at: new Date(o.created_at),
+        updated_at: new Date(o.updated_at),
+        items: o.items.map((i) => ({
+          id: i.id,
+          menu_item_id: i.menu_item_id,
+          name: i.name || menuMap.get(i.menu_item_id)?.name || 'Món ăn đặc sản',
+          quantity: i.quantity,
+          unit_price: Number(i.unit_price) || 0,
+          options: (i as any).options,
+          notes: (i as any).notes,
+        })),
+      };
+    });
 
     // Map db orders
-    const mappedDb: RestaurantOrderDto[] = filteredDbOrders.map((o) => ({
-      id: o.id,
-      customer_id: o.customer_id,
-      restaurant_id: o.restaurant_id,
-      driver_id: o.driver_id,
-      total_amount: Number(o.total_amount) || 0,
-      status: o.status,
-      delivery_address: o.delivery_address,
-      note: o.note,
-      cooking_at: o.cooking_at ?? null,
-      ready_at: o.ready_at ?? null,
-      driver_claimed_at: o.driver_claimed_at ?? null,
-      completed_at: o.completed_at ?? null,
-      cancelled_at: o.cancelled_at ?? null,
-      created_at: o.created_at,
-      updated_at: o.updated_at,
-      items: (o.items || []).map((i) => ({
-        id: i.id,
-        menu_item_id: i.menu_item_id,
-        name: (i as any).name || menuMap.get(i.menu_item_id)?.name || 'Món ăn đặc sản',
-        quantity: i.quantity,
-        unit_price: Number(i.unit_price) || 0,
-        options: (i as any).options,
-        notes: (i as any).notes,
-      })),
-    }));
+    const mappedDb: RestaurantOrderDto[] = filteredDbOrders.map((o) => {
+      const totalNum = Number(o.total_amount) || 0;
+      const subtotal = Number(o.subtotal) || (totalNum > 15000 ? totalNum - 15000 : totalNum);
+      const deliveryFee = Number(o.delivery_fee) || 15000;
+      return {
+        id: o.id,
+        customer_id: o.customer_id,
+        restaurant_id: o.restaurant_id,
+        driver_id: o.driver_id,
+        subtotal,
+        delivery_fee: deliveryFee,
+        total_amount: totalNum,
+        status: o.status,
+        delivery_address: o.delivery_address,
+        note: o.note,
+        cooking_at: o.cooking_at ?? null,
+        ready_at: o.ready_at ?? null,
+        driver_claimed_at: o.driver_claimed_at ?? null,
+        completed_at: o.completed_at ?? null,
+        cancelled_at: o.cancelled_at ?? null,
+        created_at: o.created_at,
+        updated_at: o.updated_at,
+        items: (o.items || []).map((i) => ({
+          id: i.id,
+          menu_item_id: i.menu_item_id,
+          name: (i as any).name || menuMap.get(i.menu_item_id)?.name || 'Món ăn đặc sản',
+          quantity: i.quantity,
+          unit_price: Number(i.unit_price) || 0,
+          options: (i as any).options,
+          notes: (i as any).notes,
+        })),
+      };
+    });
 
     return [...mappedInflight, ...mappedDb].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),

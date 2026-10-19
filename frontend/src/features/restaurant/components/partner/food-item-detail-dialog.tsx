@@ -135,8 +135,13 @@ export function FoodItemDetailDialog({
             </div>
 
             {/* Price Banner */}
-            <div className="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-xl text-base font-extrabold bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xl shadow-orange-500/30 font-mono">
-              {formatCurrency(Number(item.price) || 0)}
+            <div className="absolute bottom-3 right-3 flex flex-col items-end gap-1">
+              <div className="px-3.5 py-1.5 rounded-xl text-base font-extrabold bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xl shadow-orange-500/30 font-mono">
+                {formatCurrency(Number(item.price) || 0)}
+              </div>
+              <div className="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-black/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30">
+                Quán thực nhận (80%): {formatCurrency(Math.round(Number(item.price) * 0.8) || 0)}
+              </div>
             </div>
           </div>
 

@@ -20,6 +20,7 @@ import { TopupWalletUseCase } from '@/modules/ledger/usecases/topup-wallet.useca
 
 import { SettleTripCommissionUseCase } from '@/modules/ledger/usecases/settle-trip-commission.usecase.js';
 import { GetPlatformTreasuryUseCase } from '@/modules/ledger/usecases/get-platform-treasury.usecase.js';
+import { ProcessPaymentUseCase } from '@/modules/ledger/usecases/process-payment.usecase.js';
 
 import { WalletController } from '@/modules/ledger/wallet.controller.js';
 import { LedgerController } from '@/modules/ledger/ledger.controller.js';

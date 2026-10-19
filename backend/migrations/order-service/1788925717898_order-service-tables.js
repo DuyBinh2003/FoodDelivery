@@ -16,6 +16,8 @@ export const up = (pgm) => {
     customer_id: { type: 'uuid', notNull: true }, // Logical FK
     restaurant_id: { type: 'uuid', notNull: true }, // Logical FK
     driver_id: { type: 'uuid' }, // Logical FK, Nullable
+    subtotal: { type: 'numeric(15,2)', notNull: true, default: 0 },
+    delivery_fee: { type: 'numeric(15,2)', notNull: true, default: 15000 },
     total_amount: { type: 'numeric(15,2)', notNull: true },
     status: { type: 'varchar(50)', notNull: true, default: "'PENDING'" },
     delivery_address: { type: 'text', notNull: true },

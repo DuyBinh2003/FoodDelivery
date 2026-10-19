@@ -21,6 +21,9 @@ export interface DriverTrip {
   order_id: string;
   status: 'PENDING' | 'ACCEPTED' | 'COOKING' | 'READY_FOR_PICKUP' | 'DELIVERING' | 'COMPLETED' | 'CANCELLED';
   total_amount: number;
+  subtotal?: number;
+  delivery_fee?: number;
+  platform_fee?: number;
   driver_earnings: number;
   pickup_name: string;
   pickup_address: string;

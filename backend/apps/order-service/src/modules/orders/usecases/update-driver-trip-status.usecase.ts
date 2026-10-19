@@ -21,7 +21,7 @@ export class UpdateDriverTripStatusUseCase {
     private readonly sqsService: SqsService,
   ) {}
 
-  private async settleTripCommission(orderId: string, driverId: string, totalAmount: number | string) {
+  private async settleTripCommission(orderId: string, driverId: string, tripAmount: number | string) {
     const paymentUrl = process.env.PAYMENT_SERVICE_URL;
     if (!paymentUrl) {
       this.logger.warn('[UpdateDriverTripStatusUseCase] PAYMENT_SERVICE_URL not configured, skipping trip settlement');
@@ -34,7 +34,7 @@ export class UpdateDriverTripStatusUseCase {
         body: JSON.stringify({
           orderId,
           driverId,
-          tripAmount: totalAmount || 25000,
+          tripAmount: tripAmount || 15000,
           feeRate: 10,
         }),
       });
@@ -83,7 +83,7 @@ export class UpdateDriverTripStatusUseCase {
         });
 
         // Bút toán chiết khấu cuốc xe tài xế sang ví nền tảng (bất đồng bộ)
-        this.settleTripCommission(params.orderId, params.driverId, savedOrder.total_amount).catch((err: unknown) => {
+        this.settleTripCommission(params.orderId, params.driverId, savedOrder.delivery_fee ?? 15000).catch((err: unknown) => {
           this.logger.warn(`Failed background trip settlement for order ${params.orderId}:`, err);
         });
 
@@ -104,6 +104,8 @@ export class UpdateDriverTripStatusUseCase {
         customer_id: inflight.customer_id,
         restaurant_id: inflight.restaurant_id,
         driver_id: params.driverId,
+        subtotal: inflight.subtotal ?? (inflight.total_amount - (inflight.delivery_fee ?? 15000)),
+        delivery_fee: inflight.delivery_fee ?? 15000,
         total_amount: inflight.total_amount,
         status: params.status,
         delivery_address: inflight.delivery_address,
@@ -141,7 +143,7 @@ export class UpdateDriverTripStatusUseCase {
     });
 
     if (params.status === OrderStatus.COMPLETED) {
-      this.settleTripCommission(params.orderId, params.driverId, saved.total_amount).catch((err: unknown) => {
+      this.settleTripCommission(params.orderId, params.driverId, saved.delivery_fee ?? 15000).catch((err: unknown) => {
         this.logger.warn(`Failed background trip settlement for order ${params.orderId}:`, err);
       });
     }

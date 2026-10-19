@@ -46,8 +46,13 @@ Tài liệu mô tả tính năng Cổng thông tin đối tác tài xế (`/driv
    - **Lộ trình di chuyển**:
      - 🟢 **Điểm đón (Lấy món)**: Tên nhà hàng & Địa chỉ nhà hàng.
      - 🔴 **Điểm đến (Giao khách)**: Địa chỉ giao hàng của khách hàng.
-   - **Thu nhập chuyến xe**: Hiển thị số tiền tài xế nhận (+VNĐ).
-   - **Tổng tiền đơn hàng**: Giá trị thanh toán của đơn.
+   - **Cơ chế tính cước & thu nhập chuyến xe**:
+     - **Cước giao hàng cố định**: `15.000 VNĐ` (áp dụng mặc định khi chưa tích hợp GPS tính km).
+     - **Phí nền tảng ứng dụng (10%)**: Khấu trừ `-1.500 VNĐ` nộp về ví doanh thu sàn qua bút toán kép kế toán `SYS_REVENUE_PLATFORM_COMMISSION`.
+     - **Thu nhập thực nhận**: `+13.500 VNĐ` ghi Có vào tài khoản ví của tài xế.
+   - **Hiển thị minh bạch trên giao diện**:
+     - Thẻ cuốc xe và màn hình nhận chuyến hiển thị rõ: *Cước ship: 15.000 ₫ • Phí sàn (10%): -1.500 ₫ ➔ Tài xế thực nhận: +13.500 ₫*.
+   - **Tổng tiền đơn hàng**: Giá trị thanh toán của đơn (tiền món ăn + cước 15.000 ₫).
    - **Danh sách món ăn**: Số lượng, tên món và đơn giá.
    - **Trạng thái**: Hoàn thành (`COMPLETED`), Đang giao (`DELIVERING`), v.v.
    - **Bộ lọc & Tìm kiếm**: Lọc theo tab (Tất cả, Đang giao, Đã hoàn thành) và ô tìm kiếm theo tên quán hoặc địa chỉ.

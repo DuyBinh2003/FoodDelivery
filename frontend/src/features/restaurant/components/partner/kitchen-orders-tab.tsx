@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Clock,
   MapPin,
@@ -133,7 +133,13 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
       setFetchError(msg);
       showToast('error', msg);
     }
-  }, [restaurantId, showToast, enrichOrders]);
+  }, [restaurantId, enrichOrders, showToast]);
+
+  const fetchOrdersRef = useRef(fetchOrders);
+
+  useEffect(() => {
+    fetchOrdersRef.current = fetchOrders;
+  }, [fetchOrders]);
 
   useEffect(() => {
     let ignore = false;
@@ -149,7 +155,6 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
         if (!ignore) {
           const msg = getErrorMessage(err, 'Không thể tải danh sách đơn hàng của quán');
           setFetchError(msg);
-          showToast('error', msg);
           setLoading(false);
         }
       }
@@ -159,14 +164,14 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
 
     // Tự động kiểm tra đơn mới mỗi 15 giây
     const interval = setInterval(() => {
-      void fetchOrders();
+      void fetchOrdersRef.current();
     }, 15000);
 
     return () => {
       ignore = true;
       clearInterval(interval);
     };
-  }, [restaurantId, fetchOrders, showToast, enrichOrders]);
+  }, [restaurantId, enrichOrders]);
 
 
   const handleUpdateStatus = async (orderId: string, nextStatus: 'COOKING' | 'READY_FOR_PICKUP') => {

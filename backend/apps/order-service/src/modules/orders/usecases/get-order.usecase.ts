@@ -75,6 +75,8 @@ export class GetOrderUseCase {
         restaurant_address: restaurantInfo?.address || 'Địa chỉ nhà hàng',
         driver_id: inflight.driver_id,
         driver: driverInfo,
+        subtotal: inflight.subtotal ?? (Number(inflight.total_amount) > 15000 ? Number(inflight.total_amount) - 15000 : Number(inflight.total_amount)),
+        delivery_fee: inflight.delivery_fee ?? 15000,
         total_amount: inflight.total_amount,
         status: inflight.status,
         delivery_address: inflight.delivery_address,
