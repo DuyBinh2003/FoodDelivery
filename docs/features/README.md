@@ -23,7 +23,8 @@ docs/features/
 │
 ├── driver/                            # 🛵 Phân hệ Đối Tác Tài Xế (Driver App & Portal)
 │   ├── driver-portal.md               # Dashboard tài xế: Online/Offline switch, cuốc xe, thu nhập & review
-│   └── driver-registration-flow.md    # Luồng đăng ký tài xế, quy tắc 1-1 không trùng lặp, phê duyệt Admin
+│   ├── driver-registration-flow.md    # Luồng đăng ký tài xế, quy tắc 1-1 không trùng lặp, phê duyệt Admin
+│   └── realtime-gps-tracking.md       # Theo dõi GPS thời gian thực: Leaflet dark-mode, WebSocket gateway, Haversine ETA, GPS Simulator
 │
 └── admin/                             # 👑 Phân hệ Quản Trị Viên (Admin Portal & Backoffice)
     └── admin-portal.md                # Dashboard visualize Recharts, Ví Sàn Treasury, Orders/Trips, Master Data
@@ -51,6 +52,7 @@ docs/features/
 | :--- | :--- | :--- | :--- |
 | **Cổng Thông Tin Tài Xế (Driver Portal)** | `/driver/dashboard` | Bật/tắt trạng thái nhận cuốc, thống kê thu nhập ngày/tuần, lịch sử cuốc xe chi tiết và xem đánh giá khách hàng. | [`driver-portal.md`](./driver/driver-portal.md) |
 | **Đăng ký Tài Xế** | `/register/driver` | Form đăng ký phương tiện & CCCD, ràng buộc 1 tài khoản chỉ 1 tài xế, quản trị viên phê duyệt trên Admin Portal. | [`driver-registration-flow.md`](./driver/driver-registration-flow.md) |
+| **Theo Dõi GPS & Bản Đồ Số (Driver Tracking)** | `/orders/[id]`, WebSocket `/delivery` | Bản đồ Leaflet Dark-theme, WebSocket Gateway phòng `order_<id>`, lưu vị trí Redis TTL 1h, tính cự ly Haversine & ETA tự động, bộ mô phỏng GPS Simulator. | [`realtime-gps-tracking.md`](./driver/realtime-gps-tracking.md) |
 
 ### 4. Phân hệ Quản trị viên (`admin/`)
 | Tính năng | Đường dẫn ứng dụng | Mô tả cốt lõi | Tài liệu |

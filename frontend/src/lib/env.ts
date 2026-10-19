@@ -20,6 +20,7 @@ const PUBLIC_ENV_MAP: Record<string, string | undefined> = {
   NEXT_PUBLIC_API_TIMEOUT: process.env.NEXT_PUBLIC_API_TIMEOUT,
   NEXT_PUBLIC_ADMIN_WS_URL: process.env.NEXT_PUBLIC_ADMIN_WS_URL,
   NEXT_PUBLIC_USER_WS_URL: process.env.NEXT_PUBLIC_USER_WS_URL,
+  NEXT_PUBLIC_DELIVERY_WS_URL: process.env.NEXT_PUBLIC_DELIVERY_WS_URL,
 };
 
 export function getRequiredEnv(key: string): string {

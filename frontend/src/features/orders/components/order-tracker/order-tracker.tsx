@@ -72,10 +72,18 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
       {/* 5. Visual Route Animation Map (From Restaurant to Customer) */}
       {activeOrder.status !== 'CANCELLED' && (
         <OrderVisualRoute
+          orderId={activeOrder.id}
           status={activeOrder.status}
           restaurantName={activeOrder.restaurant_name}
+          restaurantAddress={activeOrder.restaurant_address}
+          restaurantLat={activeOrder.restaurant_lat}
+          restaurantLng={activeOrder.restaurant_lng}
           deliveryAddress={activeOrder.delivery_address}
+          deliveryLat={activeOrder.delivery_lat}
+          deliveryLng={activeOrder.delivery_lng}
+          distanceKm={activeOrder.distance_km}
           driverName={activeOrder.driver?.name}
+          driverId={activeOrder.driver_id}
         />
       )}
 

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test-reporter=spec src/features/loyalty/tests/loyalty-checkout.test.ts"
+    "test": "node --test-reporter=spec --test src/features/loyalty/tests/loyalty-checkout.test.ts src/features/orders/tests/driver-tracking-map.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

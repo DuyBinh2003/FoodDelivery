@@ -36,6 +36,11 @@ export interface Order {
   total_amount: number;
   status: OrderStatus;
   delivery_address: string;
+  delivery_lat?: number | null;
+  delivery_lng?: number | null;
+  restaurant_lat?: number | null;
+  restaurant_lng?: number | null;
+  distance_km?: number | null;
   note?: string | null;
   payment_method?: string;
   estimated_delivery_time?: string | null;
@@ -48,6 +53,18 @@ export interface Order {
   created_at: string;
   updated_at?: string;
   review?: OrderReview;
+}
+
+export interface DriverLocationUpdate {
+  orderId: string;
+  driverId: string;
+  lat: number;
+  lng: number;
+  heading?: number;
+  speed?: number;
+  remaining_km?: number | null;
+  eta_minutes?: number | null;
+  updatedAt: string;
 }
 
 export interface OrderReview {
