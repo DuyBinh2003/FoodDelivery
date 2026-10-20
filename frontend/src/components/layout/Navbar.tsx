@@ -38,7 +38,7 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isAuthenticated, refreshProfile]);
 
-  if (pathname?.startsWith('/admin')) {
+  if (pathname?.startsWith('/admin') || pathname === '/') {
     return null;
   }
 
