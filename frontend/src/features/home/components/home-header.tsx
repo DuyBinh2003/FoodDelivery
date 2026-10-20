@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   MapPin,
@@ -13,9 +14,11 @@ import {
   TrendingUp,
   X,
   UtensilsCrossed,
+  User as UserIcon,
 } from 'lucide-react';
 import { useLocationStore } from '../store/useLocationStore';
 import { useCartStore } from '@/features/cart/store/useCartStore';
+import { useAuthStore } from '@/features/auth';
 import { LocationModal } from './location-modal';
 
 interface HomeHeaderProps {
@@ -49,6 +52,7 @@ export function HomeHeader({
 }: HomeHeaderProps) {
   const router = useRouter();
   const { currentLocation } = useLocationStore();
+  const { user, isAuthenticated } = useAuthStore();
   const cartItems = useCartStore((state) => state.items);
   const totalCartItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -144,6 +148,26 @@ export function HomeHeader({
                   <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 rounded-full bg-red-600 text-white text-[11px] font-black flex items-center justify-center ring-2 ring-zinc-950 animate-bounce">
                     {totalCartItems}
                   </span>
+                )}
+              </Link>
+
+              {/* User Avatar / Profile */}
+              <Link
+                href={isAuthenticated ? '/profile' : '/login'}
+                aria-label={isAuthenticated ? 'Hồ sơ người dùng' : 'Đăng nhập'}
+                className="relative w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 transition-all flex items-center justify-center shrink-0 overflow-hidden active:scale-95"
+              >
+                {user?.avatar_url ? (
+                  <Image
+                    src={user.avatar_url}
+                    alt={user.name || 'User Avatar'}
+                    fill
+                    sizes="40px"
+                    unoptimized
+                    className="object-cover"
+                  />
+                ) : (
+                  <UserIcon className="w-5 h-5 text-zinc-300" />
                 )}
               </Link>
             </div>

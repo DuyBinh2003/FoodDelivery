@@ -102,7 +102,8 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
     setTimeout(() => setToastMsg(null), 3000);
   };
 
-  const coverImage = restaurant.cover_url || 
+  const coverImage = restaurant.banner_url ||
+    restaurant.cover_url || 
     restaurant.image_url || 
     'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80';
 
@@ -135,6 +136,7 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
             alt={restaurant.name}
             fill
             priority
+            unoptimized
             sizes="(max-width: 1280px) 100vw, 1280px"
             className={`object-cover ${!restaurant.is_active ? 'grayscale contrast-75 brightness-75' : ''}`}
           />
@@ -151,6 +153,7 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
                 src={restaurant.image_url || coverImage}
                 alt={restaurant.name}
                 fill
+                unoptimized
                 sizes="112px"
                 className={`object-cover ${!restaurant.is_active ? 'grayscale' : ''}`}
               />

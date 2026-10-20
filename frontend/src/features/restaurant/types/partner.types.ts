@@ -33,6 +33,7 @@ export interface PartnerRestaurant {
   owner_id: string;
   name: string;
   address?: string;
+  banner_url?: string;
   is_active: boolean;
   verification_status: string;
   rating: number;
@@ -74,4 +75,5 @@ export interface UpdateRestaurantProfilePayload {
   name?: string;
   address?: string;
   category_ids?: string[];
+  banner_url?: string;
 }

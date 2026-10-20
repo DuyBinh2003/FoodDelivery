@@ -1,7 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Inject, UseGuards } from '@nestjs/common';
+import 'multer';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+  Inject,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
 import type { JwtPayload } from '@/common/guards/jwt.strategy.js';
+import { S3StorageService } from '@/common/storage/index.js';
 import { CreateRestaurantDto } from '@/modules/restaurants/dto/create-restaurant.dto.js';
 import { UpdateRestaurantDto } from '@/modules/restaurants/dto/update-restaurant.dto.js';
 import { CreateMenuItemDto } from '@/modules/restaurants/dto/create-menu-item.dto.js';
@@ -53,6 +70,7 @@ export class RestaurantsController {
     @Inject(GetCategoriesUseCase) private readonly getCategoriesUseCase: GetCategoriesUseCase,
     @Inject(GetTagsUseCase) private readonly getTagsUseCase: GetTagsUseCase,
     @Inject(CreateTagUseCase) private readonly createTagUseCase: CreateTagUseCase,
+    @Inject(S3StorageService) private readonly s3StorageService: S3StorageService,
   ) {}
 
   // --- Partner (Merchant) Endpoints ---
@@ -216,6 +234,26 @@ export class RestaurantsController {
     @Param('itemId', ParseUUIDPipe) itemId: string
   ) {
     return this.deleteMenuItemUseCase.execute({ restaurantId: id, itemId });
+  }
+
+  @Post('upload')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMedia(
+    @UploadedFile() file?: Express.Multer.File,
+    @Body('folder') folder?: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Vui lòng chọn tệp hình ảnh để tải lên');
+    }
+    const targetFolder = folder === 'banners' ? 'banners' : 'dishes';
+    const url = await this.s3StorageService.uploadFile({
+      buffer: file.buffer,
+      originalFilename: file.originalname,
+      mimeType: file.mimetype,
+      folder: targetFolder,
+    });
+    return { success: true, url };
   }
 }
 

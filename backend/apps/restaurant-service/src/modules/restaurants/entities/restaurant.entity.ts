@@ -30,6 +30,9 @@ export class Restaurant {
   @Column({ type: 'numeric', precision: 3, scale: 2, default: 0 })
   rating: number;
 
+  @Column({ type: 'text', nullable: true })
+  banner_url?: string;
+
   @ManyToMany(() => Category)
   @JoinTable({
     name: 'm_restaurant_category',
