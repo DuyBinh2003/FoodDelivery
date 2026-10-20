@@ -1,3 +1,5 @@
+import type { MenuItemOptionGroup } from '@/features/menu/types';
+
 export interface CategoryItem {
   id: string;
   name: string;
@@ -18,8 +20,10 @@ export interface PartnerMenuItem {
   description?: string | null;
   image_url?: string | null;
   price: number;
+  original_price?: number;
   is_available: boolean;
   tags?: TagItem[];
+  options?: MenuItemOptionGroup[];
   created_at?: string;
   updated_at?: string;
 }
@@ -45,21 +49,25 @@ export interface PartnerRestaurantData {
 export interface CreateMenuItemPayload {
   name: string;
   price: number;
+  original_price?: number;
   description?: string;
   image_url?: string;
   is_available?: boolean;
   category_id?: string;
   tag_ids?: string[];
+  options?: MenuItemOptionGroup[];
 }
 
 export interface UpdateMenuItemPayload {
   name?: string;
   price?: number;
+  original_price?: number;
   description?: string;
   image_url?: string;
   is_available?: boolean;
   category_id?: string;
   tag_ids?: string[];
+  options?: MenuItemOptionGroup[];
 }
 
 export interface UpdateRestaurantProfilePayload {

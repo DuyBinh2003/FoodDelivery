@@ -29,9 +29,10 @@ Restaurant Service là microservice phụ trách quản lý dữ liệu đối t
 | `/restaurants/partner/my-restaurant/status` | `PATCH` | Bật/tắt trạng thái mở bán nhận đơn (`is_active: boolean`). |
 | `/restaurants/partner/my-restaurant/profile` | `PATCH` | Cập nhật tên quán, địa chỉ và các danh mục ẩm thực. |
 | `/restaurants/partner/my-restaurant/menu-items` | `GET` | Lấy danh sách món ăn của quán kèm tags và danh mục. |
-| `/restaurants/partner/my-restaurant/menu-items` | `POST` | Thêm món ăn mới vào thực đơn (tên, giá, tags, category, mô tả, ảnh). |
-| `/restaurants/partner/my-restaurant/menu-items/:itemId` | `PATCH` | Cập nhật món ăn (giá bán, trạng thái còn/hết món, tags, category, ảnh). |
+| `/restaurants/partner/my-restaurant/menu-items` | `POST` | Thêm món ăn mới vào thực đơn (tên, giá bán, giá gốc `original_price`, nhóm tùy chọn `options`, tags, category, mô tả, ảnh). |
+| `/restaurants/partner/my-restaurant/menu-items/:itemId` | `PATCH` | Cập nhật món ăn (giá bán, giá gốc, nhóm tùy chọn `options`, trạng thái còn/hết món, tags, category, ảnh). |
 | `/restaurants/partner/my-restaurant/menu-items/:itemId` | `DELETE` | Xóa mềm món ăn khỏi thực đơn (`is_deleted = true`). |
+| `/restaurants/partner/my-restaurant/tags` | `POST` | Tạo tag nhãn món ăn mới hoặc tái sử dụng tag đã có cho đối tác nhà hàng. |
 
 ### B. Metadata (Công khai / Khách hàng & Đối tác)
 
@@ -39,9 +40,10 @@ Restaurant Service là microservice phụ trách quản lý dữ liệu đối t
 | :--- | :---: | :--- |
 | `/restaurants/categories` | `GET` | Lấy danh sách danh mục ẩm thực (`m_category`). |
 | `/restaurants/tags` | `GET` | Lấy danh sách các nhãn đặc trưng (`m_tag`: Món nước, Cay, Bò, Gà...). |
+| `/restaurants/tags` | `POST` | Tạo tag nhãn món ăn mới (yêu cầu JWT token). |
 | `/restaurants` | `GET` | Lấy danh sách nhà hàng đang hoạt động. |
 | `/restaurants/:id` | `GET` | Lấy chi tiết nhà hàng theo ID. |
-| `/restaurants/:id/menu-items` | `GET` | Lấy danh sách món ăn của nhà hàng. |
+| `/restaurants/:id/menu-items` | `GET` | Lấy danh sách món ăn của nhà hàng (kèm tags và options từ DB). |
 
 ### C. Internal APIs (Giao tiếp giữa các Microservice)
 
@@ -69,8 +71,9 @@ Restaurant Service là microservice phụ trách quản lý dữ liệu đối t
   - `category_id`: UUID (FK tham chiếu `m_category`, nullable)
   - `name`: VARCHAR(255)
   - `description`: TEXT
-  - `image_url`: TEXT
-  - `price`: NUMERIC(15,2)
+  - `price`: NUMERIC(15,2) (Giá bán hiện tại)
+  - `original_price`: NUMERIC(15,2) (Giá gốc gạch ngang trước giảm giá, nullable)
+  - `options`: JSONB (Danh sách các nhóm tùy chọn modifier: Size radio bắt buộc, Topping checkbox tùy chọn, mức đường/đá)
   - `is_available`: BOOLEAN (Mặc định `true` - Còn món / Hết món)
 - **`m_category`**: `id`, `name`, `icon_url`.
 - **`m_tag`**: `id`, `name`.

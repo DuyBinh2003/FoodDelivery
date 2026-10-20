@@ -82,11 +82,19 @@ export const up = (pgm) => {
     description: { type: 'text', nullable: true },
     image_url: { type: 'text', nullable: true },
     price: { type: 'numeric(15,2)', notNull: true },
+    original_price: { type: 'numeric(15,2)', nullable: true },
+    options: { type: 'jsonb', default: '[]' },
     is_available: { type: 'boolean', default: true },
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }
   }, { ifNotExists: true });
+
+  pgm.sql(`
+    ALTER TABLE schema_restaurant.m_menu_item 
+    ADD COLUMN IF NOT EXISTS original_price numeric(15,2),
+    ADD COLUMN IF NOT EXISTS options jsonb DEFAULT '[]'::jsonb;
+  `);
 
   // 7. Menu Item Tags Mapping
   pgm.createTable({ schema, name: 'm_menu_item_tag' }, {

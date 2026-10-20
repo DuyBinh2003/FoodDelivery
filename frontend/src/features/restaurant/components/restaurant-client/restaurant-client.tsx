@@ -1,23 +1,20 @@
 "use client";
 
-import { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { 
   ChevronLeft, 
   Search, 
   X, 
-  Star, 
-  Clock, 
-  MapPin, 
   CheckCircle2, 
-  Utensils, 
-  ShieldCheck, 
-  ShoppingBag
+  ShoppingBag,
 } from 'lucide-react';
-import { CartWidget, useCartStore } from '@/features/cart';
+import { useCartStore } from '@/features/cart';
 import FoodCard from '@/features/menu/components/food-card/food-card';
 import { AddToCartDialog } from '@/features/restaurant/components/add-to-cart-dialog/add-to-cart-dialog';
+import { RestaurantHeader } from '@/features/restaurant/components/restaurant-header/restaurant-header';
+import { FloatingBottomCart } from '@/features/restaurant/components/floating-bottom-cart/floating-bottom-cart';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -37,7 +34,9 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
+
   const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const isManualScrollingRef = useRef(false);
 
   const cartTotalItems = useCartStore((state) => state.getTotalItems());
   const cartRestaurantId = useCartStore((state) => state.restaurantId);
@@ -51,7 +50,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
       (item) =>
         item.name.toLowerCase().includes(query) ||
         (item.description && item.description.toLowerCase().includes(query)) ||
-        (item.category?.name && item.category.name.toLowerCase().includes(query))
+        (item.category?.name && item.category.name.toLowerCase().includes(query)),
     );
   }, [menuItems, searchQuery]);
 
@@ -88,40 +87,100 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
     return result;
   }, [filteredItems]);
 
-  // Derive selected item from URL query param
-  const itemId = searchParams.get('item');
-  const selectedItem = itemId ? menuItems.find((i) => i.id === itemId) || null : null;
+  // Derive selected item from URL query param or manual click
+  const itemFromUrl = useMemo(() => {
+    const itemId = searchParams.get('item');
+    return itemId ? menuItems.find((i) => i.id === itemId) || null : null;
+  }, [searchParams, menuItems]);
+
+  const [manuallySelectedItem, setManuallySelectedItem] = useState<MenuItem | null>(null);
+  const selectedItem = manuallySelectedItem ?? itemFromUrl;
 
   const handleCloseDialog = () => {
-    router.replace(pathname, { scroll: false });
+    setManuallySelectedItem(null);
+    if (searchParams.get('item')) {
+      router.replace(pathname, { scroll: false });
+    }
   };
 
+  const handleOpenItem = (item: MenuItem) => {
+    setManuallySelectedItem(item);
+  };
+
+  // Scroll to category with smooth scroll
   const scrollToCategory = (categoryId: string) => {
+    isManualScrollingRef.current = true;
     setActiveCategory(categoryId);
+
     if (categoryId === 'all') {
-      window.scrollTo({ top: 380, behavior: 'smooth' });
-      return;
+      const topOffset = 450;
+      window.scrollTo({ top: topOffset, behavior: 'smooth' });
+    } else {
+      const element = document.getElementById(`cat-${categoryId}`);
+      if (element) {
+        const yOffset = -120; // Accounts for sticky top nav & category tabs
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
     }
 
-    const element = document.getElementById(`cat-${categoryId}`);
-    if (element) {
-      const yOffset = -130; // accounts for sticky navbar + category tabs
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
+    // Release manual scroll lock after animation completes
+    setTimeout(() => {
+      isManualScrollingRef.current = false;
+    }, 800);
   };
 
-  const ratingValue = restaurant.rating ? Number(restaurant.rating).toFixed(1) : '4.8';
+  // Scroll Spy: Synchronize category tab highlight with page scroll
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    const handleScroll = () => {
+      if (isManualScrollingRef.current) return;
+
+      const scrollPosition = window.scrollY + 180;
+      let currentActive = 'all';
+
+      for (const cat of categories) {
+        const element = document.getElementById(`cat-${cat.id}`);
+        if (element) {
+          const top = element.offsetTop;
+          const height = element.offsetHeight;
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            currentActive = cat.id;
+            break;
+          }
+        }
+      }
+
+      setActiveCategory((prev) => {
+        if (prev !== currentActive) {
+          // Scroll horizontal tab container to center the active tab
+          const activeTabButton = document.getElementById(`tab-btn-${currentActive}`);
+          if (activeTabButton && categoryScrollRef.current) {
+            activeTabButton.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest',
+              inline: 'center',
+            });
+          }
+        }
+        return currentActive;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [categories]);
 
   return (
-    <div className="min-h-screen bg-black text-white pb-32">
+    <div className="min-h-screen bg-black text-white pb-36">
       {/* 1. Sticky Top Navigation Bar */}
       <header className="sticky top-0 z-30 bg-zinc-950/85 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-3 transition-all duration-200">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/menu"
-              className="inline-flex items-center gap-1.5 py-1.5 px-3 -ml-2 rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-1.5 py-1.5 px-3 -ml-2 rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 transition-colors text-xs sm:text-sm font-medium"
               aria-label="Quay lại thực đơn"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -131,7 +190,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
             <div className="h-4 w-[1px] bg-white/10 hidden sm:block" />
 
             <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-white truncate flex items-center gap-1.5">
+              <h1 className="text-sm sm:text-base md:text-lg font-bold text-white truncate flex items-center gap-1.5">
                 {restaurant.name}
                 {restaurant.verification_status === 'VERIFIED' && (
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 inline" />
@@ -148,6 +207,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
                 <span>{cartTotalItems} món trong giỏ</span>
               </div>
             )}
+
             <Badge
               variant="outline"
               className={
@@ -164,89 +224,10 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-        {/* 2. Restaurant Hero Banner */}
-        <section className="relative w-full rounded-3xl overflow-hidden bg-zinc-900 border border-white/10 shadow-2xl mb-8">
-          {/* Cover Background Graphic */}
-          <div className="relative h-48 sm:h-64 lg:h-72 w-full overflow-hidden bg-gradient-to-r from-zinc-950 via-zinc-900 to-orange-950/40">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-500/15 via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
-            
-            {/* Atmospheric decoration */}
-            <div className="absolute top-6 right-8 text-orange-500/10 hidden md:block">
-              <Utensils className="w-48 h-48 -rotate-12" />
-            </div>
-          </div>
+        {/* 2. Restaurant Identity & Dynamic Delivery Header */}
+        <RestaurantHeader restaurant={restaurant} />
 
-          {/* Restaurant Identity Overlay Card */}
-          <div className="relative -mt-20 sm:-mt-24 p-5 sm:p-8 pt-0 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-              {/* Restaurant Avatar/Emblem */}
-              <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-2xl bg-zinc-900 border-2 border-white/10 shadow-2xl overflow-hidden flex items-center justify-center shrink-0 bg-gradient-to-br from-zinc-800 to-zinc-950">
-                <Utensils className="w-10 h-10 sm:w-12 sm:h-12 text-orange-500/80" />
-              </div>
-
-              {/* Title and Badges */}
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
-                    {restaurant.name}
-                  </h1>
-                  {restaurant.verification_status === 'VERIFIED' && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Đối tác chính hãng
-                    </span>
-                  )}
-                </div>
-
-                {/* Address & Meta */}
-                <div className="flex items-center gap-1.5 text-zinc-400 text-sm">
-                  <MapPin className="w-4 h-4 text-orange-400 shrink-0" />
-                  <span className="line-clamp-1">{restaurant.address}</span>
-                </div>
-
-                {/* Key Metrics Row */}
-                <div className="flex flex-wrap items-center gap-3 sm:gap-5 pt-1 text-xs sm:text-sm">
-                  <div className="flex items-center gap-1.5 text-amber-400 font-bold">
-                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    <span>{ratingValue}</span>
-                    <span className="text-zinc-500 font-normal">(150+ đánh giá)</span>
-                  </div>
-
-                  <span className="text-zinc-700">•</span>
-
-                  <div className="flex items-center gap-1.5 text-zinc-300">
-                    <Clock className="w-4 h-4 text-orange-400" />
-                    <span>20 - 30 phút</span>
-                  </div>
-
-                  <span className="text-zinc-700">•</span>
-
-                  <div className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Freeship từ 100k</span>
-                  </div>
-                </div>
-
-                {/* Cuisine Categories */}
-                {restaurant.categories && restaurant.categories.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 pt-2">
-                    {restaurant.categories.map((cat) => (
-                      <span
-                        key={cat.id}
-                        className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/5 border border-white/10 text-zinc-300"
-                      >
-                        {cat.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 3. Search and Quick Filter Bar */}
+        {/* 3. Search and Count Bar */}
         <div className="mb-6 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -254,8 +235,8 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm món ăn trong quán..."
-              className="pl-10 pr-9 bg-zinc-900/80 border-white/10 text-white placeholder:text-zinc-500 rounded-xl focus:border-orange-500/50 focus:ring-orange-500/20 h-11"
+              placeholder="Tìm món ăn trong thực đơn của quán..."
+              className="pl-10 pr-9 bg-zinc-900/80 border-white/10 text-white placeholder:text-zinc-500 rounded-xl focus:border-orange-500/50 focus:ring-orange-500/20 h-11 text-sm"
             />
             {searchQuery && (
               <button
@@ -273,19 +254,20 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
           </div>
         </div>
 
-        {/* 4. Sticky Category Pill Tabs Bar */}
-        {categories.length > 1 && (
-          <div className="sticky top-[57px] z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-black/90 backdrop-blur-md border-b border-white/10 mb-6">
+        {/* 4. Sticky Category Pill Tabs with Scroll Spy */}
+        {categories.length > 0 && (
+          <div className="sticky top-[57px] z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-black/90 backdrop-blur-md border-b border-white/10 mb-8">
             <div 
               ref={categoryScrollRef}
-              className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 no-scrollbar"
+              className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 no-scrollbar scroll-smooth"
             >
               <button
+                id="tab-btn-all"
                 type="button"
                 onClick={() => scrollToCategory('all')}
                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                   activeCategory === 'all'
-                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
                     : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5'
                 }`}
               >
@@ -294,12 +276,13 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
 
               {categories.map((cat) => (
                 <button
+                  id={`tab-btn-${cat.id}`}
                   key={cat.id}
                   type="button"
                   onClick={() => scrollToCategory(cat.id)}
                   className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                     activeCategory === cat.id
-                      ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+                      ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
                       : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5'
                   }`}
                 >
@@ -329,11 +312,11 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
             </Button>
           </div>
         ) : (
-          <div className="space-y-12">
+          <div className="space-y-14">
             {categories.map((cat, catIdx) => (
               <section key={cat.id} id={`cat-${cat.id}`} className="scroll-mt-36">
                 {/* Category Section Header */}
-                <div className="flex items-center justify-between mb-5 border-b border-white/10 pb-3">
+                <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-3">
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                       {cat.name}
@@ -352,6 +335,8 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
                       item={item}
                       index={catIdx * 10 + index}
                       mode="restaurant"
+                      isRestaurantClosed={!restaurant.is_active}
+                      onSelect={handleOpenItem}
                     />
                   ))}
                 </div>
@@ -361,7 +346,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
         )}
       </main>
 
-      {/* 6. Product Detail / Add To Cart Modal */}
+      {/* 6. Product Detail & Modifier Customization Dialog */}
       <AddToCartDialog
         item={selectedItem}
         restaurantId={restaurant.id}
@@ -369,8 +354,11 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
         onClose={handleCloseDialog}
       />
 
-      {/* 7. Floating Cart Widget */}
-      <CartWidget />
+      {/* 7. Floating Bottom Cart Bar */}
+      <FloatingBottomCart
+        currentRestaurantId={restaurant.id}
+        currentRestaurantName={restaurant.name}
+      />
     </div>
   );
 }

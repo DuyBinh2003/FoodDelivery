@@ -31,6 +31,7 @@ import { UpdatePartnerMenuItemUseCase } from '@/modules/restaurants/usecases/upd
 import { DeletePartnerMenuItemUseCase } from '@/modules/restaurants/usecases/delete-partner-menu-item.usecase.js';
 import { GetCategoriesUseCase } from '@/modules/restaurants/usecases/get-categories.usecase.js';
 import { GetTagsUseCase } from '@/modules/restaurants/usecases/get-tags.usecase.js';
+import { CreateTagUseCase } from '@/modules/restaurants/usecases/create-tag.usecase.js';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { GetTagsUseCase } from '@/modules/restaurants/usecases/get-tags.usecase.
     DeletePartnerMenuItemUseCase,
     GetCategoriesUseCase,
     GetTagsUseCase,
+    CreateTagUseCase,
   ],
   exports: [
     RestaurantReadRepository,
@@ -80,6 +82,7 @@ import { GetTagsUseCase } from '@/modules/restaurants/usecases/get-tags.usecase.
     DeletePartnerMenuItemUseCase,
     GetCategoriesUseCase,
     GetTagsUseCase,
+    CreateTagUseCase,
   ],
 })
 export class RestaurantsModule {}

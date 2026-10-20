@@ -54,63 +54,77 @@ flowchart TD
    - Badge trạng thái hoạt động: `Đang mở cửa` (xanh ngọc, hiệu ứng pulse) hoặc `Tạm đóng`.
    - Chỉ báo số lượng món hiện có trong giỏ hàng.
 
-2. **Hero Banner Nhà Hàng (Atmospheric Hero Section):**
-   - Ảnh nền / gradient phong cách ẩm thực với hiệu ứng ánh sáng mờ ambient.
-   - Avatar / Logo nhà hàng viền đôi nổi bật.
-   - Thông tin xếp hạng sao: ⭐ `4.8` (dựa trên đánh giá thực tế).
-   - Thời gian ước tính & Khoảng cách: `20 - 30 phút • 1.8 km`.
-   - Địa chỉ chi tiết kèm biểu tượng định vị.
-   - Nhãn danh mục ẩm thực (Cuisine tags).
+2. **Khối Header Thông Tin Nhà Hàng & Dữ Liệu Giao Vận Động (`RestaurantHeader`):**
+   - Ảnh Cover & Logo sắc nét kèm avatar quán.
+   - Xếp hạng sao thực tế kèm lượt đánh giá: ⭐ `4.8 (180+ đánh giá)`.
+   - **Dữ liệu giao vận động:**
+     - Khoảng cách (km) tính từ tọa độ GPS của người dùng (`useLocationStore`).
+     - Thời gian giao hàng dự kiến (ETA phút).
+     - Phí giao hàng tính theo cự ly thực tế (15.000đ cho 2km đầu, +5.000đ/km tiếp theo, miễn phí nếu Freeship).
+   - **Vouchers / Promos:** Danh sách mã giảm giá độc quyền từ quán (`FREESHIP`, `GIAM20K`, `TIECNGON10`) kèm nút "Thu thập" / "Đã lưu".
+   - **Trạng thái đóng cửa:** Cảnh báo nổi bật khi `is_active = false`, tự động làm mờ xám (gray-out) toàn bộ ảnh món ăn và vô hiệu hóa nút thêm vào giỏ.
 
 3. **Thanh Tìm Kiếm Trong Quán (In-Restaurant Search Bar):**
    - Lọc trực tiếp các món trong thực đơn theo tên hoặc mô tả món ăn.
    - Nút xóa nhanh từ khóa (X) và hiển thị số lượng món thỏa mãn điều kiện.
 
-4. **Thanh Danh Mục Sticky (Sticky Category Tabs):**
+4. **Thanh Danh Mục Sticky & Scroll Spy 2 Chiều:**
    - Thanh trượt ngang danh mục: `Tất cả`, `Món Nước`, `Món Cơm`, `Khai Vị`, `Đồ Uống`...
-   - Tự động cuộn mượt (smooth scroll spy) đến từng phân mục món ăn tương ứng khi nhấn chọn.
+   - **Scroll Spy 2 chiều:** Khi cuộn trang đến nhóm món nào, tab tương ứng tự động bôi đậm (highlight) và trượt vào giữa tầm nhìn. Nhấn vào tab nào thì màn hình tự động cuộn mượt (smooth scroll) thẳng đến đúng nhóm món.
 
-5. **Phân Mục Món Ăn Theo Nhóm (Grouped Category Sections):**
-   - Tiêu đề từng nhóm món ăn kèm số lượng.
-   - Lưới hiển thị `FoodCard` (1 cột trên di động, 2 cột trên tablet, 3-4 cột trên desktop).
-   - Trạng thái trống (Empty State) lịch sự khi từ khóa tìm kiếm không khớp món nào.
+5. **Danh Sách Món Ăn (`FoodCard`):**
+   - Thumbnail vuông bo góc, tên món, mô tả, giá bán nổi bật.
+   - **Giá gốc gạch ngang:** Hiển thị khi `original_price > price` kèm huy hiệu giảm giá (`-15%`).
+   - Quản lý tồn kho: Món hết hàng (`!is_available`) phủ nhãn "Hết hàng" và khóa click.
+   - Nút "+" / "Thêm vào giỏ" mở trực tiếp popup tùy chỉnh món.
 
 ---
 
-### 3.2. Popup Xem Sản Phẩm & Thêm Món (`AddToCartDialog`)
+### 3.2. Cửa Sổ Tùy Chỉnh Món Đa Tùy Chọn (`AddToCartDialog`)
 
-1. **Banner Ảnh 16:9:**
-   - Ảnh món ăn sắc nét tải qua `next/image`, bo tròn góc trên với gradient bảo vệ độ tương phản.
-   - Trực quan hóa món ăn khi không có ảnh bằng gradient ẩm thực ấm áp và icon ngọn lửa rực sáng.
-   - Huy hiệu danh mục món ăn đặt góc trên bên trái.
-   - Nút đóng (X) dạng pill tròn mờ góc trên bên phải, hỗ trợ phím `Escape`.
+1. **Banner Ảnh 16:9 & Tags Đặc Trưng Từ Database:**
+   - Ảnh món ăn sắc nét tải qua `next/image`, gradient bảo vệ độ tương phản.
+   - Nút đóng (X) dạng pill tròn mờ, hỗ trợ phím `Escape`.
    - Lớp phủ mờ "Tạm hết hàng" nếu món đang ở trạng thái `is_available = false`.
+   - **Tags món ăn từ DB:** Tự động lấy và hiển thị các nhãn đặc trưng (`item.tags`: `#Món Nước`, `#Bò`, `#Không Cay`, `#Bán Chạy`, `#Đặc Sản`...) được lưu trữ và liên kết từ database.
 
-2. **Thông Tin Món & Thẻ Tag:**
-   - Tên món ăn typography đậm nét, giá bán định dạng VND nổi bật.
-   - Danh sách tag đặc trưng: `Bán chạy`, `Cay`, `Đặc sắc`...
-   - Mô tả nguyên liệu và công thức chế biến.
+2. **Nhóm Tùy Chọn Bắt Buộc (Required Choices - Radio Button):**
+   - Bắt buộc chọn đúng 1 lựa chọn (ví dụ: Chọn Kích cỡ Size M, Size L, Size XL).
+   - Hiển thị giá chênh lệch rõ ràng (`+0đ`, `+10.000đ`, `+20.000đ`).
+   - Tự động chặn submit và hiển thị cảnh báo nếu khách chưa chọn nhóm bắt buộc.
 
-3. **Yêu Cầu Đặc Biệt & Ghi Chú Nhanh (Special Instructions):**
-   - **Interactive Quick Chips:** Các nhãn tương tác bật/tắt nhanh một chạm:
-     - `Không hành`, `Ít cay`, `Không cay`, `Để riêng nước dùng`, `Nhiều rau`, `Không tiêu`, `Ít ngọt`, `Để riêng đá`.
-   - **Ô Ghi Chú Tự Do (Custom Notes):** Textarea cho phép nhập tối đa 150 ký tự với bộ đếm ký tự trực tiếp.
+3. **Nhóm Tùy Chọn Thêm (Optional / Toppings - Checkbox):**
+   - Cho phép chọn nhiều topping (ví dụ: Thêm bò tái, Trứng chần, Quẩy giòn).
+   - Giới hạn số lượng lựa chọn tối đa nếu quán quy định (`max_choices`).
 
-4. **Bộ Tăng Giảm Số Lượng (Quantity Stepper):**
-   - Nút trừ (`-`) tự động vô hiệu hóa khi số lượng = 1.
-   - Nút cộng (`+`) tăng số lượng.
-   - Đảm bảo chuẩn tiếp xúc cảm ứng (Touch target) tối thiểu 44×44px.
+4. **Ghi Chú Cho Quán (Custom Note):**
+   - Ô nhập tự do tối đa 150 ký tự kèm bộ đếm ký tự thực tế (`{customNote.length}/150`).
+   - Cho phép khách hàng nhập lời dặn riêng cho quán (VD: "để riêng nước dùng, không hành...").
+   - Loại bỏ các tag chip tĩnh định sẵn để đảm bảo tính linh hoạt tối đa theo từng món và theo phân quyền thực tế của từng nhà hàng.
+   - Ghi chú được lưu vào thuộc tính `note` của dòng giỏ hàng (`CartItemType`) và tham gia cấu thành mã định danh giỏ hàng.
 
-5. **Thanh Hành Động Dưới Cùng (Sticky Bottom CTA):**
-   - Tính toán và phản hồi giá tiền trực tiếp: `Đơn giá * Số lượng`.
-   - Nút thêm vào giỏ kèm hiệu ứng gradient `from-orange-500 to-amber-500` sống động.
-   - Tích hợp cảnh báo `ClearCartModal` tự động khi giỏ hàng hiện tại đang lưu món của nhà hàng khác.
+5. **Bộ Tăng Giảm Số Lượng & Giá Real-time:**
+   - Nút trừ (`-`) và cộng (`+`) điều chỉnh số lượng tức thì.
+   - Giá tiền trên nút CTA nhảy số Real-time: `(Giá gốc + Tổng giá modifier) * Số lượng`.
+   - Kiểm tra validation: Nút CTA chỉ kích hoạt khi tất cả nhóm tùy chọn bắt buộc (`required: true`) đã được người dùng chọn.
 
 ---
 
-## 4. Quản Lý Trạng Thái & Dữ Liệu (State Management)
+### 3.3. Giỏ Hàng Nổi Đáy Màn Hình (`FloatingBottomCart`)
 
-- **Đồng bộ URL:** Khi click vào món ăn, tham số query `?item=[id]` được thêm vào URL. Khi đóng popup, `router.replace(pathname, { scroll: false })` loại bỏ tham số mà không làm reload trang.
+- **Hiển thị có điều kiện:** Chỉ pop-up lên ở mép đáy màn hình khi giỏ hàng có $\ge 1$ món.
+- **Nội dung:** Tổng số lượng món, tổng tiền tạm tính, tên quán đang đặt, nút "Xem giỏ hàng" mở Drawer và nút "Thanh toán" chuyển ngay sang `/checkout`.
+- **Ràng Buộc Đơn Nhà Hàng (Single Restaurant Policy):**
+  - Giỏ hàng chỉ chứa món của 1 nhà hàng duy nhất.
+  - Khi người dùng thêm món của Quán B trong khi giỏ đang có món của Quán A: Bật `ClearCartModal` cảnh báo:
+    *"Bạn đang có món của quán khác trong giỏ. Bấm thêm món này sẽ xóa giỏ hàng cũ. Bạn có đồng ý không?"*
+  - Nếu chọn đồng ý: Xóa giỏ cũ và nạp món quán mới vào.
+
+---
+
+## 4. Quản Lý Trạng Thái & Lưu Trữ (State Management & Persistence)
+
+- **Zustand Persist (`useCartStore`):** Lưu trữ toàn bộ giỏ hàng xuống `localStorage` (`food_delivery_cart_storage`). Dữ liệu giỏ hàng được bảo toàn trọn vẹn khi F5, đóng tab hoặc mở lại ứng dụng.
 - **Tách biệt dòng giỏ hàng (Cart Item Line Separation):**
   - Khóa giỏ hàng được định danh theo công thức: `${item.id}-${sortedOptions.join('|')}`.
-  - Ví dụ: 2 phần Phở bò với tùy chọn *"Không hành"* và *"Để riêng nước dùng"* sẽ được lưu thành 2 dòng riêng biệt với số lượng và ghi chú tương ứng.
+  - Giúp phân biệt rạch ròi các cấu hình tùy chọn khác nhau của cùng một món ăn trong giỏ hàng.

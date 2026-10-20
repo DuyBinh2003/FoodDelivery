@@ -2,6 +2,22 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
 import { Category } from '@/modules/restaurants/entities/category.entity.js';
 
+export interface MenuItemOptionChoice {
+  id: string;
+  name: string;
+  price: number;
+  is_default?: boolean;
+}
+
+export interface MenuItemOptionGroup {
+  id: string;
+  name: string;
+  required: boolean;
+  min_choices?: number;
+  max_choices?: number;
+  choices: MenuItemOptionChoice[];
+}
+
 @Entity('m_menu_item', { schema: 'schema_restaurant' })
 export class MenuItem {
   @PrimaryGeneratedColumn('uuid')
@@ -28,6 +44,12 @@ export class MenuItem {
 
   @Column({ type: 'numeric', precision: 15, scale: 2 })
   price: number;
+
+  @Column({ type: 'numeric', precision: 15, scale: 2, nullable: true })
+  original_price?: number;
+
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  options?: MenuItemOptionGroup[];
 
   @Column({ type: 'boolean', default: true })
   is_available: boolean;

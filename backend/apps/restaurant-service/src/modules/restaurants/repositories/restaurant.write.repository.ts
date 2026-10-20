@@ -82,4 +82,9 @@ export class RestaurantWriteRepository {
   async saveMenuItem(menuItem: MenuItem): Promise<MenuItem> {
     return this.menuItemRepo.save(menuItem);
   }
+
+  async createTag(name: string): Promise<Tag> {
+    const tag = this.tagRepo.create({ name: name.trim() });
+    return this.tagRepo.save(tag);
+  }
 }

@@ -29,6 +29,8 @@ import { UpdatePartnerMenuItemUseCase } from '@/modules/restaurants/usecases/upd
 import { DeletePartnerMenuItemUseCase } from '@/modules/restaurants/usecases/delete-partner-menu-item.usecase.js';
 import { GetCategoriesUseCase } from '@/modules/restaurants/usecases/get-categories.usecase.js';
 import { GetTagsUseCase } from '@/modules/restaurants/usecases/get-tags.usecase.js';
+import { CreateTagUseCase } from '@/modules/restaurants/usecases/create-tag.usecase.js';
+import { CreateTagDto } from '@/modules/restaurants/dto/create-tag.dto.js';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -50,6 +52,7 @@ export class RestaurantsController {
     @Inject(DeletePartnerMenuItemUseCase) private readonly deletePartnerMenuItemUseCase: DeletePartnerMenuItemUseCase,
     @Inject(GetCategoriesUseCase) private readonly getCategoriesUseCase: GetCategoriesUseCase,
     @Inject(GetTagsUseCase) private readonly getTagsUseCase: GetTagsUseCase,
+    @Inject(CreateTagUseCase) private readonly createTagUseCase: CreateTagUseCase,
   ) {}
 
   // --- Partner (Merchant) Endpoints ---
@@ -139,6 +142,18 @@ export class RestaurantsController {
   @Get('tags')
   getTags() {
     return this.getTagsUseCase.execute();
+  }
+
+  @Post('partner/my-restaurant/tags')
+  @UseGuards(JwtAuthGuard)
+  createPartnerTag(@Body() dto: CreateTagDto) {
+    return this.createTagUseCase.execute(dto);
+  }
+
+  @Post('tags')
+  @UseGuards(JwtAuthGuard)
+  createTag(@Body() dto: CreateTagDto) {
+    return this.createTagUseCase.execute(dto);
   }
 
   // --- General Restaurant Endpoints ---

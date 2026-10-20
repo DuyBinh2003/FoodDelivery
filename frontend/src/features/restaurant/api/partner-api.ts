@@ -69,6 +69,13 @@ export async function getAvailableTags(): Promise<TagItem[]> {
   });
 }
 
+export async function createPartnerTag(name: string): Promise<TagItem> {
+  return await apiClient<TagItem>('/restaurants/partner/my-restaurant/tags', {
+    method: 'POST',
+    body: { name },
+  });
+}
+
 export interface PartnerOrderItem {
   id?: string;
   menu_item_id: string;

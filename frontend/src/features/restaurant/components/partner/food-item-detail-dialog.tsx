@@ -136,8 +136,15 @@ export function FoodItemDetailDialog({
 
             {/* Price Banner */}
             <div className="absolute bottom-3 right-3 flex flex-col items-end gap-1">
-              <div className="px-3.5 py-1.5 rounded-xl text-base font-extrabold bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xl shadow-orange-500/30 font-mono">
-                {formatCurrency(Number(item.price) || 0)}
+              <div className="flex items-center gap-1.5">
+                {item.original_price && Number(item.original_price) > Number(item.price) && (
+                  <span className="px-2 py-0.5 rounded-lg text-xs font-semibold text-zinc-400 line-through bg-black/60 backdrop-blur-md">
+                    {formatCurrency(Number(item.original_price))}
+                  </span>
+                )}
+                <div className="px-3.5 py-1.5 rounded-xl text-base font-extrabold bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xl shadow-orange-500/30 font-mono">
+                  {formatCurrency(Number(item.price) || 0)}
+                </div>
               </div>
               <div className="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-black/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30">
                 Quán thực nhận (80%): {formatCurrency(Math.round(Number(item.price) * 0.8) || 0)}
@@ -240,6 +247,35 @@ export function FoodItemDetailDialog({
                   >
                     #{tag.name}
                   </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Options / Modifiers configured for dish */}
+          {item.options && item.options.length > 0 && (
+            <div className="bg-zinc-900/60 border border-white/5 rounded-2xl p-4 space-y-3">
+              <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+                <span>Nhóm tùy chọn & Topping ({item.options.length} nhóm)</span>
+              </h4>
+              <div className="space-y-2.5">
+                {item.options.map((group) => (
+                  <div key={group.id} className="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-white">{group.name}</span>
+                      <span className="text-[10px] text-zinc-400">
+                        {group.required ? 'Bắt buộc' : 'Tùy chọn'} • Tối đa {group.max_choices || 1}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {group.choices.map((c) => (
+                        <span key={c.id} className="px-2 py-0.5 rounded-lg text-[11px] bg-zinc-800 text-zinc-300 border border-white/5">
+                          {c.name} {c.price > 0 ? `(+${formatCurrency(c.price)})` : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

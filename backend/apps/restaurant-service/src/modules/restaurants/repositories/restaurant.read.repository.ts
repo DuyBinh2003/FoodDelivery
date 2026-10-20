@@ -68,4 +68,12 @@ export class RestaurantReadRepository {
       order: { name: 'ASC' },
     });
   }
+
+  async findTagByName(name: string): Promise<Tag | null> {
+    return this.tagRepo
+      .createQueryBuilder('tag')
+      .where('LOWER(TRIM(tag.name)) = LOWER(TRIM(:name))', { name })
+      .andWhere('tag.is_deleted = false')
+      .getOne();
+  }
 }
