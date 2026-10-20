@@ -12,6 +12,8 @@ function requireEnv(key: string): string {
 
 const nextConfig: NextConfig = {
   images: {
+    dangerouslyAllowLocalIP: true,
+    dangerouslyAllowSVG: true,
     remotePatterns: [
       {
         protocol: 'https',

@@ -153,6 +153,7 @@ export default function ProfilePage() {
                     fill
                     sizes="128px"
                     priority
+                    unoptimized
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (

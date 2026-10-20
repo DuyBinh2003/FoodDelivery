@@ -136,6 +136,7 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
             alt={restaurant.name}
             fill
             priority
+            unoptimized
             sizes="(max-width: 1280px) 100vw, 1280px"
             className={`object-cover ${!restaurant.is_active ? 'grayscale contrast-75 brightness-75' : ''}`}
           />
@@ -152,6 +153,7 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
                 src={restaurant.image_url || coverImage}
                 alt={restaurant.name}
                 fill
+                unoptimized
                 sizes="112px"
                 className={`object-cover ${!restaurant.is_active ? 'grayscale' : ''}`}
               />

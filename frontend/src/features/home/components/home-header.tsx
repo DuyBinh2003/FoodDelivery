@@ -163,6 +163,7 @@ export function HomeHeader({
                     alt={user.name || 'User Avatar'}
                     fill
                     sizes="40px"
+                    unoptimized
                     className="object-cover"
                   />
                 ) : (
