@@ -119,3 +119,16 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
     body: { status },
   });
 }
+
+export async function uploadRestaurantMedia(
+  file: File,
+  folder: 'dishes' | 'banners' = 'dishes',
+): Promise<{ success: boolean; url: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('folder', folder);
+  return await apiClient<{ success: boolean; url: string }>('/restaurants/upload', {
+    method: 'POST',
+    body: formData,
+  });
+}

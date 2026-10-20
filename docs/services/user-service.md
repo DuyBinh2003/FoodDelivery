@@ -16,7 +16,7 @@ Hệ thống sử dụng mô hình linh hoạt với 2 cấp độ:
 
 ## Database Schema
 Các bảng chính liên quan:
-- `m_user` (id, email, password_hash, role)
+- `m_user` (id, email, password_hash, role, avatar_url)
 - `m_customer_profile` (id, user_id, full_name, phone)
 - `m_driver_profile` (id, user_id, status, verification_status, vehicle_plate, vehicle_type, current_location_lat, current_location_lng)
 - `m_user_address` (id, user_id, recipient_name, recipient_phone, label, street_address, ward, district, city, full_address, latitude, longitude, delivery_notes, is_default, created_at, updated_at)
@@ -35,6 +35,7 @@ Mọi thao tác quản lý, tạo mới Profile, Sổ địa chỉ và Ví đi�
 | `/auth/register` | `POST` | Public | Đăng ký tài khoản người dùng mới | `{ email, password, name }` | `201`, `400`, `409` |
 | `/auth/login` | `POST` | Public | Đăng nhập và nhận JWT token | `{ email, password }` | `200`, `401` |
 | `/users/profile` | `GET` | `JwtAuthGuard` | Lấy thông tin user hiện tại kèm các Profile mở rộng | Không | `200`, `401` |
+| `/users/avatar` | `POST` | `JwtAuthGuard` | Tải lên ảnh đại diện cá nhân lưu trữ trên LocalStack S3 | `multipart/form-data: file` (Max 5MB) | `200`, `400`, `401` |
 | `/users/profile/driver/status` | `PATCH` | `JwtAuthGuard` | Tài xế chuyển đổi trạng thái `ONLINE` / `OFFLINE` | `{ "status": "ONLINE" \| "OFFLINE" }` | `200`, `401` |
 | `/users/registrations` | `POST` | `JwtAuthGuard` | Nộp hồ sơ đăng ký đối tác (Tài xế / Nhà hàng) | `{ type: "DRIVER", payload: {...} }` | `201`, `400`, `409` |
 | `/users/addresses` | `GET` | `JwtAuthGuard` | Lấy danh sách sổ địa chỉ của người dùng | Không | `200`, `401` |

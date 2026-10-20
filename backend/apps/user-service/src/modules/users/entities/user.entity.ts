@@ -16,6 +16,9 @@ export class User {
   @Column({ type: 'varchar', length: 20 })
   role: UserRole;
 
+  @Column({ type: 'text', nullable: true })
+  avatar_url?: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 

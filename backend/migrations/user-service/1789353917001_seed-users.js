@@ -13,13 +13,13 @@ export const up = (pgm) => {
   const passwordHash = '$2b$10$PC8vTwnyth6xfhVHTDGFruUlk2wY8rorUukhyB2oPKDIUfuSyUwMC'; // password123
 
   pgm.sql(`
-    INSERT INTO schema_user.m_user (id, email, password_hash, role) VALUES
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'customer@fooddelivery.com', '${passwordHash}', 'USER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'driver1@fooddelivery.com', '${passwordHash}', 'USER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'driver2@fooddelivery.com', '${passwordHash}', 'USER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'owner@phobien.com', '${passwordHash}', 'USER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'owner@bunbo.com', '${passwordHash}', 'USER'),
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'admin@fooddelivery.com', '${passwordHash}', 'ADMIN')
+    INSERT INTO schema_user.m_user (id, email, password_hash, role, avatar_url) VALUES
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'customer@fooddelivery.com', '${passwordHash}', 'USER', 'http://localhost:4566/food-delivery-assets/defaults/avatars/customer.svg'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'driver1@fooddelivery.com', '${passwordHash}', 'USER', 'http://localhost:4566/food-delivery-assets/defaults/avatars/driver.svg'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'driver2@fooddelivery.com', '${passwordHash}', 'USER', 'http://localhost:4566/food-delivery-assets/defaults/avatars/driver.svg'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'owner@phobien.com', '${passwordHash}', 'USER', 'http://localhost:4566/food-delivery-assets/defaults/avatars/restaurant.svg'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'owner@bunbo.com', '${passwordHash}', 'USER', 'http://localhost:4566/food-delivery-assets/defaults/avatars/restaurant.svg'),
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16', 'admin@fooddelivery.com', '${passwordHash}', 'ADMIN', 'http://localhost:4566/food-delivery-assets/defaults/avatars/admin.svg')
     ON CONFLICT (id) DO NOTHING;
   `);
 

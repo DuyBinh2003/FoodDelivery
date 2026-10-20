@@ -57,6 +57,7 @@ export const up = (pgm) => {
     lat: { type: 'numeric(10,8)' },
     lon: { type: 'numeric(11,8)' },
     rating: { type: 'numeric(3,2)', default: 0 },
+    banner_url: { type: 'text', nullable: true },
     is_active: { type: 'boolean', default: true },
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },

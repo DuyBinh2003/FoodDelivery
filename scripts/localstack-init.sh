@@ -37,6 +37,22 @@ awslocal sns subscribe \
   --notification-endpoint "$DRIVER_QUEUE_ARN" \
   --region "$REGION"
 
+# Create S3 Bucket for Media & Assets
+echo "Creating S3 bucket for assets..."
+BUCKET_NAME="food-delivery-assets"
+awslocal s3 mb "s3://${BUCKET_NAME}" --region "$REGION" || true
+awslocal s3api put-bucket-cors --bucket "${BUCKET_NAME}" --cors-configuration '{
+  "CORSRules": [
+    {
+      "AllowedHeaders": ["*"],
+      "AllowedMethods": ["GET", "PUT", "POST", "HEAD"],
+      "AllowedOrigins": ["*"],
+      "ExposeHeaders": ["ETag"]
+    }
+  ]
+}' || true
+
 echo "=== LocalStack initialization completed! ==="
 echo "Topic ARN : $TOPIC_ARN"
 echo "Queue ARN : $QUEUE_ARN"
+echo "S3 Bucket : s3://${BUCKET_NAME}"

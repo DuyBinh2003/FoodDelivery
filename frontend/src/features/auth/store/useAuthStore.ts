@@ -26,6 +26,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  avatar_url?: string | null;
   role?: 'USER' | 'ADMIN';
   customerProfile?: Record<string, unknown> | null;
   driverProfile?: DriverProfile | null;
@@ -45,6 +46,7 @@ interface AuthState {
   logout: () => void;
   refreshProfile: () => Promise<User | null>;
   setDriverStatus: (status: 'ONLINE' | 'OFFLINE') => void;
+  updateAvatar: (avatarUrl: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -92,6 +94,17 @@ export const useAuthStore = create<AuthState>()(
                 ...currentUser.driverProfile,
                 status,
               },
+            },
+          });
+        }
+      },
+      updateAvatar: (avatarUrl: string) => {
+        const currentUser = get().user;
+        if (currentUser) {
+          set({
+            user: {
+              ...currentUser,
+              avatar_url: avatarUrl,
             },
           });
         }

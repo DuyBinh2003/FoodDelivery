@@ -13,4 +13,8 @@ export class UpdateRestaurantProfileDto {
   @IsUUID('4', { each: true })
   @IsOptional()
   category_ids?: string[];
+
+  @IsString()
+  @IsOptional()
+  banner_url?: string;
 }

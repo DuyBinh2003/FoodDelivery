@@ -102,7 +102,8 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
     setTimeout(() => setToastMsg(null), 3000);
   };
 
-  const coverImage = restaurant.cover_url || 
+  const coverImage = restaurant.banner_url ||
+    restaurant.cover_url || 
     restaurant.image_url || 
     'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80';
 

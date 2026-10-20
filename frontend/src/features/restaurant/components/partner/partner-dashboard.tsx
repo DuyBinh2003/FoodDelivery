@@ -329,6 +329,15 @@ export function PartnerDashboard() {
 
       {/* Top Banner & Online/Offline Status Bar */}
       <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        {restaurant.banner_url && (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center opacity-25 pointer-events-none transition-opacity duration-300"
+              style={{ backgroundImage: `url(${restaurant.banner_url})` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/75 to-zinc-950/90 pointer-events-none" />
+          </>
+        )}
         {/* Glow accent */}
         <div
           className={`absolute top-0 right-0 -mr-24 -mt-24 w-80 h-80 rounded-full blur-3xl pointer-events-none transition-colors duration-500 ${

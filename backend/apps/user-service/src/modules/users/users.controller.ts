@@ -1,9 +1,30 @@
-import { Controller, Get, Inject, Put, Patch, Post, Delete, Param, Body, UseGuards, Logger, NotFoundException } from '@nestjs/common';
+import 'multer';
+import {
+  Controller,
+  Get,
+  Inject,
+  Put,
+  Patch,
+  Post,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Logger,
+  NotFoundException,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
 import { Roles } from '@/common/decorators/roles.decorator.js';
 import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
 import { UserRole } from '@/common/enums/user-role.enum.js';
+import { S3StorageService } from '@/common/storage/index.js';
+import { UserReadRepository } from '@/modules/users/repositories/user.read.repository.js';
+import { UserWriteRepository } from '@/modules/users/repositories/user.write.repository.js';
 import { UpdateCustomerProfileDto, UpdateDriverProfileDto } from '@/modules/users/dto/profile.dto.js';
 import { CreateAddressDto, UpdateAddressDto } from '@/modules/users/dto/address.dto.js';
 import { GetCustomerProfileUseCase } from '@/modules/users/usecases/get-customer-profile.usecase.js';
@@ -45,6 +66,9 @@ export class UsersController {
     @Inject(UpdateUserAddressUseCase) private readonly updateUserAddressUseCase: UpdateUserAddressUseCase,
     @Inject(SetDefaultAddressUseCase) private readonly setDefaultAddressUseCase: SetDefaultAddressUseCase,
     @Inject(DeleteUserAddressUseCase) private readonly deleteUserAddressUseCase: DeleteUserAddressUseCase,
+    @Inject(UserReadRepository) private readonly userReadRepo: UserReadRepository,
+    @Inject(UserWriteRepository) private readonly userWriteRepo: UserWriteRepository,
+    @Inject(S3StorageService) private readonly s3StorageService: S3StorageService,
   ) { }
 
   @Get('profile')
@@ -88,8 +112,11 @@ export class UsersController {
       const hasDriver = !!(driverProfile && driverProfile.verification_status === 'APPROVED');
       const hasRestaurant = !!restaurant;
 
+      const userEntity = await this.userReadRepo.findById(user.id);
+
       return {
         ...user,
+        avatar_url: userEntity?.avatar_url || null,
         customerProfile,
         driverProfile,
         restaurant,
@@ -99,7 +126,30 @@ export class UsersController {
         restaurantRegistrationStatus: restaurantReg?.status || (hasRestaurant ? 'APPROVED' : null),
       };
     }
-    return user; // Return basic user info for ADMIN
+    const adminEntity = await this.userReadRepo.findById(user.id);
+    return {
+      ...user,
+      avatar_url: adminEntity?.avatar_url || null,
+    };
+  }
+
+  @Post('avatar')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAvatar(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Vui lòng chọn tệp hình ảnh để tải lên');
+    }
+    const avatarUrl = await this.s3StorageService.uploadFile({
+      buffer: file.buffer,
+      originalFilename: file.originalname,
+      mimeType: file.mimetype,
+      folder: 'avatars',
+    });
+    await this.userWriteRepo.updateAvatar(user.id, avatarUrl);
+    return { success: true, avatar_url: avatarUrl };
   }
 
   @Roles(UserRole.USER)
