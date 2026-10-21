@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Cấu Hình API Gateway Định Tuyến Delivery Service, WebSocket Proxy & Rate Limiting
 
-`[DRAFT]` • **Issue liên kết:** [#72](https://github.com/DuyBinh2003/FoodDelivery/issues/72) • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-21
+`[COMPLETED]` • **Issue liên kết:** [#72](https://github.com/DuyBinh2003/FoodDelivery/issues/72) • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-21
 
 ---
 

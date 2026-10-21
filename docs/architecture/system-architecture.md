@@ -18,16 +18,17 @@ graph TD
     end
 
     subgraph "Entry Point"
-        GW["🛡️ NGINX / API Gateway\n(Port 80/443)\nRoute by path prefix"]
+        GW["🛡️ NGINX API Gateway\n(Port 3000)\nRate Limiting + WS Proxy"]
     end
 
     subgraph "Microservices Layer"
-        US["👤 User Service\n(NestJS, Port 3001)\nAuth + Registration"]
+        US["👤 User Service\n(NestJS, Port 3001)\nAuth + Registration + Loyalty"]
         AS["👑 Admin Service\n(NestJS, Port 3002)\nApprovals + Config + Metrics"]
         RS["🏪 Restaurant Service\n(NestJS, Port 3003)\nMenu + Store Management"]
-        OS["📦 Order Service\n(NestJS, Port 3004)\nOrder State Machine"]
-        DS["🛵 Driver Service\n(NestJS, Port 3005)\nDispatch + GPS Tracking"]
+        OS["📦 Order Service\n(NestJS, Port 3004)\nOrder State Machine + SQS Buffer"]
+        DS["🛵 Delivery Service\n(NestJS, Port 3005)\nDispatch + GPS Tracking + OSRM"]
         SS["🔍 Search Service\n(NestJS, Port 3006)\nElasticsearch Integration"]
+        PS["💳 Payment Service\n(NestJS, Port 3007)\nDouble-Entry Ledger + Wallets"]
     end
 
     subgraph "Messaging Layer (AWS / LocalStack)"
@@ -47,12 +48,13 @@ graph TD
     CA & DA & RP & AD --> GW
 
     %% Gateway -> Services
-    GW -->|"/api/v1/users/*\n/api/v1/auth/*"| US
-    GW -->|"/api/v1/admin/*"| AS
-    GW -->|"/api/v1/restaurants/*"| RS
-    GW -->|"/api/v1/orders/*"| OS
-    GW -->|"/api/v1/drivers/*"| DS
-    GW -->|"/api/v1/search/*"| SS
+    GW -->|"/users/*, /auth/*"| US
+    GW -->|"/admin/*"| AS
+    GW -->|"/restaurants/*"| RS
+    GW -->|"/orders/*"| OS
+    GW -->|"/delivery/*, /socket.io/* (WS)"| DS
+    GW -->|"/search/*"| SS
+    GW -->|"/wallets/*, /payment/*, /ledger/*"| PS
 
     %% Services -> DB (Schema Isolated)
     US -->|"schema_user"| DB
@@ -87,12 +89,13 @@ graph TD
 
 | Service | Port | Trách nhiệm | Database Schema | Publisher | Consumer |
 | :--- | :---: | :--- | :--- | :--- | :--- |
-| **User Service** | 3001 | Đăng ký, đăng nhập, JWT auth, quản lý profile, đăng ký mở quán/tài xế | `schema_user` | `RegistrationCreated` | — |
+| **User Service** | 3001 | Đăng ký, đăng nhập, JWT auth, profile, loyalty points | `schema_user` | `RegistrationCreated` | — |
 | **Admin Service** | 3002 | Xét duyệt hồ sơ, cấu hình hệ thống, metrics dashboard | `public` | — | `admin-registration-queue` |
-| **Restaurant Service** | 3003 | Quản lý nhà hàng, menu, giờ hoạt động | `schema_restaurant` | `RestaurantUpdated` | — |
-| **Order Service** | 3004 | Tạo đơn, state machine trạng thái, lịch sử đơn, đánh giá | `schema_order` | `OrderCreated` | — |
-| **Driver Service** | 3005 | Nhận đơn, GPS tracking, wallet tài xế | `schema_driver` | `DriverAssigned` | `food-delivery-orders` |
-| **Search Service** | 3006 | Full-text search, geo-search nhà hàng | — (Read from ES) | — | `restaurant-updates` |
+| **Restaurant Service** | 3003 | Quản lý nhà hàng, menu, options, giờ hoạt động | `schema_restaurant` | `RestaurantUpdated` | — |
+| **Order Service** | 3004 | Tạo đơn, state machine trạng thái, SQS buffer | `schema_order` | `OrderCreated` | — |
+| **Delivery Service** | 3005 | Dispatch tài xế, GPS realtime, OSRM routing, WebSocket | `schema_delivery` | `DriverAssigned` | `food-delivery-orders` |
+| **Search Service** | 3006 | Full-text search, geo-search nhà hàng/món ăn | — (Elasticsearch) | — | `restaurant-updates` |
+| **Payment Service** | 3007 | Sổ cái kép (Double-Entry Ledger), ví 4 chủ thể, COD | `schema_payment` | — | — |
 
 ---
 
@@ -105,7 +108,9 @@ PostgreSQL (food_delivery database)
 ├── public                    → Admin: m_system_config
 ├── schema_user               → User Service: m_user, m_customer_profile, m_driver_profile, t_registration_request
 ├── schema_restaurant         → Restaurant Service: m_restaurant, m_menu_item, m_category
-└── schema_order              → Order Service: t_order, t_order_item, t_order_review
+├── schema_order              → Order Service: t_order, t_order_item, t_order_review
+├── schema_delivery           → Delivery Service: dispatch & tracking state
+└── schema_payment            → Payment Service: m_wallet, t_ledger_entry, t_idempotency_key
 ```
 
 > **Nguyên tắc Cross-service Data:** Không dùng FK hoặc JOIN qua schema. Chỉ lưu `UUID` của entity bên kia (Logical Reference). Để lấy data của service khác, phải gọi HTTP nội bộ hoặc nhận qua Event.
