@@ -10,6 +10,8 @@ import { GetTagsUseCase } from '@/modules/search/usecases/get-tags.usecase.js';
 import { SearchRestaurantsUseCase } from '@/modules/search/usecases/search-restaurants.usecase.js';
 import { SearchMenuUseCase } from '@/modules/search/usecases/search-menu.usecase.js';
 import { SyncRestaurantIndexUseCase } from '@/modules/search/usecases/sync-restaurant-index.usecase.js';
+import { AiAssistantService } from '@/modules/search/services/ai-assistant.service.js';
+import { AiAssistantController } from '@/modules/search/ai-assistant.controller.js';
 
 @Module({
   imports: [
@@ -30,8 +32,9 @@ import { SyncRestaurantIndexUseCase } from '@/modules/search/usecases/sync-resta
     SearchRestaurantsUseCase,
     SearchMenuUseCase,
     SyncRestaurantIndexUseCase,
+    AiAssistantService,
   ],
-  controllers: [SearchController],
+  controllers: [SearchController, AiAssistantController],
   exports: [
     ElasticsearchRepository,
     SearchReadRepository,
@@ -40,6 +43,7 @@ import { SyncRestaurantIndexUseCase } from '@/modules/search/usecases/sync-resta
     SearchRestaurantsUseCase,
     SearchMenuUseCase,
     SyncRestaurantIndexUseCase,
+    AiAssistantService,
   ],
 })
 export class SearchModule {}

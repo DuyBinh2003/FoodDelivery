@@ -7,6 +7,10 @@ import { OrdersController } from '@/modules/orders/orders.controller.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
 import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
+import { WebhookSubscription } from '@/modules/orders/entities/webhook-subscription.entity.js';
+import { WebhookDeliveryLog } from '@/modules/orders/entities/webhook-delivery-log.entity.js';
+import { WebhookDispatcherService } from '@/modules/orders/services/webhook-dispatcher.service.js';
+import { WebhooksController } from '@/modules/orders/webhooks.controller.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
@@ -31,16 +35,17 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, OrderReview]),
+    TypeOrmModule.forFeature([Order, OrderItem, OrderReview, WebhookSubscription, WebhookDeliveryLog]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
-  controllers: [OrdersController, OrdersInternalController],
+  controllers: [OrdersController, OrdersInternalController, WebhooksController],
   providers: [
     OrderReadRepository,
     OrderWriteRepository,
     OrderRedisRepository,
     OrderIngestionConsumer,
     OrderEventsService,
+    WebhookDispatcherService,
     SqsService,
     SnsService,
     JwtStrategy,
@@ -64,6 +69,7 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
     OrderWriteRepository,
     OrderRedisRepository,
     OrderEventsService,
+    WebhookDispatcherService,
     SqsService,
     SnsService,
     CreateOrderUseCase,
