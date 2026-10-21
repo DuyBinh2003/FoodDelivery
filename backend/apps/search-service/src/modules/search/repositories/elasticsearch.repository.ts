@@ -106,6 +106,24 @@ export class ElasticsearchRepository implements OnModuleInit {
     });
   }
 
+  async updateRestaurantRating(id: string, rating: number): Promise<void> {
+    try {
+      await this.elasticsearchService.update({
+        index: 'restaurants',
+        id,
+        doc: { rating: Number(rating) || 0 },
+      });
+      this.logger.log(`Updated Elasticsearch rating for restaurant ${id} to ${rating}`);
+    } catch (error: unknown) {
+      const err = error as { meta?: { statusCode?: number }; statusCode?: number; message?: string };
+      if (err?.meta?.statusCode === 404 || err?.statusCode === 404) {
+        this.logger.debug(`Restaurant ${id} not found in Elasticsearch index to update rating`);
+      } else {
+        this.logger.warn(`Failed to update rating in Elasticsearch for ${id}:`, error);
+      }
+    }
+  }
+
   async removeRestaurant(id: string) {
     try {
       await this.elasticsearchService.delete({

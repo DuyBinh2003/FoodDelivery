@@ -24,6 +24,7 @@ import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admi
 import { ClaimDriverTripUseCase } from '@/modules/orders/usecases/claim-driver-trip.usecase.js';
 import { GetAvailableDriverTripsUseCase } from '@/modules/orders/usecases/get-available-driver-trips.usecase.js';
 import { GetRestaurantOrdersUseCase } from '@/modules/orders/usecases/get-restaurant-orders.usecase.js';
+import { GetRestaurantReviewsUseCase } from '@/modules/orders/usecases/get-restaurant-reviews.usecase.js';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { SnsService } from '@/common/messaging/sns.service.js';
 import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingestion.consumer.js';
@@ -58,6 +59,7 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
     ClaimDriverTripUseCase,
     GetAvailableDriverTripsUseCase,
     GetRestaurantOrdersUseCase,
+    GetRestaurantReviewsUseCase,
   ],
   exports: [
     OrderReadRepository,
@@ -80,6 +82,7 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
     ClaimDriverTripUseCase,
     GetAvailableDriverTripsUseCase,
     GetRestaurantOrdersUseCase,
+    GetRestaurantReviewsUseCase,
   ],
 })
 export class OrdersModule { }

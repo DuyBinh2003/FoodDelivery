@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Query, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, Query, ValidationPipe } from '@nestjs/common';
 import { SearchMenuUseCase } from '@/modules/search/usecases/search-menu.usecase.js';
 import { SearchRestaurantsUseCase } from '@/modules/search/usecases/search-restaurants.usecase.js';
 import { GetCategoriesUseCase } from '@/modules/search/usecases/get-categories.usecase.js';
 import { GetTagsUseCase } from '@/modules/search/usecases/get-tags.usecase.js';
 import { SyncRestaurantIndexUseCase } from '@/modules/search/usecases/sync-restaurant-index.usecase.js';
+import { ElasticsearchRepository } from '@/modules/search/repositories/elasticsearch.repository.js';
 
 @Controller('search')
 export class SearchController {
@@ -13,6 +14,7 @@ export class SearchController {
     private readonly getCategoriesUseCase: GetCategoriesUseCase,
     private readonly getTagsUseCase: GetTagsUseCase,
     private readonly syncRestaurantIndexUseCase: SyncRestaurantIndexUseCase,
+    private readonly elasticsearchRepo: ElasticsearchRepository,
   ) {}
 
   @Post('sync')
@@ -46,5 +48,14 @@ export class SearchController {
   @Get('tags')
   getTags() {
     return this.getTagsUseCase.execute();
+  }
+
+  @Patch('internal/restaurants/:id/rating')
+  async updateRestaurantRating(
+    @Param('id') id: string,
+    @Body() dto: { rating: number },
+  ) {
+    await this.elasticsearchRepo.updateRestaurantRating(id, dto.rating);
+    return { success: true, id, rating: dto.rating };
   }
 }

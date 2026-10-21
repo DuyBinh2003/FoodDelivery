@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Hệ Thống Đánh Giá & Xếp Hạng 3 Bên (Review & Rating) Đồng Bộ Elasticsearch
 
-`[DRAFT]` • **Issue liên kết:** [#74](https://github.com/DuyBinh2003/FoodDelivery/issues/74) • **Phân loại:** `customer` • **Ngày khởi tạo:** 2026-10-21
+`[COMPLETED]` • **Issue liên kết:** [#74](https://github.com/DuyBinh2003/FoodDelivery/issues/74) • **Phân loại:** `customer` • **Ngày khởi tạo:** 2026-10-21
 
 ---
 

@@ -25,6 +25,8 @@ import { ValidateCartDto } from '@/modules/orders/dto/validate-cart.dto.js';
 import { GetOrderHistoryUseCase } from '@/modules/orders/usecases/get-order-history.usecase.js';
 import { CreateOrderReviewUseCase } from '@/modules/orders/usecases/create-order-review.usecase.js';
 import { CreateOrderReviewDto } from '@/modules/orders/dto/create-order-review.dto.js';
+import { GetRestaurantReviewsUseCase } from '@/modules/orders/usecases/get-restaurant-reviews.usecase.js';
+import { RestaurantReviewsQueryDto } from '@/modules/orders/dto/restaurant-reviews-query.dto.js';
 import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admin.usecase.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
@@ -67,6 +69,8 @@ export class OrdersController {
     private readonly getAvailableDriverTripsUseCase: GetAvailableDriverTripsUseCase,
     @Inject(GetRestaurantOrdersUseCase)
     private readonly getRestaurantOrdersUseCase: GetRestaurantOrdersUseCase,
+    @Inject(GetRestaurantReviewsUseCase)
+    private readonly getRestaurantReviewsUseCase: GetRestaurantReviewsUseCase,
     @Inject(OrderEventsService)
     private readonly orderEventsService: OrderEventsService,
   ) {}
@@ -95,7 +99,7 @@ export class OrdersController {
     return this.getOrderHistoryUseCase.execute({ customerId: user.id });
   }
 
-  @Post(':id/reviews')
+  @Post([':id/review', ':id/reviews'])
   @UseGuards(JwtAuthGuard)
   createReview(
     @Param('id', ParseUUIDPipe) id: string,
@@ -198,6 +202,16 @@ export class OrdersController {
     @CurrentUser() user: JwtPayload,
   ): Promise<Observable<MessageEvent>> {
     return this.orderEventsService.streamOrderEvents(id, user);
+  }
+
+  // --- Order Reviews Endpoints ---
+
+  @Get('restaurants/:restaurantId/reviews')
+  getRestaurantReviews(
+    @Param('restaurantId', ParseUUIDPipe) restaurantId: string,
+    @Query() query: RestaurantReviewsQueryDto,
+  ) {
+    return this.getRestaurantReviewsUseCase.execute(restaurantId, query);
   }
 }
 
