@@ -1,0 +1,37 @@
+{
+  "ci-gate-post-code": {
+    "enabled": true,
+    "PostToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .agents/scripts/remind-ci-gate.js",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "no-any-guard": {
+    "enabled": false,
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node .agents/scripts/check-no-any.js",
+        "timeout": 10
+      }
+    ]
+  },
+  "session-start-reminder": {
+    "enabled": true,
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node .agents/scripts/session-reminder.js",
+        "timeout": 5
+      }
+    ]
+  }
+}

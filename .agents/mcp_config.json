@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "_comment": "Thêm MCP servers tại đây khi cần tích hợp external tools.",
+    "_example_postgres": {
+      "_disabled": true,
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/fooddelivery"],
+      "env": {
+        "DB_READONLY": "true"
+      }
+    },
+    "_example_filesystem": {
+      "_disabled": true,
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"]
+    }
+  }
+}
