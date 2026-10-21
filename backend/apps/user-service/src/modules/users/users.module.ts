@@ -23,9 +23,11 @@ import { RegistrationRequest } from '@/modules/users/entities/registration-reque
 import { RegistrationWriteRepository } from '@/modules/users/repositories/registration.write.repository.js';
 import { SubmitRegistrationUseCase } from '@/modules/users/usecases/submit-registration.usecase.js';
 import { UserGateway } from '@/modules/users/gateways/user.gateway.js';
+import { StorageModule } from '@/common/storage/index.js';
 
 @Module({
   imports: [
+    StorageModule,
     TypeOrmModule.forFeature([User, CustomerProfile, DriverProfile, RegistrationRequest, UserAddress]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],

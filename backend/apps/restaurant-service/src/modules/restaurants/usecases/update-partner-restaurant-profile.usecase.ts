@@ -30,6 +30,9 @@ export class UpdatePartnerRestaurantProfileUseCase {
     if (command.dto.address !== undefined) {
       restaurant.address = command.dto.address;
     }
+    if (command.dto.banner_url !== undefined) {
+      restaurant.banner_url = command.dto.banner_url;
+    }
 
     let savedRestaurant = await this.restaurantWriteRepo.save(restaurant);
 

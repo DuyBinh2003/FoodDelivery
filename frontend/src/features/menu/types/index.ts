@@ -59,6 +59,7 @@ export interface Restaurant {
   lon?: number;
   cover_url?: string;
   image_url?: string;
+  banner_url?: string;
   discount_label?: string;
   is_freeship?: boolean;
   categories?: RestaurantCategory[];

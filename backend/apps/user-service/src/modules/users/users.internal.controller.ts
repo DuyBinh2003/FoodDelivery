@@ -8,6 +8,7 @@ import { RegistrationRequest } from '@/modules/users/entities/registration-reque
 import { ReviewRegistrationDto, RegistrationStatus } from '@/modules/users/dto/review-registration.dto.js';
 import { UserGateway } from '@/modules/users/gateways/user.gateway.js';
 import { UserAddressRepository } from '@/modules/users/repositories/user-address.repository.js';
+import { UserAddress } from '@/modules/users/entities/user-address.entity.js';
 
 @Controller('internal')
 export class UsersInternalController {
@@ -336,7 +337,7 @@ export class UsersInternalController {
   @Get('users/:id/default-address')
   async getDefaultAddressInternal(@Param('id', ParseUUIDPipe) id: string) {
     const addresses = await this.addressRepo.findUserAddresses(id);
-    const defaultAddr = addresses.find((a) => a.is_default) || addresses[0] || null;
+    const defaultAddr = addresses.find((a: UserAddress) => a.is_default) || addresses[0] || null;
     if (!defaultAddr) {
       throw new NotFoundException(`User ${id} has no registered addresses`);
     }

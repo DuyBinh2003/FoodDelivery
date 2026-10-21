@@ -182,8 +182,10 @@ async function apiClient<T>(
     });
   }
 
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(customHeaders as Record<string, string>),
   };
 
@@ -202,7 +204,7 @@ async function apiClient<T>(
     const response = await fetch(url.toString(), {
       ...fetchOptions,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(timeoutMs),
     });
 

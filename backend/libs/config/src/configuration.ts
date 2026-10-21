@@ -30,6 +30,11 @@ export default () => ({
     orderDriverDispatchTopic: process.env.SNS_ORDER_DRIVER_DISPATCH_TOPIC,
     userRegistrationTopic: process.env.SNS_USER_REGISTRATION_TOPIC,
   },
+  s3: {
+    endpoint: process.env.S3_ENDPOINT || process.env.LOCALSTACK_ENDPOINT,
+    bucket: process.env.S3_BUCKET || 'food-delivery-assets',
+    publicUrlPrefix: process.env.S3_PUBLIC_URL_PREFIX || 'http://localhost:4566/food-delivery-assets',
+  },
   services: {
     orderUrl: process.env.ORDER_SERVICE_URL,
     restaurantUrl: process.env.RESTAURANT_SERVICE_URL,

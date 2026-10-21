@@ -66,5 +66,9 @@ export class UserWriteRepository {
   async saveDriverProfile(profile: DriverProfile): Promise<DriverProfile> {
     return this.driverProfileRepo.save(profile);
   }
+
+  async updateAvatar(userId: string, avatarUrl: string): Promise<void> {
+    await this.dataSource.getRepository(User).update({ id: userId }, { avatar_url: avatarUrl });
+  }
 }
 

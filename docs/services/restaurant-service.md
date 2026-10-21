@@ -33,6 +33,7 @@ Restaurant Service là microservice phụ trách quản lý dữ liệu đối t
 | `/restaurants/partner/my-restaurant/menu-items/:itemId` | `PATCH` | Cập nhật món ăn (giá bán, giá gốc, nhóm tùy chọn `options`, trạng thái còn/hết món, tags, category, ảnh). |
 | `/restaurants/partner/my-restaurant/menu-items/:itemId` | `DELETE` | Xóa mềm món ăn khỏi thực đơn (`is_deleted = true`). |
 | `/restaurants/partner/my-restaurant/tags` | `POST` | Tạo tag nhãn món ăn mới hoặc tái sử dụng tag đã có cho đối tác nhà hàng. |
+| `/restaurants/upload` | `POST` | Tải lên ảnh món ăn (`folder: 'dishes'`) hoặc banner nhà hàng (`folder: 'banners'`) lên LocalStack S3. |
 
 ### B. Metadata (Công khai / Khách hàng & Đối tác)
 
@@ -62,6 +63,7 @@ Restaurant Service là microservice phụ trách quản lý dữ liệu đối t
   - `owner_id`: UUID (Logical FK tham chiếu `schema_user.m_user`)
   - `name`: VARCHAR(255)
   - `address`: TEXT
+  - `banner_url`: TEXT (URL ảnh bìa/banner trên LocalStack S3)
   - `is_active`: BOOLEAN (Mặc định `true`)
   - `verification_status`: VARCHAR(50) (`PENDING`, `APPROVED`, `REJECTED`)
   - `rating`: NUMERIC(3,2)

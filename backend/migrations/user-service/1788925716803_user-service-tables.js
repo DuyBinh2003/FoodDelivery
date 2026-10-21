@@ -16,6 +16,7 @@ export const up = (pgm) => {
     email: { type: 'varchar(255)', notNull: true, unique: true },
     password_hash: { type: 'varchar(255)', notNull: true },
     role: { type: 'varchar(20)', notNull: true },
+    avatar_url: { type: 'text', nullable: true },
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }

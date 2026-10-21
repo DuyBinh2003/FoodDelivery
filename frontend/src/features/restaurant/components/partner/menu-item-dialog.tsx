@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import type { PartnerMenuItem, CategoryItem, TagItem, CreateMenuItemPayload } from '@/features/restaurant/types/partner.types';
 import type { MenuItemOptionGroup, MenuItemOptionChoice } from '@/features/menu/types';
-import { createPartnerTag } from '@/features/restaurant/api/partner-api';
+import { createPartnerTag, uploadRestaurantMedia } from '@/features/restaurant/api/partner-api';
 
 interface MenuItemDialogProps {
   isOpen: boolean;
@@ -67,7 +67,29 @@ function MenuItemDialogContent({
 
   const [isAvailable, setIsAvailable] = useState(initialItem?.is_available ?? true);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Kích thước ảnh không được vượt quá 5MB');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setError(null);
+      const res = await uploadRestaurantMedia(file, 'dishes');
+      setImageUrl(res.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Lỗi khi tải ảnh lên S3');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const toggleTag = (tagId: string) => {
     setSelectedTagIds((prev) =>
@@ -323,6 +345,72 @@ function MenuItemDialogContent({
             placeholder="VD: Phở Bò Tái Nạm, Trà Sữa Trân Châu Đường Đen..."
             className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition-colors text-sm"
           />
+        </div>
+
+        {/* Hình ảnh món ăn (LocalStack S3) */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5 flex items-center justify-between">
+            <span>Hình ảnh món ăn (S3 Storage)</span>
+            <span className="text-[11px] text-zinc-500 font-normal">Tối đa 5MB (JPG, PNG, WEBP)</span>
+          </label>
+
+          {imageUrl ? (
+            <div className="relative w-full h-44 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageUrl}
+                alt={name || 'Dish preview'}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
+                <label className="cursor-pointer bg-white/20 hover:bg-white/30 text-white text-xs font-medium px-3 py-2 rounded-xl backdrop-blur-md transition-all shadow-md">
+                  Đổi ảnh khác
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageFileChange}
+                    disabled={uploadingImage}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setImageUrl('')}
+                  className="bg-red-500/80 hover:bg-red-500 text-white text-xs font-medium px-3 py-2 rounded-xl backdrop-blur-md transition-all shadow-md"
+                >
+                  Xóa ảnh
+                </button>
+              </div>
+            </div>
+          ) : (
+            <label className="w-full h-28 border-2 border-dashed border-white/10 hover:border-orange-500/50 rounded-2xl bg-zinc-900/50 hover:bg-zinc-900 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-200 group">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageFileChange}
+                disabled={uploadingImage}
+              />
+              {uploadingImage ? (
+                <div className="flex items-center gap-2 text-orange-400 text-sm">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Đang tải ảnh lên S3...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="w-9 h-9 rounded-xl bg-white/5 group-hover:bg-orange-500/10 text-zinc-400 group-hover:text-orange-400 flex items-center justify-center transition-colors">
+                    <ImageIcon className="w-4 h-4" />
+                  </div>
+                  <div className="text-center">
+                    <span className="text-xs font-semibold text-zinc-300 group-hover:text-orange-400 transition-colors">
+                      Nhấn để tải ảnh món ăn lên S3
+                    </span>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Hỗ trợ PNG, JPG, WEBP dưới 5MB</p>
+                  </div>
+                </>
+              )}
+            </label>
+          )}
         </div>
 
         {/* Giá bán & Giá gốc niêm yết */}

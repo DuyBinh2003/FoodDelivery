@@ -35,9 +35,11 @@
     "migrate:payment": "node-pg-migrate -m migrations/payment-service --schema schema_payment --migrations-schema schema_payment --migrations-table pgmigrations up",
     "migrate:all": "npm run migrate:init && npm run migrate:user && npm run migrate:restaurant && npm run migrate:order && npm run migrate:admin && npm run migrate:payment",
     "migrate:up": "npm run migrate:all",
-    "migrate:reset": "node scripts/reset-db.js && npm run migrate:all"
+    "migrate:reset": "node scripts/reset-db.js && npm run migrate:all",
+    "sync:s3": "node scripts/sync-s3-seed.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1153.0",
     "@aws-sdk/client-sns": "^3.1147.0",
     "@aws-sdk/client-sqs": "^3.1131.0",
     "@elastic/elasticsearch": "^8.17.0",
@@ -78,6 +80,7 @@
     "@nestjs/testing": "^12.0.1",
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.0",
+    "@types/multer": "^2.3.0",
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.23.1",
