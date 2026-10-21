@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Quản Lý Phiên Đăng Nhập Với Refresh Token Rotation (RTR) & Redis Blacklist
 
-`[DRAFT]` • **Issue liên kết:** [#73](https://github.com/DuyBinh2003/FoodDelivery/issues/73) • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-21
+`[COMPLETED]` • **Issue liên kết:** [#73](https://github.com/DuyBinh2003/FoodDelivery/issues/73) • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-21
 
 ---
 
