@@ -104,6 +104,9 @@ graph TD
 | `/orders/driver/reviews` | `GET` | `JwtAuthGuard` | Xem danh sách đánh giá tài xế nhận được | Không | `200`, `401` |
 | `/orders/driver/trips/:id/status` | `PATCH` | `JwtAuthGuard` | Tài xế cập nhật trạng thái cuốc (Ghi DB khi `COMPLETED`) | `{ "status": "COMPLETED" }` | `200`, `400`, `401` |
 | `/orders/:id/reviews` | `POST` | `JwtAuthGuard` | Gửi đánh giá cho đơn hàng đã hoàn tất | `CreateOrderReviewDto` | `201`, `400`, `404` |
+| `/vouchers` | `POST` | `JwtAuthGuard` | Tạo mới Voucher (Admin tạo Platform, Partner tạo Merchant) | `CreateVoucherDto` | `201`, `400`, `409` |
+| `/vouchers/validate` | `POST` | Public / User | Kiểm tra và tính toán số tiền giảm giá voucher trước khi đặt đơn | `ValidateVoucherDto` | `200`, `400`, `404` |
+| `/vouchers/available` | `GET` | Public / User | Lấy danh sách voucher hợp lệ cho giỏ hàng của quán | Query `?restaurant_id=...&subtotal=...` | `200` |
 | `/orders` | `GET` | `JwtAuthGuard` | Quản trị viên tra cứu danh sách đơn với bộ lọc & phân trang | `QueryOrdersDto` (`page`, `limit`, `status`,...) | `200`, `401` |
 
 ### B. Internal APIs (Giao tiếp nội bộ Docker, NGINX Gateway chặn 403)

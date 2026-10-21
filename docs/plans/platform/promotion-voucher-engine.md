@@ -1,7 +1,7 @@
 # Kế Hoạch Triển Khai: Hệ Thống Voucher & Khuyến Mại Đa Tầng (Platform vs Merchant) Tích Hợp Sổ Cái Kép
 
 > **Mã công việc (Task Code):** `promotion-voucher-engine`  
-> **Trạng thái:** `[IN_PROGRESS]`  
+> **Trạng thái:** `[COMPLETED]`  
 > **Tác giả:** `@planner` (Điều phối bởi `@orchestrator`)  
 > **Nhánh phát triển:** `feature/issue-75-promotion-voucher-engine`  
 > **GitHub Issue:** [#75](https://github.com/DuyBinh2003/FoodDelivery/issues/75)  

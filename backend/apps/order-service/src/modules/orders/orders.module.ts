@@ -7,8 +7,11 @@ import { OrdersController } from '@/modules/orders/orders.controller.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
 import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
+import { Voucher } from '@/modules/orders/entities/voucher.entity.js';
+import { VoucherUsage } from '@/modules/orders/entities/voucher-usage.entity.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
+import { VoucherRepository } from '@/modules/orders/repositories/voucher.repository.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
 import { GetOrderUseCase } from '@/modules/orders/usecases/get-order.usecase.js';
@@ -24,6 +27,12 @@ import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admi
 import { ClaimDriverTripUseCase } from '@/modules/orders/usecases/claim-driver-trip.usecase.js';
 import { GetAvailableDriverTripsUseCase } from '@/modules/orders/usecases/get-available-driver-trips.usecase.js';
 import { GetRestaurantOrdersUseCase } from '@/modules/orders/usecases/get-restaurant-orders.usecase.js';
+import { CreateVoucherUseCase } from '@/modules/orders/usecases/create-voucher.usecase.js';
+import { ValidateVoucherUseCase } from '@/modules/orders/usecases/validate-voucher.usecase.js';
+import { ApplyVoucherUseCase } from '@/modules/orders/usecases/apply-voucher.usecase.js';
+import { RevertVoucherUseCase } from '@/modules/orders/usecases/revert-voucher.usecase.js';
+import { GetAvailableVouchersUseCase } from '@/modules/orders/usecases/get-available-vouchers.usecase.js';
+import { VouchersController } from '@/modules/orders/vouchers.controller.js';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { SnsService } from '@/common/messaging/sns.service.js';
 import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingestion.consumer.js';
@@ -31,10 +40,10 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, OrderReview]),
+    TypeOrmModule.forFeature([Order, OrderItem, OrderReview, Voucher, VoucherUsage]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
-  controllers: [OrdersController, OrdersInternalController],
+  controllers: [OrdersController, OrdersInternalController, VouchersController],
   providers: [
     OrderReadRepository,
     OrderWriteRepository,
@@ -58,6 +67,12 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
     ClaimDriverTripUseCase,
     GetAvailableDriverTripsUseCase,
     GetRestaurantOrdersUseCase,
+    VoucherRepository,
+    CreateVoucherUseCase,
+    ValidateVoucherUseCase,
+    ApplyVoucherUseCase,
+    RevertVoucherUseCase,
+    GetAvailableVouchersUseCase,
   ],
   exports: [
     OrderReadRepository,
@@ -80,6 +95,12 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
     ClaimDriverTripUseCase,
     GetAvailableDriverTripsUseCase,
     GetRestaurantOrdersUseCase,
+    VoucherRepository,
+    CreateVoucherUseCase,
+    ValidateVoucherUseCase,
+    ApplyVoucherUseCase,
+    RevertVoucherUseCase,
+    GetAvailableVouchersUseCase,
   ],
 })
 export class OrdersModule { }
