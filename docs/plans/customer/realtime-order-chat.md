@@ -1,7 +1,7 @@
 # Kế Hoạch Triển Khai: Kênh Chat Thời Gian Thực Khách Hàng - Tài Xế - Nhà Hàng Qua WebSocket
 
 > **Mã công việc (Task Code):** `realtime-order-chat`  
-> **Trạng thái:** `[IN_PROGRESS]`  
+> **Trạng thái:** `[COMPLETED]`  
 > **Tác giả:** `@planner` (Điều phối bởi `@orchestrator`)  
 > **Nhánh phát triển:** `feature/issue-76-realtime-order-chat`  
 > **GitHub Issue:** [#76](https://github.com/DuyBinh2003/FoodDelivery/issues/76)  

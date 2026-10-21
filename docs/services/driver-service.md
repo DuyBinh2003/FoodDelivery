@@ -22,6 +22,10 @@ Dịch vụ `delivery-service` (Port `3005`) chịu trách nhiệm định vị 
 | `GET` | `/delivery/orders/:orderId/location` | Public / Khách hàng | Lấy tọa độ GPS mới nhất của tài xế đang giao đơn hàng. |
 | `POST` | `/delivery/orders/:orderId/location` | Tài xế / Internal | Endpoint cập nhật vị trí GPS qua HTTP REST (Dự phòng cho WebSocket). |
 | `POST` | `/delivery/estimate-distance` | Public / Client | Tính toán cự ly đường chim bay (km) và thời gian dự kiến giữa 2 tọa độ bất kỳ. |
+| `GET` | `/delivery/chat/orders/:orderId/messages` | Khách / Tài xế / Quán | Lấy lịch sử tin nhắn của đơn hàng (hỗ trợ phân trang). |
+| `POST` | `/delivery/chat/orders/:orderId/messages` | Khách / Tài xế / Quán | Gửi tin nhắn qua REST API (dự phòng WebSocket). |
+| `POST` | `/delivery/chat/orders/:orderId/seen` | Khách / Tài xế / Quán | Đánh dấu đã đọc tin nhắn của đối phương. |
+| `GET` | `/delivery/chat/quick-replies` | Public / Client | Lấy danh mục câu trả lời nhanh mẫu theo vai trò. |
 
 ### Chi tiết Request / Response mẫu
 
@@ -102,6 +106,18 @@ Gateway cung cấp kênh truyền thông hai chiều (Full-Duplex) với độ t
 ### B. Sự kiện Phát đi (Server ➔ Client)
 1. **`driver:location_current`**: Trả về dữ liệu GPS tức thời cho khách hàng ngay khi vừa mở màn hình theo dõi đơn hàng.
 2. **`driver:location_updated`**: Broadcast tọa độ GPS mới nhất kèm cự ly còn lại và ETA mỗi khi tài xế di chuyển.
+
+### C. Sự kiện Kênh Chat Thời Gian Thực (In-App Order Chat)
+- **Client ➔ Server**:
+  - `chat:join` `{ orderId, userId, role }`: Tham gia phòng chat của đơn hàng (`chat_order_<orderId>`), trả về 50 tin nhắn gần nhất và quick replies.
+  - `chat:send` `{ order_id, sender_id, sender_role, sender_name, content, message_type? }`: Gửi tin nhắn mới, lưu PostgreSQL `t_order_chat_message` và broadcast tới room (< 200ms).
+  - `chat:mark_seen` `{ orderId, readerId }`: Đánh dấu đã đọc tin nhắn của đối phương và broadcast `chat:seen`.
+  - `chat:typing` `{ orderId, userId, userName, role, isTyping }`: Phát trạng thái đang soạn tin nhắn tới các thành viên khác.
+- **Server ➔ Client**:
+  - `chat:joined`: Trả về dữ liệu lịch sử phòng chat, danh mục câu trả lời nhanh mẫu và trạng thái phòng.
+  - `chat:new_message`: Phát sóng tin nhắn mới cho các bên liên quan trong đơn.
+  - `chat:seen`: Cập nhật thời điểm đọc tin nhắn của đối phương.
+  - `chat:typing`: Trạng thái đang gõ phím.
 
 ---
 
