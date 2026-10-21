@@ -1,7 +1,7 @@
 # Kế Hoạch Triển Khai: Thuật Toán Gom Đơn / Ghép Cuốc (Order Stacking) Cho Tài Xế Theo Lộ Trình OSRM
 
 > **Mã công việc (Task Code):** `driver-order-stacking-osrm`  
-> **Trạng thái:** `[IN_PROGRESS]`  
+> **Trạng thái:** `[COMPLETED]`  
 > **Tác giả:** `@planner` (Điều phối bởi `@orchestrator`)  
 > **Nhánh phát triển:** `feature/issue-78-driver-order-stacking`  
 > **GitHub Issue:** [#78](https://github.com/DuyBinh2003/FoodDelivery/issues/78)  
