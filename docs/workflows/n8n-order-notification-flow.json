@@ -1,0 +1,159 @@
+{
+  "name": "FoodDelivery Order & Merchant Notification Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "order-events",
+        "responseMode": "onReceived",
+        "responseData": "allEntries",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verify HMAC-SHA256 signature\nconst crypto = require('crypto');\nconst signature = $node[\"Webhook Trigger\"].json.headers['x-webhook-signature'];\nconst secretKey = $env.WEBHOOK_SECRET_KEY || 'fd-default-n8n-secret-key-2026';\nconst rawBody = $node[\"Webhook Trigger\"].json.body;\n\nconst expected = 'sha256=' + crypto.createHmac('sha256', secretKey).update(JSON.stringify(rawBody)).digest('hex');\n\nif (signature !== expected) {\n  throw new Error('Invalid HMAC-SHA256 signature');\n}\n\nreturn [{\n  json: {\n    eventType: $node[\"Webhook Trigger\"].json.headers['x-webhook-event'],\n    payload: rawBody,\n    verified: true\n  }\n}];"
+      },
+      "name": "Verify HMAC Signature",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.eventType}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "order.created",
+              "output": 0
+            },
+            {
+              "value2": "order.delayed",
+              "output": 1
+            },
+            {
+              "value2": "merchant.alert",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "name": "Switch Event Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.payload.merchantTelegramChatId || '-10023456789'}}",
+        "text": "=🛵 <b>ĐƠN HÀNG MỚI #{{$json.payload.orderId.substring(0,8)}}</b>\n\n🏪 Quán: <b>{{$json.payload.restaurantName}}</b>\n💰 Tổng tiền: <b>{{$json.payload.totalAmount}} VND</b>\n📍 Địa chỉ giao: {{$json.payload.deliveryAddress}}\n⏰ Thời gian: {{$json.payload.createdAt}}\n\n<i>Vui lòng mở ứng dụng Quản lý Quán để xác nhận món ăn!</i>",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Send Telegram Merchant Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        950,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "channel": "#operations-alerts",
+        "text": "=⚠️ *CẢNH BÁO ĐƠN HÀNG BỊ TRỄ*\n- Mã đơn: `{{$json.payload.orderId}}`\n- Quán: *{{$json.payload.restaurantName}}*\n- Thời gian trễ: *{{$json.payload.delayMinutes}} phút*\n- CS cần hỗ trợ gọi ngay cho tài xế/quán!",
+        "otherOptions": {}
+      },
+      "name": "Send Slack Ops Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        950,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.payload.merchantTelegramChatId || '-10023456789'}}",
+        "text": "=🔔 <b>CẢNH BÁO KHO & MÓN ĂN QUÁN</b>\n\nNội dung: {{$json.payload.message}}\nMón ăn ảnh hưởng: {{$json.payload.itemName || 'N/A'}}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Send Merchant Stock Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        950,
+        460
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Verify HMAC Signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify HMAC Signature": {
+      "main": [
+        [
+          {
+            "node": "Switch Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Event Type": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Merchant Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Slack Ops Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Merchant Stock Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

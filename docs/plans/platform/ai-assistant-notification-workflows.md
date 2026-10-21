@@ -1,7 +1,7 @@
 # Kế Hoạch Triển Khai: Trợ Lý AI Gợi Ý Món Ăn & Luồng Tự Động Hóa Thông Báo Qua Webhooks & n8n
 
 > **Mã công việc (Task Code):** `ai-assistant-notification-workflows`  
-> **Trạng thái:** `[DRAFT]`  
+> **Trạng thái:** `[COMPLETED]`  
 > **Tác giả:** `@planner` (Điều phối bởi `@orchestrator`)  
 > **Nhánh phát triển:** `feature/issue-86-ai-assistant-notification-workflows`  
 > **GitHub Issue:** [#86](https://github.com/DuyBinh2003/FoodDelivery/issues/86)  

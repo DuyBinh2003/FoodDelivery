@@ -60,3 +60,56 @@ GET /api/search/restaurants
 ```
 
 Backend sẽ mapping các params này thành Query DSL của Elasticsearch (`bool` query kết hợp `must`, `filter`, `geo_distance`).
+ 
+---
+
+## 5. Trợ Lý AI Gợi Ý Món Ăn Thông Minh (AI Food Recommendation Assistant)
+
+Module Trợ lý AI (`AiAssistantModule` / `AiAssistantService`) hỗ trợ người dùng tìm kiếm và khám phá món ăn thông qua giao tiếp ngôn ngữ tự nhiên (Conversational AI).
+
+### A. Danh Sách REST APIs
+| Phương thức | Đường dẫn | Quyền hạn | Mô tả |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/search/ai/recommend` | Public / Customer | Phân tích prompt tự nhiên, trích xuất nhu cầu sức khỏe/ngân sách/thể loại và gợi ý món ăn phù hợp. |
+| `POST` | `/search/ai/chat` | Public / Customer | Hội thoại đàm thoại nhiều lượt (Multi-turn chat) với trợ lý ảo. |
+
+### B. Request / Response Mẫu: `POST /search/ai/recommend`
+- **Request Body**:
+```json
+{
+  "prompt": "Hôm nay tôi bị cảm sốt muốn ăn món gì nóng ấm nhiều gừng thanh nhẹ quanh quận 1 dưới 50k",
+  "lat": 10.7765,
+  "lng": 106.7009,
+  "budget": 50000
+}
+```
+- **Response `200 OK`**:
+```json
+{
+  "message": "Mình hiểu bạn đang cảm thấy không khỏe. Mình đặc biệt đề xuất các món nóng hổi, thanh nhẹ, ấm bụng giúp bạn nhanh chóng hồi phục năng lượng:",
+  "extractedPreferences": {
+    "mood": "RECOVERY_HEALTHY",
+    "category": "chao-sup",
+    "maxPrice": 50000,
+    "dietary": [],
+    "keywords": ["chao", "sup", "am-bung", "mon-nuoc"]
+  },
+  "suggestedDishes": [
+    {
+      "dishId": "dish-001",
+      "dishName": "Cháo Gà Hạt Sen Nóng Hổi",
+      "restaurantId": "rest-101",
+      "restaurantName": "Quán Cháo Dinh Dưỡng Cô Ba",
+      "price": 45000,
+      "rating": 4.8,
+      "matchReason": "Phù hợp từ khóa 'chao'; Đúng nhóm món 'chao-sup'; Giá 45.000đ nằm trong ngân sách"
+    }
+  ],
+  "source": "FALLBACK_RULE_BASED"
+}
+```
+
+### C. Cơ Chế Fallback An Toàn (Graceful Degradation)
+- Khi gọi LLM bên ngoài (Gemini/OpenAI) gặp sự cố mạng hoặc timeout (> 4000ms), hệ thống tự động suy thoái trong suốt sang **Rule-based Keyword Recommendation Engine** dựa trên catalog món ăn sẵn có.
+- Đảm bảo API luôn phản hồi nhanh chóng (HTTP 200) với gợi ý chuẩn mực và không bao giờ gián đoạn trải nghiệm người dùng.
+
