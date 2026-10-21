@@ -1,7 +1,7 @@
 # Kế Hoạch Triển Khai: Tích Hợp Cổng Thanh Toán Trực Tuyến (VNPay / MoMo) & Webhook Idempotency
 
 > **Mã công việc (Task Code):** `payment-gateway-webhook`  
-> **Trạng thái:** `[IN_PROGRESS]`  
+> **Trạng thái:** `[COMPLETED]`  
 > **Tác giả:** `@planner` (Điều phối bởi `@orchestrator`)  
 > **Nhánh phát triển:** `feature/issue-77-payment-gateway-webhook`  
 > **GitHub Issue:** [#77](https://github.com/DuyBinh2003/FoodDelivery/issues/77)  
