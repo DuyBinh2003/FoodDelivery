@@ -13,8 +13,10 @@ import {
   ChevronUp,
   PackageCheck,
   Loader2,
+  MessageSquare,
 } from 'lucide-react';
 import type { DriverTrip } from '@/features/driver/types/driver.types';
+import { OrderLiveChatWidget } from '@/features/orders/components/OrderLiveChatWidget';
 
 interface DriverTripCardProps {
   trip: DriverTrip;
@@ -58,6 +60,7 @@ const formatFullDate = (dateInput: string | Date) => {
 export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
   const [showItems, setShowItems] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const getStatusBadge = () => {
     switch (trip.status) {
@@ -248,6 +251,17 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
+          {trip.status !== 'CANCELLED' && trip.status !== 'COMPLETED' && (
+            <button
+              onClick={() => setShowChat((prev) => !prev)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-orange-500/15 hover:bg-orange-500 text-orange-400 hover:text-white border border-orange-500/30 transition-all cursor-pointer shadow-sm shadow-orange-500/10 active:scale-95"
+              title="Nhắn tin trực tiếp với khách hàng"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Chat Khách</span>
+            </button>
+          )}
+
           {trip.items && trip.items.length > 0 && (
             <button
               onClick={() => setShowItems(!showItems)}
@@ -279,6 +293,18 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
           )}
         </div>
       </div>
+
+      {/* Driver-Customer Live Chat Widget */}
+      {trip.status !== 'CANCELLED' && trip.status !== 'COMPLETED' && (
+        <OrderLiveChatWidget
+          orderId={trip.order_id}
+          role="DRIVER"
+          driverName={trip.recipient_name || 'Khách hàng'}
+          restaurantName={trip.pickup_name}
+          isOpen={showChat}
+          onOpenChange={setShowChat}
+        />
+      )}
 
       {/* Expandable Items List */}
       {showItems && trip.items && trip.items.length > 0 && (

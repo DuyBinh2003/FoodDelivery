@@ -34,6 +34,7 @@ import { DriverTripsList } from './driver-trips-list';
 import { DriverReviewsTab } from './driver-reviews-tab';
 import { DriverAvailableTrips } from './driver-available-trips';
 import { IncomingTripModal } from './incoming-trip-modal';
+import { DriverActiveChatManager } from './driver-active-chat-manager';
 import { useDriverDispatch } from '@/features/driver/hooks/useDriverDispatch';
 import { ErrorState } from '@/components/ui/error-state/error-state';
 import { getErrorMessage } from '@/lib/error-handler';
@@ -304,7 +305,10 @@ export function DriverDashboard() {
     );
   }
 
-  // currentStatus is already defined above
+  const activeTrips = trips.filter((t) =>
+    ['ACCEPTED', 'COOKING', 'READY_FOR_PICKUP', 'DELIVERING'].includes(t.status)
+  );
+  const currentActiveTrip = activeTrips[0];
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
@@ -377,6 +381,42 @@ export function DriverDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
         {/* Metrics Grid */}
         <DriverMetricsGrid summary={summary} loading={loading} />
+
+        {/* Active Delivery Order Banner */}
+        {currentActiveTrip && (
+          <div className="bg-gradient-to-r from-orange-500/15 via-amber-500/10 to-zinc-900 border border-orange-500/30 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in fade-in">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0 animate-pulse">
+                <Bike className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                    Cuốc xe đang thực hiện
+                  </span>
+                  <span className="text-xs font-mono font-medium text-zinc-400">
+                    #{currentActiveTrip.order_id.slice(0, 8)}
+                  </span>
+                </div>
+                <h3 className="text-sm font-bold text-white mt-1">
+                  {currentActiveTrip.pickup_name} ➔ {currentActiveTrip.recipient_name || 'Khách hàng'}
+                </h3>
+                <p className="text-xs text-zinc-400 truncate max-w-md mt-0.5">
+                  Giao đến: {currentActiveTrip.dropoff_address}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+              <button
+                onClick={() => setActiveTab('trips')}
+                className="px-4 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                Xem chi tiết
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tab Navigation & Content */}
         <div className="space-y-6">
@@ -468,6 +508,9 @@ export function DriverDashboard() {
         onReject={handleModalReject}
         onTimeout={handleTimeout}
       />
+
+      {/* Active Delivery Chat & Message Receiver Manager */}
+      <DriverActiveChatManager trips={trips} />
     </div>
   );
 }
