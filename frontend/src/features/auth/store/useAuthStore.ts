@@ -58,7 +58,8 @@ export const useAuthStore = create<AuthState>()(
       setHasHydrated: (state) => set({ _hasHydrated: state }),
       login: (user) => set({ isAuthenticated: true, user }),
       logout: () => {
-        document.cookie = 'access_token=; path=/; max-age=0';
+        document.cookie = 'access_token=; path=/; max-age=0; SameSite=Lax';
+        document.cookie = 'refresh_token=; path=/; max-age=0; SameSite=Lax';
         set({ isAuthenticated: false, user: null });
       },
       refreshProfile: async () => {
