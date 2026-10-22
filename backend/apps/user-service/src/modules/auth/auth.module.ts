@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import type { SignOptions } from 'jsonwebtoken';
@@ -14,6 +15,7 @@ import { AuthRedisRepository } from '@/modules/auth/repositories/auth.redis.repo
 @Module({
   imports: [
     UsersModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -38,6 +40,7 @@ import { AuthRedisRepository } from '@/modules/auth/repositories/auth.redis.repo
     AuthRedisRepository,
   ],
   exports: [
+    PassportModule,
     LoginUseCase,
     RegisterUseCase,
     RefreshTokenUseCase,
