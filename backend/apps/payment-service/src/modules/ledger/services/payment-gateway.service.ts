@@ -53,7 +53,7 @@ export class PaymentGatewayService {
     const vnpAmount = dto.amount * 100; // VNPay quy định nhân 100
 
     const returnUrl = dto.returnUrl || 'http://localhost:3000/payment/webhooks/vnpay-return';
-    const orderInfo = dto.orderInfo || `Thanh toán nạp tiền ví ${dto.walletAccountId.slice(0, 8)}`;
+    const orderInfo = dto.orderInfo || (dto.walletAccountId ? `Thanh toán nạp tiền ví ${dto.walletAccountId}` : `Thanh toán đơn hàng ${dto.orderId || txnRef}`);
 
     const vnpParams: Record<string, string> = {
       vnp_Version: '2.1.0',
@@ -92,7 +92,7 @@ export class PaymentGatewayService {
 
   private generateMoMoUrl(dto: CreateGatewayPaymentUrlDto, txnRef: string): PaymentUrlResult {
     const requestId = `REQ_${Date.now()}`;
-    const orderInfo = dto.orderInfo || `Thanh toán nạp ví ${dto.walletAccountId.slice(0, 8)}`;
+    const orderInfo = dto.orderInfo || (dto.walletAccountId ? `Thanh toán nạp ví ${dto.walletAccountId}` : `Thanh toán đơn hàng ${dto.orderId || txnRef}`);
     const redirectUrl = dto.returnUrl || 'http://localhost:3000/payment/webhooks/momo-return';
     const ipnUrl = 'http://localhost:3000/payment/webhooks/momo';
     const extraData = Buffer.from(JSON.stringify({ walletAccountId: dto.walletAccountId, orderId: dto.orderId })).toString('base64');

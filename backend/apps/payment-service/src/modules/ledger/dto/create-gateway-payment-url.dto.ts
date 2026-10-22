@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsNotEmpty, IsOptional, IsUUID, IsEnum, Min } from 'class-validator';
+import { IsNumber, IsString, IsOptional, IsUUID, IsEnum, Min } from 'class-validator';
 
 export enum OnlinePaymentGateway {
   VNPAY = 'VNPAY',
@@ -13,9 +13,9 @@ export class CreateGatewayPaymentUrlDto {
   @IsEnum(OnlinePaymentGateway)
   paymentMethod: OnlinePaymentGateway;
 
+  @IsOptional()
   @IsUUID()
-  @IsNotEmpty()
-  walletAccountId: string;
+  walletAccountId?: string;
 
   @IsOptional()
   @IsUUID()

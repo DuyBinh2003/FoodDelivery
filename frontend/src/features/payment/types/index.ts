@@ -1,4 +1,4 @@
-export type PaymentMethod = 'WALLET' | 'COD';
+export type PaymentMethod = 'WALLET' | 'COD' | 'VNPAY' | 'MOMO';
 
 export interface WalletAccount {
   id: string;
@@ -38,6 +38,46 @@ export interface TopupWalletDto {
   paymentMethod: 'VNPAY' | 'MOMO' | 'STRIPE' | 'MOCK';
   referenceId: string;
   idempotencyKey: string;
+}
+
+export interface CreateGatewayPaymentUrlDto {
+  amount: number;
+  paymentMethod: 'VNPAY' | 'MOMO';
+  walletAccountId?: string;
+  orderId?: string;
+  returnUrl?: string;
+  orderInfo?: string;
+  bankCode?: string;
+}
+
+export interface PaymentUrlResponse {
+  paymentUrl: string;
+  qrPayload: string;
+  transactionRef: string;
+  gateway: 'VNPAY' | 'MOMO';
+  amount: number;
+}
+
+export interface SimulateGatewayWebhookDto {
+  gateway: 'VNPAY' | 'MOMO';
+  transactionRef: string;
+  amount: number;
+  walletAccountId?: string;
+  orderId?: string;
+  isSuccess?: boolean;
+}
+
+export interface SimulateGatewayWebhookResponse {
+  success: boolean;
+  gateway: 'VNPAY' | 'MOMO';
+  transactionRef: string;
+  amount: number;
+  result: {
+    RspCode?: string;
+    resultCode?: number;
+    message?: string;
+    Message?: string;
+  };
 }
 
 export interface ProcessPaymentDto {

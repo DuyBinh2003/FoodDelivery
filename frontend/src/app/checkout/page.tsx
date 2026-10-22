@@ -5,7 +5,16 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/features/cart';
 import { useCartValidation } from '@/features/cart/hooks/useCartValidation';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { getCustomerWallet, processOrderPayment, QuickTopupModal, type WalletDetailsResponse } from '@/features/payment';
+import {
+  getCustomerWallet,
+  processOrderPayment,
+  QuickTopupModal,
+  OnlinePaymentGatewayModal,
+  createGatewayPaymentUrl,
+  type WalletDetailsResponse,
+  type PaymentMethod,
+  type PaymentUrlResponse,
+} from '@/features/payment';
 import { createOrder } from '@/features/orders/api/order-api';
 import {
   MapPin,
@@ -21,6 +30,7 @@ import {
   Edit2,
   Home,
   Briefcase,
+  QrCode,
 } from 'lucide-react';
 import {
   AddressSelectorModal,
@@ -35,10 +45,13 @@ export default function CheckoutPage() {
   const { items, restaurantId, getSubtotal, getTotalItems, clearCart } = useCartStore();
   const { validateCart, isValidating } = useCartValidation();
 
-  const [paymentMethod, setPaymentMethod] = useState<'WALLET' | 'COD'>('WALLET');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('WALLET');
   const [walletData, setWalletData] = useState<WalletDetailsResponse | null>(null);
   const [isLoadingWallet, setIsLoadingWallet] = useState(false);
   const [isTopupModalOpen, setIsTopupModalOpen] = useState(false);
+  const [gatewayPaymentData, setGatewayPaymentData] = useState<PaymentUrlResponse | null>(null);
+  const [isGatewayModalOpen, setIsGatewayModalOpen] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [orderNote, setOrderNote] = useState('');
@@ -192,7 +205,27 @@ export default function CheckoutPage() {
 
       const createdOrder = await createOrder(orderPayload);
 
-      // 2. Process payment in payment-service
+      // 2. Gateway Online Payment (VNPAY / MOMO)
+      if (paymentMethod === 'VNPAY' || paymentMethod === 'MOMO') {
+        const returnUrl = typeof window !== 'undefined'
+          ? `${window.location.origin}/payment/return?orderId=${createdOrder.id}`
+          : undefined;
+
+        const gatewayRes = await createGatewayPaymentUrl({
+          amount: total,
+          paymentMethod,
+          orderId: createdOrder.id,
+          returnUrl,
+        });
+
+        setPendingOrderId(createdOrder.id);
+        setGatewayPaymentData(gatewayRes);
+        setIsGatewayModalOpen(true);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 3. Process payment for WALLET / COD in payment-service
       const idempotencyKey = `pay-${createdOrder.id}`;
       await processOrderPayment({
         orderId: createdOrder.id,
@@ -205,7 +238,7 @@ export default function CheckoutPage() {
         idempotencyKey,
       });
 
-      // 3. Clear cart and redirect to order tracker
+      // 4. Clear cart and redirect to order tracker
       clearCart();
       router.push(`/orders/${createdOrder.id}`);
     } catch (err: unknown) {
@@ -399,7 +432,81 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Option 2: Cash On Delivery (COD) */}
+              {/* Option 2: VNPAY QR */}
+              <div
+                onClick={() => setPaymentMethod('VNPAY')}
+                className={`relative p-4 rounded-2xl border transition-all cursor-pointer ${
+                  paymentMethod === 'VNPAY'
+                    ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10'
+                    : 'border-white/10 bg-zinc-800/30 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center font-black text-xs text-blue-400">
+                      VNPAY
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-bold">Cổng thanh toán VNPAY QR</span>
+                        <span className="text-[10px] bg-blue-500/20 text-blue-400 font-semibold px-2 py-0.5 rounded-full border border-blue-500/30">
+                          Thẻ / QR Ngân hàng
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        Quét mã QR qua 40+ ứng dụng ngân hàng & Thẻ quốc tế
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`w-5 h-5 rounded-full border-[5px] transition-all ${
+                      paymentMethod === 'VNPAY'
+                        ? 'border-blue-500 bg-black'
+                        : 'border-zinc-600 bg-zinc-800'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Option 3: MoMo Wallet */}
+              <div
+                onClick={() => setPaymentMethod('MOMO')}
+                className={`relative p-4 rounded-2xl border transition-all cursor-pointer ${
+                  paymentMethod === 'MOMO'
+                    ? 'border-pink-500 bg-pink-500/10 shadow-lg shadow-pink-500/10'
+                    : 'border-white/10 bg-zinc-800/30 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-pink-600/20 border border-pink-500/30 flex items-center justify-center font-black text-xs text-pink-400">
+                      MOMO
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-bold">Ví điện tử MoMo</span>
+                        <span className="text-[10px] bg-pink-500/20 text-pink-400 font-semibold px-2 py-0.5 rounded-full border border-pink-500/30">
+                          Ví điện tử
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        Thanh toán bảo mật tức thì qua ứng dụng Ví MoMo
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`w-5 h-5 rounded-full border-[5px] transition-all ${
+                      paymentMethod === 'MOMO'
+                        ? 'border-pink-500 bg-black'
+                        : 'border-zinc-600 bg-zinc-800'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Option 4: Cash On Delivery (COD) */}
               <div
                 onClick={() => setPaymentMethod('COD')}
                 className={`relative p-4 rounded-2xl border transition-all cursor-pointer ${
@@ -537,7 +644,13 @@ export default function CheckoutPage() {
           <div className="max-w-xl mx-auto flex items-center justify-between gap-4">
             <div>
               <p className="text-zinc-400 text-xs">
-                {paymentMethod === 'WALLET' ? 'Thanh toán qua Ví FoodPay' : 'Thanh toán tiền mặt'}
+                {paymentMethod === 'WALLET'
+                  ? 'Thanh toán qua Ví FoodPay'
+                  : paymentMethod === 'VNPAY'
+                  ? 'Thanh toán qua Cổng VNPAY QR'
+                  : paymentMethod === 'MOMO'
+                  ? 'Thanh toán qua Ví MoMo'
+                  : 'Thanh toán tiền mặt (COD)'}
               </p>
               <p className="text-xl font-extrabold text-white">{formatVND(total)}</p>
             </div>
@@ -545,11 +658,15 @@ export default function CheckoutPage() {
             <button
               onClick={handlePlaceOrder}
               disabled={isSubmitting || !!errorMsg}
-              className={`py-3.5 px-8 rounded-2xl font-bold text-white transition-all shadow-lg flex items-center gap-2 ${
+              className={`py-3.5 px-8 rounded-2xl font-bold text-white transition-all shadow-lg flex items-center gap-2 cursor-pointer ${
                 isSubmitting || !!errorMsg
                   ? 'bg-zinc-700 cursor-not-allowed'
                   : paymentMethod === 'WALLET' && !isBalanceSufficient
                   ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20'
+                  : paymentMethod === 'VNPAY'
+                  ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/25'
+                  : paymentMethod === 'MOMO'
+                  ? 'bg-pink-600 hover:bg-pink-500 shadow-pink-600/25'
                   : 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/25'
               }`}
             >
@@ -562,6 +679,11 @@ export default function CheckoutPage() {
                 <>
                   <PlusCircle className="w-5 h-5" />
                   <span>Nạp tiền & Đặt hàng</span>
+                </>
+              ) : paymentMethod === 'VNPAY' || paymentMethod === 'MOMO' ? (
+                <>
+                  <QrCode className="w-5 h-5" />
+                  <span>Thanh toán QR ngay</span>
                 </>
               ) : (
                 <span>Đặt hàng ngay</span>
@@ -581,6 +703,20 @@ export default function CheckoutPage() {
         onRefreshAddresses={fetchAddresses}
         defaultRecipientName={customerName}
         defaultRecipientPhone={customerPhone}
+      />
+
+      {/* Online Gateway Payment Modal (VNPAY / MOMO) */}
+      <OnlinePaymentGatewayModal
+        isOpen={isGatewayModalOpen}
+        onClose={() => setIsGatewayModalOpen(false)}
+        paymentData={gatewayPaymentData}
+        orderId={pendingOrderId || undefined}
+        onPaymentSuccess={() => {
+          clearCart();
+          if (pendingOrderId) {
+            router.push(`/orders/${pendingOrderId}`);
+          }
+        }}
       />
     </div>
   );

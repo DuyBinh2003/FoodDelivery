@@ -90,33 +90,78 @@ Hệ thống tận dụng cơ sở dữ liệu `schema_payment` hiện có:
 
 ---
 
-## 5. Kịch Bản Kiểm Thử 3 Nhánh (Vitest Test Suite)
+## 5. Kiến Trúc Giao Diện Người Dùng & Các Điểm Chạm (Frontend UI / UX Architecture)
 
-Tất cả các ca kiểm thử được đặt tại `backend/apps/payment-service/src/modules/ledger/tests/payment-gateway-webhook.spec.ts` có gắn Traceability Header.
+### 5.1 Tùy chọn Cổng Thanh toán tại Trang Thanh Toán (`/checkout`)
+- Bổ sung 2 phương thức thanh toán trực tuyến vào danh sách lựa chọn:
+  1. **VNPAY QR / Thẻ ATM / Quốc tế**: Logo nhận diện VNPAY màu xanh dương, mô tả: *"Quét mã QR qua 40+ ứng dụng ngân hàng & Ví VNPAY"*.
+  2. **Ví điện tử MoMo**: Logo nhận diện MoMo màu hồng đặc trưng, mô tả: *"Thanh toán nhanh qua ứng dụng Ví MoMo"*.
+- Khi chọn VNPAY hoặc MoMo và bấm **"Đặt hàng"**:
+  - Tạo đơn hàng trên `order-service`.
+  - Gọi API `POST /payment/gateway/create-url` để lấy `paymentUrl`, `qrPayload`, `transactionRef`.
+  - Mở Modal **`OnlinePaymentGatewayModal`** hiển thị mã QR thanh toán động kèm liên kết chuyển hướng.
 
-### Nhánh 1: Luồng chuẩn thành công (Happy Path)
+### 5.2 Component Modal Thanh Toán Cổng Trực Tuyến (`OnlinePaymentGatewayModal.tsx`)
+- Thiết kế **Dark Glassmorphism** đồng bộ phong cách cao cấp của FoodDelivery:
+  - **Mã QR Pay động**: Hiển thị mã QR thanh toán rõ nét (sử dụng SVG generator chất lượng cao) kèm số tiền định dạng VND.
+  - **Đồng hồ đếm ngược giao dịch (15 phút)**: Hiển thị thời gian còn lại trước khi mã QR hết hạn.
+  - **Nút "Mở Cổng Thanh Toán Sandbox"**: Cho phép mở trang cổng thanh toán Sandbox trong tab mới hoặc chuyển hướng trực tiếp.
+  - **Nút "Mô phỏng Thanh toán Thành công (Test Sandbox)"**: Cho phép người dùng và kiểm thử viên kích hoạt Webhook IPN giả lập thành công tức thì mà không cần ứng dụng ngân hàng thực tế.
+  - **Tự động thăm dò trạng thái (Polling Fallback)**: Sau khi quét mã hoặc bấm mô phỏng, hệ thống tự động xác nhận đơn hàng thành công và chuyển hướng sang trang theo dõi đơn hàng `http://localhost:3000/orders/[id]`.
+
+### 5.3 Nâng Cấp Modal Nạp Tiền Ví (`QuickTopupModal.tsx`)
+- Tích hợp gọi API `POST /payment/gateway/create-url` khi nạp tiền qua VNPay / MoMo.
+- Hiển thị QR thanh toán nạp tiền và cập nhật số dư ví tức thì khi nhận được Webhook hạch toán vào Sổ cái kép.
+
+### 5.4 Trang Kết Quả Giao Dịch Cổng Thanh Toán (`/payment/return`)
+- Tạo trang `frontend/src/app/payment/return/page.tsx` tiếp nhận các tham số callback từ VNPay Sandbox (`vnp_ResponseCode`, `vnp_TxnRef`, `vnp_Amount`, `vnp_BankCode`) và MoMo.
+- Giao diện cao cấp hiển thị chi tiết biên lai giao dịch:
+  - **Trạng thái thành công (`00`)**: Huy hiệu xanh ngọc bích, mã tham chiếu, ngân hàng xử lý, số tiền đã trừ.
+  - **Trạng thái thất bại / Hủy**: Cảnh báo cam/đỏ, lý do giao dịch bị hủy và nút thử lại.
+  - **Bộ đếm tự động điều hướng**: Đếm ngược 5 giây tự động đưa khách hàng về trang theo dõi đơn hàng hoặc trang ví.
+
+---
+
+## 6. Kịch Bản Kiểm Thử 3 Nhánh (Vitest Test Suite)
+
+### 6.1 Backend Test Suite (`backend/apps/payment-service/src/modules/ledger/tests/payment-gateway-webhook.spec.ts`)
+#### Nhánh 1: Luồng chuẩn thành công (Happy Path)
 - **HP-01**: Tạo URL thanh toán VNPay thành công (đúng format tham số, chữ ký HMAC-SHA512 hợp lệ, có mã QR).
 - **HP-02**: Tạo URL thanh toán MoMo thành công (đúng format tham số, chữ ký HMAC-SHA256 hợp lệ).
 - **HP-03**: Xử lý Webhook VNPay thành công: xác thực đúng chữ ký số, nạp tiền ví thành công và hạch toán đúng sổ cái kép.
 - **HP-04**: Xử lý Webhook MoMo thành công: xác thực chữ ký và hoàn tất giao dịch.
 
-### Nhánh 2: Các trường hợp biên (Edge Cases)
+#### Nhánh 2: Các trường hợp biên (Edge Cases)
 - **EC-01**: Webhook gửi trùng lặp nhiều lần (Idempotency check): lần thứ 2 trở đi không hạch toán thêm tiền, trả về `RspCode: 00` ngay lập tức.
 - **EC-02**: Các tham số URL VNPay được sắp xếp bảng chữ cái (Alphabetical sorting) chuẩn trước khi hash chữ ký.
 - **EC-03**: Giao dịch nạp số tiền lớn hoặc số tiền lẻ (ví dụ 10.000.000 VND).
 - **EC-04**: Xử lý giao dịch VNPay trả về mã lỗi ngân hàng khách hủy (`vnp_ResponseCode !== '00'`) mà không làm hỏng dữ liệu sổ cái.
 
-### Nhánh 3: Luồng lỗi & Từ chối vi phạm (Error / Rejection Flow)
+#### Nhánh 3: Luồng lỗi & Từ chối vi phạm (Error / Rejection Flow)
 - **ERR-01**: Webhook gửi chữ ký số sai hoặc bị giả mạo -> ném `BadRequestException` hoặc từ chối phản hồi.
 - **ERR-02**: Tạo URL thanh toán với phương thức không được hỗ trợ -> ném `BadRequestException`.
 - **ERR-03**: Tạo URL thanh toán với số tiền âm hoặc bằng 0 -> ném `BadRequestException`.
 - **ERR-04**: Ví nhận tiền không tồn tại trong hệ thống -> ném `NotFoundException`.
 - **ERR-05**: Webhook thiếu các trường bắt buộc (`orderId`, `amount`, `signature`) -> từ chối xử lý.
 
+### 6.2 Frontend Test Suite (`frontend/src/features/payment/tests/online-payment-gateway-ui.spec.ts`)
+#### Nhánh 1: Luồng chuẩn thành công (Happy Path)
+- **UI-HP-01**: Khách hàng chọn phương thức VNPay QR tại `/checkout`, bấm "Đặt hàng" mở thành công Modal QR Code thanh toán.
+- **UI-HP-02**: Modal hiển thị đầy đủ mã QR, số tiền chính xác, mã đơn hàng và đếm ngược 15 phút.
+- **UI-HP-03**: Bấm "Mô phỏng thanh toán thành công", hệ thống ghi nhận và chuyển hướng sang `/orders/[id]`.
+- **UI-HP-04**: Trang `/payment/return` hiển thị đúng trạng thái giao dịch thành công khi nhận `vnp_ResponseCode=00`.
+
+#### Nhánh 2: Các trường hợp biên (Edge Cases)
+- **UI-EC-01**: Khách hàng đóng modal QR Code và mở lại từ đơn hàng mà không bị mất mã QR hoặc tạo đơn lặp.
+- **UI-EC-02**: Hết thời gian đếm ngược 15 phút, giao diện hiển thị cảnh báo hết hạn và nút "Tạo lại mã thanh toán".
+
+#### Nhánh 3: Luồng lỗi & Từ chối (Error Flow)
+- **UI-ERR-01**: Khi người dùng hủy giao dịch tại cổng Sandbox, trang `/payment/return` hiển thị rõ thông báo giao dịch bị hủy và cung cấp nút "Thanh toán lại".
+
 ---
 
-## 6. Bộ Tứ Kiểm Soát CI Nội Bộ (Local CI Gate)
-1. **Linter**: `npm run lint` (0 warning, 0 error).
-2. **Type Check**: `npx tsc -p apps/payment-service/tsconfig.json --noEmit` (0 error).
+## 7. Bộ Tứ Kiểm Soát CI Nội Bộ (Local CI Gate)
+1. **Linter**: `npm run lint` (Backend: oxlint 0 warnings/errors; Frontend: eslint 0 warnings/errors).
+2. **Type Check**: `npx tsc --noEmit` (0 errors trên cả backend và frontend).
 3. **Unit Tests**: `npm test` với Vitest (100% pass trên toàn bộ test suite).
-4. **Build Check**: `npm run build` (Biên dịch thành công).
+4. **Build Check**: `npm run build` (Biên dịch thành công cả backend và frontend).
