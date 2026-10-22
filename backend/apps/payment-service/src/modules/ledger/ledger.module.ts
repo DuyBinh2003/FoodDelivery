@@ -21,10 +21,13 @@ import { TopupWalletUseCase } from '@/modules/ledger/usecases/topup-wallet.useca
 import { SettleTripCommissionUseCase } from '@/modules/ledger/usecases/settle-trip-commission.usecase.js';
 import { GetPlatformTreasuryUseCase } from '@/modules/ledger/usecases/get-platform-treasury.usecase.js';
 import { ProcessPaymentUseCase } from '@/modules/ledger/usecases/process-payment.usecase.js';
+import { ProcessGatewayWebhookUseCase } from '@/modules/ledger/usecases/process-gateway-webhook.usecase.js';
+import { PaymentGatewayService } from '@/modules/ledger/services/payment-gateway.service.js';
 
 import { WalletController } from '@/modules/ledger/wallet.controller.js';
 import { LedgerController } from '@/modules/ledger/ledger.controller.js';
 import { PaymentController } from '@/modules/ledger/payment.controller.js';
+import { PaymentGatewayController } from '@/modules/ledger/payment-gateway.controller.js';
 import { LedgerInternalController } from '@/modules/ledger/ledger.internal.controller.js';
 
 @Module({
@@ -39,7 +42,13 @@ import { LedgerInternalController } from '@/modules/ledger/ledger.internal.contr
       Outbox,
     ]),
   ],
-  controllers: [WalletController, LedgerController, PaymentController, LedgerInternalController],
+  controllers: [
+    WalletController,
+    LedgerController,
+    PaymentController,
+    PaymentGatewayController,
+    LedgerInternalController,
+  ],
   providers: [
     WalletReadRepository,
     WalletWriteRepository,
@@ -50,6 +59,8 @@ import { LedgerInternalController } from '@/modules/ledger/ledger.internal.contr
     GetWalletBalanceUseCase,
     TopupWalletUseCase,
     ProcessPaymentUseCase,
+    ProcessGatewayWebhookUseCase,
+    PaymentGatewayService,
     SettleTripCommissionUseCase,
     GetPlatformTreasuryUseCase,
   ],
@@ -58,6 +69,8 @@ import { LedgerInternalController } from '@/modules/ledger/ledger.internal.contr
     WalletWriteRepository,
     LedgerReadRepository,
     LedgerWriteRepository,
+    PaymentGatewayService,
+    ProcessGatewayWebhookUseCase,
     CreateWalletUseCase,
     RecordLedgerTransactionUseCase,
     GetWalletBalanceUseCase,

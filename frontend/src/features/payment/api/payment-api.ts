@@ -42,3 +42,21 @@ export const getOrderPaymentDetails = async (
     return null;
   }
 };
+
+export const createGatewayPaymentUrl = async (
+  dto: import('../types').CreateGatewayPaymentUrlDto,
+): Promise<import('../types').PaymentUrlResponse> => {
+  return apiClient<import('../types').PaymentUrlResponse>('/payment/gateway/create-url', {
+    method: 'POST',
+    body: dto,
+  });
+};
+
+export const simulateGatewayWebhook = async (
+  dto: import('../types').SimulateGatewayWebhookDto,
+): Promise<import('../types').SimulateGatewayWebhookResponse> => {
+  return apiClient<import('../types').SimulateGatewayWebhookResponse>('/payment/webhooks/simulate', {
+    method: 'POST',
+    body: dto,
+  });
+};

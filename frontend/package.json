@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --test-reporter=spec --test src/features/loyalty/tests/loyalty-checkout.test.ts src/features/orders/tests/driver-tracking-map.test.ts src/features/orders/tests/street-routing.test.ts src/features/driver/tests/driver-dispatch.test.ts src/features/home/tests/home-feed.test.ts src/features/restaurant/tests/restaurant-menu.test.ts src/features/payment/tests/online-payment-gateway-ui.test.ts"
     "test": "node --test-reporter=spec --test src/features/loyalty/tests/loyalty-checkout.test.ts src/features/orders/tests/driver-tracking-map.test.ts src/features/orders/tests/street-routing.test.ts src/features/driver/tests/driver-dispatch.test.ts src/features/home/tests/home-feed.test.ts src/features/restaurant/tests/restaurant-menu.test.ts src/features/orders/tests/order-review.test.ts"
   },
   "dependencies": {

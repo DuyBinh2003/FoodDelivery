@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { X, Wallet, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
-import { topupWallet } from '../api/payment-api';
+import { createGatewayPaymentUrl } from '../api/payment-api';
+import { OnlinePaymentGatewayModal } from './online-payment-gateway-modal';
+import type { PaymentUrlResponse } from '../types';
 
 interface QuickTopupModalProps {
   isOpen: boolean;
@@ -28,6 +30,8 @@ export default function QuickTopupModal({
     return missingAmount > 0 ? missingAmount : 50000;
   });
   const [paymentMethod, setPaymentMethod] = useState<'VNPAY' | 'MOMO'>('VNPAY');
+  const [gatewayPaymentData, setGatewayPaymentData] = useState<PaymentUrlResponse | null>(null);
+  const [isGatewayModalOpen, setIsGatewayModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -54,22 +58,19 @@ export default function QuickTopupModal({
       setIsLoading(true);
       setErrorMsg(null);
 
-      const idempotencyKey = `topup-${walletAccountId.slice(0, 8)}-${Date.now()}`;
-      await topupWallet({
-        walletAccountId,
-        amount: selectedAmount.toString(),
+      const returnUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/payment/return?walletAccountId=${walletAccountId}`
+        : undefined;
+
+      const gatewayRes = await createGatewayPaymentUrl({
+        amount: selectedAmount,
         paymentMethod,
-        referenceId: `REF-${Date.now()}`,
-        idempotencyKey,
+        walletAccountId,
+        returnUrl,
       });
 
-      setIsDone(true);
-      await onTopupSuccess();
-
-      setTimeout(() => {
-        setIsDone(false);
-        onClose();
-      }, 1200);
+      setGatewayPaymentData(gatewayRes);
+      setIsGatewayModalOpen(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Nạp tiền thất bại, vui lòng thử lại';
       setErrorMsg(msg);
@@ -238,6 +239,23 @@ export default function QuickTopupModal({
           </>
         )}
       </div>
+
+      {/* Online Gateway QR Payment Modal */}
+      <OnlinePaymentGatewayModal
+        isOpen={isGatewayModalOpen}
+        onClose={() => setIsGatewayModalOpen(false)}
+        paymentData={gatewayPaymentData}
+        walletAccountId={walletAccountId}
+        onPaymentSuccess={async () => {
+          setIsDone(true);
+          await onTopupSuccess();
+          setTimeout(() => {
+            setIsDone(false);
+            setIsGatewayModalOpen(false);
+            onClose();
+          }, 1200);
+        }}
+      />
     </div>
   );
 }
