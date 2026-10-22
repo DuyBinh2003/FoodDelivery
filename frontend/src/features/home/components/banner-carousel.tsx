@@ -45,7 +45,7 @@ const DEFAULT_BANNER_SLIDES: BannerSlide[] = [
     subtitle: 'Món ngon nóng hổi giao nhanh thần tốc dưới 20 phút',
     tag: 'QUÁN ĐỊA PHƯƠNG',
     imageUrl:
-      'https://images.unsplash.com/photo-1503764654157-724e030b1442?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=1200&q=80',
     ctaText: 'Đặt món ngay',
     link: '/menu?category=com',
     gradient: 'from-emerald-700/90 via-teal-700/80 to-transparent',
