@@ -33,7 +33,9 @@ Mọi thao tác quản lý, tạo mới Profile, Sổ địa chỉ và Ví đi�
 | Endpoint | Method | Auth Guard | Mô tả | Request Body | Response Codes |
 | :--- | :---: | :---: | :--- | :--- | :--- |
 | `/auth/register` | `POST` | Public | Đăng ký tài khoản người dùng mới | `{ email, password, name }` | `201`, `400`, `409` |
-| `/auth/login` | `POST` | Public | Đăng nhập và nhận JWT token | `{ email, password }` | `200`, `401` |
+| `/auth/login` | `POST` | Public | Đăng nhập và nhận cặp tokens (`access_token` 15m + `refresh_token` 7d) | `{ email, password }` | `200`, `401` |
+| `/auth/refresh` | `POST` | Public | Xoay vòng token (RTR), cấp token mới và phát hiện Replay Attack | `{ refresh_token }` | `200`, `401` |
+| `/auth/logout` | `POST` | `JwtAuthGuard` | Đăng xuất, đưa access token vào Redis Blacklist và xóa refresh token | `{ refresh_token? }` | `200`, `401` |
 | `/users/profile` | `GET` | `JwtAuthGuard` | Lấy thông tin user hiện tại kèm các Profile mở rộng | Không | `200`, `401` |
 | `/users/avatar` | `POST` | `JwtAuthGuard` | Tải lên ảnh đại diện cá nhân lưu trữ trên LocalStack S3 | `multipart/form-data: file` (Max 5MB) | `200`, `400`, `401` |
 | `/users/profile/driver/status` | `PATCH` | `JwtAuthGuard` | Tài xế chuyển đổi trạng thái `ONLINE` / `OFFLINE` | `{ "status": "ONLINE" \| "OFFLINE" }` | `200`, `401` |

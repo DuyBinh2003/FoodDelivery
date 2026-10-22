@@ -1,3 +1,4 @@
+import 'multer';
 import {
   Controller,
   Post,
@@ -11,9 +12,14 @@ import {
   Query,
   Sse,
   MessageEvent,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Observable } from 'rxjs';
 import { OrderEventsService } from '@/modules/orders/services/order-events.service.js';
+import { S3StorageService } from '@/common/storage/index.js';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from '@/modules/orders/dto/update-order-status.dto.js';
 import { QueryOrdersDto } from '@/modules/orders/dto/query-orders.dto.js';
@@ -25,6 +31,8 @@ import { ValidateCartDto } from '@/modules/orders/dto/validate-cart.dto.js';
 import { GetOrderHistoryUseCase } from '@/modules/orders/usecases/get-order-history.usecase.js';
 import { CreateOrderReviewUseCase } from '@/modules/orders/usecases/create-order-review.usecase.js';
 import { CreateOrderReviewDto } from '@/modules/orders/dto/create-order-review.dto.js';
+import { GetRestaurantReviewsUseCase } from '@/modules/orders/usecases/get-restaurant-reviews.usecase.js';
+import { RestaurantReviewsQueryDto } from '@/modules/orders/dto/restaurant-reviews-query.dto.js';
 import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admin.usecase.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
@@ -67,8 +75,12 @@ export class OrdersController {
     private readonly getAvailableDriverTripsUseCase: GetAvailableDriverTripsUseCase,
     @Inject(GetRestaurantOrdersUseCase)
     private readonly getRestaurantOrdersUseCase: GetRestaurantOrdersUseCase,
+    @Inject(GetRestaurantReviewsUseCase)
+    private readonly getRestaurantReviewsUseCase: GetRestaurantReviewsUseCase,
     @Inject(OrderEventsService)
     private readonly orderEventsService: OrderEventsService,
+    @Inject(S3StorageService)
+    private readonly s3StorageService: S3StorageService,
   ) {}
 
   // --- Validate Cart (public — không cần auth) ---
@@ -95,7 +107,25 @@ export class OrdersController {
     return this.getOrderHistoryUseCase.execute({ customerId: user.id });
   }
 
-  @Post(':id/reviews')
+  @Post('upload')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMedia(
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Vui lòng chọn tệp hình ảnh để tải lên');
+    }
+    const url = await this.s3StorageService.uploadFile({
+      buffer: file.buffer,
+      originalFilename: file.originalname,
+      mimeType: file.mimetype,
+      folder: 'reviews',
+    });
+    return { success: true, url };
+  }
+
+  @Post([':id/review', ':id/reviews'])
   @UseGuards(JwtAuthGuard)
   createReview(
     @Param('id', ParseUUIDPipe) id: string,
@@ -198,6 +228,16 @@ export class OrdersController {
     @CurrentUser() user: JwtPayload,
   ): Promise<Observable<MessageEvent>> {
     return this.orderEventsService.streamOrderEvents(id, user);
+  }
+
+  // --- Order Reviews Endpoints ---
+
+  @Get('restaurants/:restaurantId/reviews')
+  getRestaurantReviews(
+    @Param('restaurantId', ParseUUIDPipe) restaurantId: string,
+    @Query() query: RestaurantReviewsQueryDto,
+  ) {
+    return this.getRestaurantReviewsUseCase.execute(restaurantId, query);
   }
 }
 

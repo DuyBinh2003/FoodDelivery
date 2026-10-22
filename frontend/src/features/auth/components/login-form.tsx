@@ -25,14 +25,16 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      // 1. Call login API
-      const data = await apiClient('/auth/login', {
+      const data = (await apiClient('/auth/login', {
         method: 'POST',
         body: { email, password },
-      }) as { access_token: string; user: Record<string, unknown> };
+      })) as { access_token: string; refresh_token?: string; user: Record<string, unknown> };
 
-      // 2. Save token to cookies so other requests (Server or Client) can use it
-      document.cookie = `access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}`;
+      // 2. Save tokens to cookies so other requests (Server or Client) can use them
+      document.cookie = `access_token=${data.access_token}; path=/; max-age=${15 * 60}; SameSite=Lax`;
+      if (data.refresh_token) {
+        document.cookie = `refresh_token=${data.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+      }
 
       // 3. Fetch full user profile using the token
       const profile = await apiClient<User>('/users/profile', {

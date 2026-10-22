@@ -7,12 +7,13 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Logger, Inject, forwardRef } from '@nestjs/common';
+import { Logger, Inject, forwardRef, type OnModuleInit } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Server, Socket } from 'socket.io';
 import { TrackingService } from '@/modules/tracking/tracking.service.js';
 import { UpdateDriverLocationDto } from '@/modules/tracking/dto/update-location.dto.js';
 import type { DriverLocationData } from '@/modules/tracking/repositories/driver-location.redis.repository.js';
-import { DispatchService, type TripOfferPayload } from '@/modules/dispatch/dispatch.service.js';
+import type { DispatchService, TripOfferPayload } from '@/modules/dispatch/dispatch.service.js';
 
 @WebSocketGateway({
   namespace: 'delivery',
@@ -20,18 +21,23 @@ import { DispatchService, type TripOfferPayload } from '@/modules/dispatch/dispa
     origin: '*',
   },
 })
-export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer()
   server: Server;
 
   private readonly logger = new Logger(TrackingGateway.name);
+  private dispatchService!: DispatchService;
 
   constructor(
     @Inject(forwardRef(() => TrackingService))
     private readonly trackingService: TrackingService,
-    @Inject(forwardRef(() => DispatchService))
-    private readonly dispatchService: DispatchService,
+    private readonly moduleRef: ModuleRef,
   ) {}
+
+  async onModuleInit() {
+    const { DispatchService } = await import('@/modules/dispatch/dispatch.service.js');
+    this.dispatchService = this.moduleRef.get(DispatchService, { strict: false });
+  }
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected to /delivery: ${client.id}`);
