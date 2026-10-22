@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query, Body, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Query, Body, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
@@ -184,6 +184,23 @@ export class RestaurantsInternalController {
       rating: 5,
     });
     return this.restaurantRepo.save(restaurant);
+  }
+
+  @Patch('restaurants/:id/rating')
+  async updateRestaurantRating(
+    @Param('id') id: string,
+    @Body() dto: { rating: number },
+  ): Promise<{ success: boolean; id: string; rating: number }> {
+    const restaurant = await this.restaurantRepo.findOne({
+      where: { id, is_deleted: false },
+    });
+    if (!restaurant) {
+      throw new NotFoundException(`Restaurant with ID ${id} not found`);
+    }
+
+    restaurant.rating = Number(dto.rating) || 0;
+    await this.restaurantRepo.save(restaurant);
+    return { success: true, id, rating: Number(restaurant.rating) };
   }
 }
 

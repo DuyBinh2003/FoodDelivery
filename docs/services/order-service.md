@@ -102,8 +102,9 @@ graph TD
 | `/orders/driver/trips` | `GET` | `JwtAuthGuard` | Lấy danh sách cuốc xe của tài xế (Bao gồm mốc `claimed_at`, `completed_at`, và thời lượng cuốc `duration_minutes`) | Không | `200`, `401` |
 | `/orders/driver/summary` | `GET` | `JwtAuthGuard` | Thống kê tổng số cuốc, doanh thu và điểm đánh giá | Không | `200`, `401` |
 | `/orders/driver/reviews` | `GET` | `JwtAuthGuard` | Xem danh sách đánh giá tài xế nhận được | Không | `200`, `401` |
-| `/orders/driver/trips/:id/status` | `PATCH` | `JwtAuthGuard` | Tài xế cập nhật trạng thái cuốc (Ghi DB khi `COMPLETED`) | `{ "status": "COMPLETED" }` | `200`, `400`, `401` |
-| `/orders/:id/reviews` | `POST` | `JwtAuthGuard` | Gửi đánh giá cho đơn hàng đã hoàn tất | `CreateOrderReviewDto` | `201`, `400`, `404` |
+| `/orders/upload` | `POST` | `JwtAuthGuard` | Tải ảnh chụp món ăn đánh giá lên LocalStack S3 (Bucket: `food-delivery-assets`, Folder: `reviews/`) | Multipart File (`file`), giới hạn 5MB (JPEG, PNG, WEBP) | `201`, `400`, `401` |
+| `/orders/:id/review` | `POST` | `JwtAuthGuard` | Gửi đánh giá cho đơn hàng đã hoàn tất (Đồng bộ tức thời sang `restaurant-service` & `search-service`) | `CreateOrderReviewDto` | `201`, `400`, `404` |
+| `/orders/restaurants/:restaurantId/reviews` | `GET` | Public | Lấy danh sách đánh giá của nhà hàng kèm phân bổ số sao (1-5 sao) | Query `page`, `limit` | `200`, `400` |
 | `/orders` | `GET` | `JwtAuthGuard` | Quản trị viên tra cứu danh sách đơn với bộ lọc & phân trang | `QueryOrdersDto` (`page`, `limit`, `status`,...) | `200`, `401` |
 
 ### B. Internal APIs (Giao tiếp nội bộ Docker, NGINX Gateway chặn 403)
