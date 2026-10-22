@@ -88,6 +88,8 @@ services:
         condition: service_started
       payment-service:
         condition: service_started
+      delivery-service:
+        condition: service_started
     restart: unless-stopped
 
   # ==========================================
