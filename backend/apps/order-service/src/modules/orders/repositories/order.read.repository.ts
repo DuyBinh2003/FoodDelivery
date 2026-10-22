@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from '@/modules/orders/entities/order.entity.js';
+import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
 import { QueryOrdersDto } from '@/modules/orders/dto/query-orders.dto.js';
 
 @Injectable()
@@ -9,6 +10,8 @@ export class OrderReadRepository {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
+    @InjectRepository(OrderReview)
+    private readonly orderReviewRepo: Repository<OrderReview>,
   ) {}
 
   async findById(id: string): Promise<Order | null> {
@@ -145,6 +148,74 @@ export class OrderReadRepository {
 
   async countTotal(): Promise<number> {
     return this.orderRepo.count({ where: { is_deleted: false } });
+  }
+
+  async calculateRestaurantRatingStats(restaurantId: string): Promise<{ average_rating: number; total_reviews: number }> {
+    const stats = await this.orderReviewRepo
+      .createQueryBuilder('review')
+      .innerJoin('review.order', 'order')
+      .where('order.restaurant_id = :restaurantId', { restaurantId })
+      .andWhere('review.is_deleted = false')
+      .andWhere('review.restaurant_rating IS NOT NULL')
+      .select('AVG(review.restaurant_rating)', 'avgRating')
+      .addSelect('COUNT(review.id)', 'totalReviews')
+      .getRawOne<{ avgRating: string | null; totalReviews: string | null }>();
+
+    const average_rating = stats?.avgRating ? parseFloat(parseFloat(stats.avgRating).toFixed(2)) : 0;
+    const total_reviews = stats?.totalReviews ? parseInt(stats.totalReviews, 10) : 0;
+
+    return { average_rating, total_reviews };
+  }
+
+  async findRestaurantReviews(
+    restaurantId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<{
+    data: OrderReview[];
+    total: number;
+    average_rating: number;
+    star_breakdown: Record<number, number>;
+  }> {
+    const p = Math.max(1, page);
+    const l = Math.max(1, Math.min(100, limit));
+
+    const [data, total] = await this.orderReviewRepo
+      .createQueryBuilder('review')
+      .innerJoinAndSelect('review.order', 'order')
+      .where('order.restaurant_id = :restaurantId', { restaurantId })
+      .andWhere('review.is_deleted = false')
+      .orderBy('review.created_at', 'DESC')
+      .skip((p - 1) * l)
+      .take(l)
+      .getManyAndCount();
+
+    const stats = await this.calculateRestaurantRatingStats(restaurantId);
+
+    const breakdownRaw = await this.orderReviewRepo
+      .createQueryBuilder('review')
+      .innerJoin('review.order', 'order')
+      .where('order.restaurant_id = :restaurantId', { restaurantId })
+      .andWhere('review.is_deleted = false')
+      .andWhere('review.restaurant_rating IS NOT NULL')
+      .select('review.restaurant_rating', 'star')
+      .addSelect('COUNT(review.id)', 'count')
+      .groupBy('review.restaurant_rating')
+      .getRawMany<{ star: number; count: string }>();
+
+    const star_breakdown: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    for (const b of breakdownRaw) {
+      if (b.star >= 1 && b.star <= 5) {
+        star_breakdown[b.star] = parseInt(b.count, 10);
+      }
+    }
+
+    return {
+      data,
+      total,
+      average_rating: stats.average_rating,
+      star_breakdown,
+    };
   }
 }
 

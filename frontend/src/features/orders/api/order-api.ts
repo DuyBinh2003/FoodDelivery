@@ -56,3 +56,15 @@ export const cancelOrder = async (orderId: string): Promise<Order> => {
   });
 };
 
+export const uploadOrderReviewImage = async (
+  file: File,
+): Promise<{ success: boolean; url: string }> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return apiClient<{ success: boolean; url: string }>('/orders/upload', {
+    method: 'POST',
+    body: formData,
+  });
+};
+
+
