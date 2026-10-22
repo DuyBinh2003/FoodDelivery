@@ -31,6 +31,7 @@ export enum ReferenceType {
   REFUND = 'REFUND',
   COD_DEDUCTION = 'COD_DEDUCTION',
   COMMISSION_FEE = 'COMMISSION_FEE',
+  PROMOTION_DISCOUNT = 'PROMOTION_DISCOUNT',
 }
 
 export enum WalletStatus {
