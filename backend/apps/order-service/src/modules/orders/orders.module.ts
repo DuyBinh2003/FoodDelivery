@@ -29,9 +29,11 @@ import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.
 import { SnsService } from '@/common/messaging/sns.service.js';
 import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingestion.consumer.js';
 import { OrderEventsService } from '@/modules/orders/services/order-events.service.js';
+import { StorageModule } from '@/common/storage/index.js';
 
 @Module({
   imports: [
+    StorageModule,
     TypeOrmModule.forFeature([Order, OrderItem, OrderReview]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
