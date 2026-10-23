@@ -19,7 +19,7 @@ const reminder = `[SESSION START REMINDER]
 Bạn đang làm việc trên dự án FoodDelivery. Trước khi bắt đầu bất kỳ task nào:
 1. Đọc AGENTS.md ở root để nắm quy trình vòng tròn khép kín (Closed-Loop Pipeline).
 2. Kích hoạt skill 'general-project-policy' cho mọi task.
-3. Kích hoạt skill tương ứng: nestjs-patterns (Backend), nextjs-patterns + ui-ux-pro-max (Frontend), database-schema-policy (DB).
+3. Kích hoạt skill tương ứng: nestjs-patterns (Backend), nextjs-patterns + ui-ux-pro-max + design-taste-frontend (Frontend), database-schema-policy (DB).
 4. Tuân thủ tuyệt đối: cấm any, cấm nuốt exception, cấm fallback ngầm, import tuyệt đối (@/).`;
 
 process.stdout.write(JSON.stringify({

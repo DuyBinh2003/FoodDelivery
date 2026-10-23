@@ -32,6 +32,7 @@ Thư mục này chứa toàn bộ cấu hình tùy chỉnh cho **Antigravity AI 
 │   ├── nestjs-patterns/             # Patterns NestJS Backend
 │   ├── nextjs-patterns/             # Patterns Next.js Frontend
 │   ├── ui-ux-pro-max/               # Design system & UI/UX
+│   ├── design-taste-frontend/       # Anti-slop UI design, art direction, browser inspector
 │   ├── documentation-policy/        # Quy chuẩn viết tài liệu
 │   └── testing-policy/              # Quy chuẩn viết test
 │
@@ -62,7 +63,7 @@ Thư mục này chứa toàn bộ cấu hình tùy chỉnh cho **Antigravity AI 
 
 Rules được load tự động và áp dụng cho mọi conversation.
 
-- `project-rules.md`: Tóm tắt quy trình Closed-Loop Pipeline, TypeScript standards, CI Gate.
+- `project-rules.md`: Tóm tắt quy trình Closed-Loop Pipeline, TypeScript standards, CI Gate, Frontend & UI/UX standards.
 
 ### `skills/` — On-Demand Skills
 
@@ -75,7 +76,8 @@ Skills chỉ được load khi agent quyết định kích hoạt (progressive d
 | `database-schema-policy` | Thiết kế / thay đổi schema DB |
 | `nestjs-patterns` | Làm việc với Backend NestJS |
 | `nextjs-patterns` | Làm việc với Frontend Next.js |
-| `ui-ux-pro-max` | Thiết kế UI/UX, tạo component |
+| `ui-ux-pro-max` | Thiết kế UI/UX, tạo component, tương tác vi mô, accessibility |
+| `design-taste-frontend` | Thiết kế/refactor giao diện web chống template sáo rỗng (anti-slop), art direction cho Page & App Screen |
 | `documentation-policy` | Tạo mới / cập nhật / cấu trúc lại `docs/` |
 | `testing-policy` | Triển khai, sửa đổi hoặc kiểm thử business flows |
 

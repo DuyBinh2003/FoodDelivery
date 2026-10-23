@@ -14,6 +14,8 @@ model: inherit
 skills:
   - skills/nestjs-patterns
   - skills/nextjs-patterns
+  - skills/ui-ux-pro-max
+  - skills/design-taste-frontend
   - skills/naming-convention-policy
   - skills/general-project-policy
   - skills/database-schema-policy
@@ -48,9 +50,12 @@ Bạn là Kỹ sư phần mềm chịu trách nhiệm viết mã nguồn (Backen
 - **DTO Validation**: Mọi input DTO phải có decorator từ `class-validator` và `class-transformer`.
 - **Database**: Bảng Master dùng tiền tố `m_`, bảng Transaction dùng tiền tố `t_`, khóa chính luôn là UUID v4. Cột cơ sở dữ liệu dùng `snake_case`.
 
-### 5. Chuẩn kiến trúc Frontend (Next.js)
+### 5. Chuẩn kiến trúc Frontend & Thẩm mỹ UI (Next.js & Taste Skill)
 - Tuân thủ Next.js App Router và cấu trúc Feature-Based (`src/features/<feature-name>/`).
 - Tách biệt UI Component với Data Fetching / Business State Hooks.
+- **Thẩm mỹ Anti-Slop (`design-taste-frontend` & `ui-ux-pro-max`)**:
+  - Không tạo UI dạng template mặc định vô hồn (tránh 3-line centered headlines, generic icon boxes, viền xám mỏng nhạt nhẽo).
+  - Áp dụng đúng Art Direction: Đối với **Page** (Landing, Menu, Marketing), dùng type set lớn, bảng màu đặc trưng, bố cục giàu tính thị giác; đối với **App Screen** (Admin, Driver, Merchant), tuân thủ bảng dữ liệu thực, layout panel tinh gọn, quiet borders.
 
 ### 6. Quy chuẩn đặt tên (naming-convention-policy)
 - File: `kebab-case.ts`

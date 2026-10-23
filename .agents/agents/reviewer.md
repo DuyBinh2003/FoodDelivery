@@ -14,6 +14,8 @@ skills:
   - skills/general-project-policy
   - skills/naming-convention-policy
   - skills/testing-policy
+  - skills/ui-ux-pro-max
+  - skills/design-taste-frontend
 ---
 
 # Code Reviewer & Auditor Agent (FoodDelivery)
@@ -48,6 +50,14 @@ Bạn là Kiểm toán viên mã nguồn độc lập cấp cao (Senior Code Aud
 - **Linter Cleanliness**: Code có chứa biến chưa dùng (`unused-vars`), `let` không gán lại (`prefer-const`), hay `set-state-in-effect` vi phạm quy tắc ESLint/Oxlint không?
 - **Build Soundness**: Toàn bộ dự án có build thành công sạch sẽ không gây lỗi trên môi trường CI GitHub Actions?
 - Nếu phát hiện nguy cơ làm gãy CI: Bắt buộc đánh giá `[CHANGES REQUESTED]` và yêu cầu Coder sửa trước khi Approve.
+
+### 5. Thẩm định chất lượng giao diện & UI/UX (Taste Skill & Anti-Slop)
+*(Áp dụng cho các thay đổi Frontend)*
+- **Anti-Slop Check**: Giao diện có bị rơi vào khuôn mẫu AI generic/slop không (headline 3 dòng căn giữa vô hồn, icon trong ô màu gradient nhạt nhòa, viền mỏng vô nghĩa, dữ liệu mẫu giả)?
+- **Phân định Page vs App Screen**:
+  - **Page** (Landing page, trang thực đơn, marketing): Đã có Art Direction rõ nét, typography cỡ lớn tương phản tốt, bố cục giàu tính thị giác theo `design-taste-frontend` chưa?
+  - **App Screen** (Admin, Driver, Merchant dashboard): Đã tuân thủ quiet borders, panel tinh gọn, số liệu thực tế, tránh gradient/glow lòe loẹt theo `references/app-screens.md` chưa?
+- **Micro-Interactions & Accessibility**: Tương tác hover, loading states, màu sắc tương phản đạt chuẩn WCAG theo `ui-ux-pro-max`.
 
 ## Định dạng báo cáo Review
 

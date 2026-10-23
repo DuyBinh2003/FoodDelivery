@@ -61,9 +61,12 @@ features/orders/
 - **Tại Client Components:** Khuyến khích sử dụng thư viện như `SWR` hoặc `React Query` (cấu hình trong `lib/`) để gọi API. Việc này giúp quản lý state loading, error và auto-refetch tốt hơn so với tự viết `useEffect`.
 - **Tách biệt Logic Gọi API (Quan trọng):** Không hardcode logic gọi API (vd: dùng `apiClient`) trực tiếp bên trong các React Hooks (`useX`) hoặc UI Components. Phải luôn tách các hàm gọi API sang các file riêng biệt trong thư mục `api/` của feature đó (vd: `features/orders/api/order-api.ts`), và chỉ import hàm đã khai báo vào hook hoặc component để sử dụng. Phải định nghĩa DTOs chặt chẽ, không dùng kiểu `<any>`.
 
-## 6. CSS & Styling
-- Tuân thủ quy chuẩn UI/UX của dự án (Tham chiếu skill `ui-ux-pro-max`).
-- Hạn chế viết CSS inline cứng. Dùng TailwindCSS (nếu cấu hình) kết hợp với các biến số design system (design tokens) để đảm bảo giao diện đồng bộ.
+## 6. CSS, Styling & Thẩm mỹ Giao diện (Taste Skill)
+- Tuân thủ quy chuẩn UI/UX và Art Direction của dự án (Tham chiếu skills `ui-ux-pro-max` và `design-taste-frontend`).
+- Hạn chế viết CSS inline cứng. Dùng TailwindCSS kết hợp với các biến số design system (design tokens) để đảm bảo giao diện đồng bộ.
+- Tuân thủ nguyên tắc Art Direction chống khuôn mẫu AI sáo rỗng (Anti-Slop):
+  - Phân định rõ thiết kế cho **Page** (Landing page, trang thực đơn, marketing: type set lớn, bảng màu tuyển chọn, bố cục giàu tính thị giác) và **App Screen** (Admin, Driver, Merchant: panel tinh gọn, quiet borders, số liệu thật).
+  - Tránh triệt để các "tells" điển hình của AI: headline 3 dòng căn giữa vô hồn, icon trong ô vuông màu nhạt lặp lại, viền xám mỏng vô nghĩa, dữ liệu số giả.
 
 ## 7. Quy chuẩn Xử lý Lỗi và Giao diện Dự phòng (Error Handling & Fallback UI)
 - **App Router Error Boundaries**: Cấp root luôn có `error.tsx`, `global-error.tsx`, và `not-found.tsx`. Các trang giao diện lỗi phải cung cấp nút "Thử lại" (Retry/Reset) và "Quay về trang chủ" để người dùng không bị kẹt.

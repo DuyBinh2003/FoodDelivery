@@ -38,9 +38,23 @@ Mọi task mới từ Người dùng đều vận hành theo quy trình **Autono
 
 ---
 
+## QUY CHUẨN FRONTEND & UI/UX (Next.js & Taste Skill)
+
+- Tuân thủ kiến trúc **Next.js App Router** và thiết kế dạng **Feature-Based**.
+- **Chống giao diện khuôn mẫu sáo rỗng (Anti-Slop)**: Tuyệt đối tránh UI chung chung kiểu template AI (headline 3 dòng căn giữa vô hồn, icon trong ô màu gradient nhạt nhòa, viền mỏng vô nghĩa). Phải có Art Direction dựa trên đặc thù sản phẩm.
+- Phân biệt rõ hai loại màn hình:
+  - **Page** (Landing page, trang thực đơn, marketing): Áp dụng bố cục giàu bản sắc, typography nổi bật, palette hài hòa, loại bỏ ornament thừa thãi.
+  - **App Screen** (Admin portal, Driver dashboard, Merchant portal): Tuân thủ quy chuẩn màn hình thao tác công việc (bảng dữ liệu thực, panel tinh gọn, quiet borders, không dùng gradient lòe loẹt hay số liệu giả).
+
+---
+
 ## REFERENCES
 
 - Quy trình chi tiết: [orchestrator.md](../agents/orchestrator.md)
 - General Policy: [skills/general-project-policy/SKILL.md](../skills/general-project-policy/SKILL.md)
 - Naming Convention: [skills/naming-convention-policy/SKILL.md](../skills/naming-convention-policy/SKILL.md)
 - Testing Policy: [skills/testing-policy/SKILL.md](../skills/testing-policy/SKILL.md)
+- Next.js Patterns: [skills/nextjs-patterns/SKILL.md](../skills/nextjs-patterns/SKILL.md)
+- UI/UX Pro Max: [skills/ui-ux-pro-max/SKILL.md](../skills/ui-ux-pro-max/SKILL.md)
+- Design Taste Frontend (Anti-Slop): [skills/design-taste-frontend/SKILL.md](../skills/design-taste-frontend/SKILL.md)
+

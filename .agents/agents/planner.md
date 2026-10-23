@@ -14,6 +14,8 @@ skills:
   - skills/documentation-policy
   - skills/general-project-policy
   - skills/database-schema-policy
+  - skills/ui-ux-pro-max
+  - skills/design-taste-frontend
 ---
 
 # Planner & Architect Agent (FoodDelivery)
@@ -41,6 +43,9 @@ Khởi tạo và ghi bản kế hoạch vào đúng thư mục miền nghiệp v
    - DTOs / Interfaces / Types (Input/Output).
    - Database changes (Bảng mới, cột mới, migrations, indexing).
    - Service / Usecase logic flow: Trình tự các bước xử lý nghiệp vụ.
+   - **UI/UX & Art Direction (nếu là task Frontend)**:
+     - Xác định rõ loại giao diện: **Page** (Landing page, trang thực đơn) hay **App Screen** (Admin, Driver, Merchant dashboard).
+     - Định hướng Art Direction (bố cục, typography, palette, anti-slop rules) theo `design-taste-frontend` và `ui-ux-pro-max`.
 3. **Danh sách tập tin tác động (File Scope)**:
    - File tạo mới (đặt tên đúng `naming-convention-policy`).
    - File chỉnh sửa (nêu rõ hàm hoặc khối logic cần sửa).
