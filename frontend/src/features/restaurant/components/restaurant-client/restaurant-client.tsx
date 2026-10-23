@@ -173,24 +173,24 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
   }, [categories]);
 
   return (
-    <div className="min-h-screen bg-black text-white pb-36">
+    <div className="min-h-screen bg-background text-foreground pb-36">
       {/* 1. Sticky Top Navigation Bar */}
-      <header className="sticky top-0 z-30 bg-zinc-950/85 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-3 transition-all duration-200">
+      <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border px-4 sm:px-6 py-3 transition-all duration-200">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/menu"
-              className="inline-flex items-center gap-1.5 py-1.5 px-3 -ml-2 rounded-xl text-zinc-300 hover:text-white hover:bg-white/10 transition-colors text-xs sm:text-sm font-medium"
+              className="inline-flex items-center gap-1.5 py-1.5 px-3 -ml-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-xs sm:text-sm font-medium"
               aria-label="Quay lại thực đơn"
             >
               <ChevronLeft className="w-5 h-5" />
               <span className="hidden sm:inline">Khám phá</span>
             </Link>
 
-            <div className="h-4 w-[1px] bg-white/10 hidden sm:block" />
+            <div className="h-4 w-[1px] bg-border hidden sm:block" />
 
             <div className="min-w-0">
-              <h1 className="text-sm sm:text-base md:text-lg font-bold text-white truncate flex items-center gap-1.5">
+              <h1 className="text-sm sm:text-base md:text-lg font-bold text-foreground truncate flex items-center gap-1.5">
                 {restaurant.name}
                 {restaurant.verification_status === 'VERIFIED' && (
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 inline" />
@@ -202,7 +202,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
           {/* Right Status / Mini Cart Indicator */}
           <div className="flex items-center gap-3">
             {cartTotalItems > 0 && isCurrentRestaurantInCart && (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>{cartTotalItems} món trong giỏ</span>
               </div>
@@ -213,7 +213,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
               className={
                 restaurant.is_active
                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-medium'
-                  : 'bg-zinc-800 text-zinc-400 border-zinc-700 text-xs'
+                  : 'bg-muted text-muted-foreground border-border text-xs'
               }
             >
               {restaurant.is_active ? 'Đang mở cửa' : 'Tạm đóng'}
@@ -230,18 +230,18 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
         {/* 3. Search and Count Bar */}
         <div className="mb-6 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm món ăn trong thực đơn của quán..."
-              className="pl-10 pr-9 bg-zinc-900/80 border-white/10 text-white placeholder:text-zinc-500 rounded-xl focus:border-orange-500/50 focus:ring-orange-500/20 h-11 text-sm"
+              className="pl-10 pr-9 bg-card border-border text-foreground placeholder:text-muted-foreground/60 rounded-xl focus:border-primary/50 focus:ring-primary/20 h-11 text-sm"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors"
                 aria-label="Xóa tìm kiếm"
               >
                 <X className="w-3.5 h-3.5" />
@@ -249,14 +249,14 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
             )}
           </div>
 
-          <div className="text-xs text-zinc-400 self-center sm:self-auto font-medium">
-            Có <span className="text-white font-bold">{filteredItems.length}</span> món đang phục vụ
+          <div className="text-xs text-muted-foreground self-center sm:self-auto font-medium">
+            Có <span className="text-foreground font-bold">{filteredItems.length}</span> món đang phục vụ
           </div>
         </div>
 
         {/* 4. Sticky Category Pill Tabs with Scroll Spy */}
         {categories.length > 0 && (
-          <div className="sticky top-[57px] z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-black/90 backdrop-blur-md border-b border-white/10 mb-8">
+          <div className="sticky top-[57px] z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-background/90 backdrop-blur-md border-b border-border mb-8">
             <div 
               ref={categoryScrollRef}
               className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 no-scrollbar scroll-smooth"
@@ -267,8 +267,8 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
                 onClick={() => scrollToCategory('all')}
                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                   activeCategory === 'all'
-                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
-                    : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-card text-muted-foreground hover:text-foreground hover:bg-secondary border border-border'
                 }`}
               >
                 Tất cả ({filteredItems.length})
@@ -282,8 +282,8 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
                   onClick={() => scrollToCategory(cat.id)}
                   className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                     activeCategory === cat.id
-                      ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
-                      : 'bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-white/5'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'bg-card text-muted-foreground hover:text-foreground hover:bg-secondary border border-border'
                   }`}
                 >
                   {cat.name} ({cat.items.length})
@@ -295,33 +295,33 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
 
         {/* 5. Menu Content by Category */}
         {filteredItems.length === 0 ? (
-          <div className="text-center py-20 bg-zinc-950 rounded-3xl border border-white/5 p-8 max-w-lg mx-auto">
-            <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-4 text-orange-400">
-              <Search className="w-7 h-7" />
+          <div className="text-center py-20 bg-card rounded-2xl border border-border p-8 max-w-lg mx-auto">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 text-primary">
+              <Search className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Không tìm thấy món ăn</h3>
-            <p className="text-sm text-zinc-400 mb-6">
+            <h3 className="text-base font-bold text-foreground mb-1.5">Không tìm thấy món ăn</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-6">
               Không có món ăn nào phù hợp với từ khóa &ldquo;{searchQuery}&rdquo;. Vui lòng thử tìm từ khóa khác.
             </p>
             <Button
               onClick={() => setSearchQuery('')}
               variant="outline"
-              className="border-white/10 hover:bg-white/10 text-white rounded-xl"
+              className="rounded-xl"
             >
               Xóa tìm kiếm
             </Button>
           </div>
         ) : (
-          <div className="space-y-14">
+          <div className="space-y-12">
             {categories.map((cat, catIdx) => (
               <section key={cat.id} id={`cat-${cat.id}`} className="scroll-mt-36">
                 {/* Category Section Header */}
-                <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-3">
+                <div className="flex items-center justify-between mb-5 border-b border-border/60 pb-3">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">
                       {cat.name}
                     </h2>
-                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-white/5">
+                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground border border-border">
                       {cat.items.length} món
                     </span>
                   </div>

@@ -108,12 +108,12 @@ export function CategoryGrid({
     <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-          Danh Mục Món Ăn
+        <h3 className="text-base font-semibold text-foreground tracking-tight">
+          Danh mục ẩm thực
         </h3>
         <Link
           href="/menu"
-          className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+          className="flex items-center gap-1 text-xs font-medium text-primary hover:underline transition-colors"
         >
           <span>Xem tất cả</span>
           <ChevronRight className="w-3.5 h-3.5" />
@@ -121,7 +121,7 @@ export function CategoryGrid({
       </div>
 
       {/* Grid of Categories */}
-      <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-4">
+      <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5 sm:gap-3">
         {DEFAULT_CATEGORIES.map((cat) => {
           const isSelected = selectedCategoryId === cat.id;
 
@@ -130,20 +130,20 @@ export function CategoryGrid({
               key={cat.id}
               type="button"
               onClick={() => onSelectCategory(cat.id)}
-              className="flex flex-col items-center gap-2 group cursor-pointer focus:outline-none"
+              className="flex flex-col items-center gap-1.5 group cursor-pointer focus:outline-none"
             >
               {/* Icon Container with Badge */}
               <div
-                className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center transition-all duration-300 border ${
+                className={`relative w-12 h-12 sm:w-13 sm:h-13 rounded-xl flex items-center justify-center transition-all duration-150 border ${
                   isSelected
-                    ? 'bg-amber-500 text-zinc-950 border-amber-400 shadow-lg shadow-amber-500/25 scale-105'
-                    : `bg-zinc-900 border-white/5 hover:border-white/20 group-hover:scale-105 ${cat.gradient}`
+                    ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                    : 'bg-card text-zinc-300 border-border group-hover:border-white/20 group-hover:text-foreground'
                 }`}
               >
                 {renderCategoryIcon(cat.iconName)}
 
                 {cat.badge && !isSelected && (
-                  <span className="absolute -top-1.5 -right-1 px-1.5 py-0.2 rounded-md bg-red-600 text-white text-[9px] font-black uppercase tracking-wider shadow">
+                  <span className="absolute -top-1 -right-0.5 px-1 py-0.2 rounded bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-wider">
                     {cat.badge}
                   </span>
                 )}
@@ -151,8 +151,8 @@ export function CategoryGrid({
 
               {/* Title */}
               <span
-                className={`text-xs font-semibold tracking-tight transition-colors truncate max-w-full ${
-                  isSelected ? 'text-amber-400' : 'text-zinc-300 group-hover:text-white'
+                className={`text-xs font-medium transition-colors truncate max-w-full ${
+                  isSelected ? 'text-primary' : 'text-zinc-400 group-hover:text-foreground'
                 }`}
               >
                 {cat.name}

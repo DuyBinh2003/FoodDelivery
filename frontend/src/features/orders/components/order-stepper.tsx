@@ -27,11 +27,11 @@ export default function OrderStepper({ currentStatus }: OrderStepperProps) {
     <div className="w-full py-6">
       <div className="flex items-center justify-between relative">
         {/* Progress bar background */}
-        <div className="absolute top-5 left-[10%] right-[10%] h-0.5 bg-white/10" />
+        <div className="absolute top-5 left-[10%] right-[10%] h-0.5 bg-muted" />
 
         {/* Progress bar fill */}
         <div
-          className="absolute top-5 left-[10%] h-0.5 bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-700 ease-out"
+          className="absolute top-5 left-[10%] h-0.5 bg-primary transition-all duration-500 ease-out"
           style={{
             width: `${(currentIndex / (STEPS.length - 1)) * 80}%`,
           }}
@@ -52,16 +52,16 @@ export default function OrderStepper({ currentStatus }: OrderStepperProps) {
               {/* Circle */}
               <div
                 className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500',
-                  isCompleted && 'bg-gradient-to-br from-orange-500 to-red-600 shadow-lg shadow-orange-500/30',
-                  isCurrent && 'bg-gradient-to-br from-orange-500 to-red-600 shadow-lg shadow-orange-500/40 ring-4 ring-orange-500/20 animate-pulse',
-                  isPending && 'bg-white/5 border border-white/10'
+                  'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300',
+                  isCompleted && 'bg-primary text-primary-foreground shadow-sm',
+                  isCurrent && 'bg-primary text-primary-foreground shadow-md ring-4 ring-primary/20',
+                  isPending && 'bg-secondary border border-border text-muted-foreground'
                 )}
               >
                 <Icon
                   className={cn(
-                    'w-4 h-4 transition-colors duration-500',
-                    (isCompleted || isCurrent) ? 'text-white' : 'text-zinc-600'
+                    'w-4 h-4 transition-colors',
+                    (isCompleted || isCurrent) ? 'text-primary-foreground' : 'text-muted-foreground'
                   )}
                 />
               </div>
@@ -69,10 +69,10 @@ export default function OrderStepper({ currentStatus }: OrderStepperProps) {
               {/* Label */}
               <span
                 className={cn(
-                  'mt-3 text-xs font-medium text-center transition-colors duration-500',
-                  isCurrent && 'text-orange-400',
-                  isCompleted && 'text-zinc-300',
-                  isPending && 'text-zinc-600'
+                  'mt-3 text-xs font-medium text-center transition-colors',
+                  isCurrent && 'text-primary font-semibold',
+                  isCompleted && 'text-foreground',
+                  isPending && 'text-muted-foreground'
                 )}
               >
                 {step.label}

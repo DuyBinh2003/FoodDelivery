@@ -41,10 +41,10 @@ const StarRating = ({
   const currentRating = hoverRating ?? rating;
 
   return (
-    <div className="flex flex-col gap-2 p-3 rounded-xl bg-zinc-950/60 border border-white/5 transition-colors hover:border-white/10">
+    <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-secondary/30 border border-border transition-colors hover:border-border/80">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-zinc-200">{label}</span>
-        <span className="text-xs font-semibold text-orange-400 min-h-[1rem]">
+        <span className="text-sm font-medium text-foreground">{label}</span>
+        <span className="text-xs font-semibold text-primary min-h-[1rem]">
           {currentRating > 0 ? REVIEW_RATING_LABELS[currentRating] : 'Chưa chọn'}
         </span>
       </div>
@@ -59,14 +59,14 @@ const StarRating = ({
                 onClick={() => setRating(star)}
                 onMouseEnter={() => setHoverRating(star)}
                 onMouseLeave={() => setHoverRating(null)}
-                className="p-1 rounded-lg transition-transform hover:scale-110 active:scale-95 focus:outline-none"
+                className="p-1 rounded-lg transition-transform hover:scale-110 active:scale-95 focus:outline-none cursor-pointer"
                 aria-label={`${label} ${star} sao`}
               >
                 <Star
-                  className={`w-7 h-7 transition-all ${
+                  className={`w-6 h-6 transition-colors ${
                     isFilled
-                      ? 'text-amber-400 fill-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]'
-                      : 'text-zinc-700 hover:text-zinc-500'
+                      ? 'text-amber-400 fill-amber-400'
+                      : 'text-muted-foreground/40 hover:text-muted-foreground'
                   }`}
                 />
               </button>
@@ -74,7 +74,7 @@ const StarRating = ({
           })}
         </div>
         {rating > 0 && (
-          <span className="text-xs text-zinc-400 font-mono">({rating}/5)</span>
+          <span className="text-xs text-muted-foreground font-mono">({rating}/5)</span>
         )}
       </div>
     </div>
@@ -234,27 +234,27 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="review-modal-title"
     >
-      <div className="w-full max-w-xl bg-zinc-900/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+      <div className="w-full max-w-xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10 bg-gradient-to-r from-zinc-900 to-zinc-950">
+        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-border bg-card/60">
           <div>
-            <h2 id="review-modal-title" className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 id="review-modal-title" className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
               Đánh giá đơn hàng
             </h2>
-            <p className="text-xs text-zinc-400 mt-1">
-              Mã đơn: <span className="font-mono text-zinc-300">#{orderId.slice(0, 8)}</span> • Chia sẻ trải nghiệm để nâng cao chất lượng dịch vụ
+            <p className="text-xs text-muted-foreground mt-1">
+              Mã đơn: <span className="font-mono text-foreground font-semibold">#{orderId.slice(0, 8)}</span> • Chia sẻ trải nghiệm để nâng cao chất lượng dịch vụ
             </p>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
             aria-label="Đóng cửa sổ"
           >
             <X className="w-5 h-5" />
@@ -262,10 +262,10 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
         </div>
 
         {/* Modal Body / Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
           {/* Ratings Section */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Chấm điểm chất lượng
             </h3>
             <div className="grid gap-3">
@@ -290,11 +290,11 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
           {/* Comment Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="review-comment" className="text-sm font-semibold text-zinc-300 flex items-center gap-1.5">
-                <MessageSquare className="w-4 h-4 text-orange-400" />
+              <label htmlFor="review-comment" className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4 text-primary" />
                 Nhận xét chi tiết
               </label>
-              <span className="text-xs text-zinc-500 font-mono">
+              <span className="text-xs text-muted-foreground font-mono">
                 {comment.length}/1000 ký tự
               </span>
             </div>
@@ -302,7 +302,7 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
               id="review-comment"
               rows={3}
               maxLength={1000}
-              className="w-full p-3.5 bg-zinc-950/80 border border-white/10 text-white rounded-xl resize-none placeholder:text-zinc-600 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all text-sm"
+              className="w-full p-3.5 bg-secondary/30 border border-border text-foreground rounded-xl resize-none placeholder:text-muted-foreground/60 focus:ring-1 focus:ring-primary/40 focus:border-primary/50 outline-none transition-all text-sm"
               placeholder="Món ăn có chuẩn vị không? Bao bì đóng gói thế nào? Tài xế giao nhanh không?..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -312,11 +312,11 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
           {/* Image Upload Section */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-300 flex items-center gap-1.5">
-                <ImagePlus className="w-4 h-4 text-orange-400" />
+              <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                <ImagePlus className="w-4 h-4 text-primary" />
                 Hình ảnh thực tế
               </span>
-              <span className="text-xs text-zinc-400 font-mono">
+              <span className="text-xs text-muted-foreground font-mono">
                 {uploadedImages.length}/{MAX_REVIEW_IMAGES} ảnh (Lưu trữ S3)
               </span>
             </div>
@@ -345,17 +345,17 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
                 onClick={() => fileInputRef.current?.click()}
                 className={`flex flex-col items-center justify-center p-5 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
                   isDragOver
-                    ? 'border-orange-500 bg-orange-500/10 scale-[1.01]'
-                    : 'border-white/15 bg-zinc-950/40 hover:bg-zinc-950/80 hover:border-white/30'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border/80 bg-secondary/20 hover:bg-secondary/40 hover:border-primary/40'
                 }`}
               >
-                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 mb-2">
-                  <UploadCloud className="w-5 h-5 text-orange-400" />
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground mb-2">
+                  <UploadCloud className="w-5 h-5 text-primary" />
                 </div>
-                <p className="text-sm font-medium text-zinc-200 text-center">
+                <p className="text-sm font-medium text-foreground text-center">
                   Nhấp hoặc kéo thả ảnh món ăn vào đây
                 </p>
-                <p className="text-xs text-zinc-500 text-center mt-1">
+                <p className="text-xs text-muted-foreground text-center mt-1">
                   Định dạng JPEG, PNG, WEBP • Tối đa 5MB mỗi ảnh
                 </p>
               </div>
@@ -367,7 +367,7 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
                 {uploadedImages.map((img) => (
                   <div
                     key={img.id}
-                    className="group relative aspect-square rounded-xl overflow-hidden border border-white/10 bg-zinc-950 shadow-inner"
+                    className="group relative aspect-square rounded-xl overflow-hidden border border-border bg-muted shadow-inner"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -381,8 +381,8 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
                     {/* Loading Overlay */}
                     {img.isUploading && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 p-1">
-                        <Loader2 className="w-5 h-5 text-orange-400 animate-spin" />
-                        <span className="text-[10px] text-zinc-300 font-medium mt-1">Đang tải...</span>
+                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                        <span className="text-[10px] text-white font-medium mt-1">Đang tải...</span>
                       </div>
                     )}
 
@@ -391,7 +391,7 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(img.id)}
-                        className="absolute top-1 right-1 p-1 rounded-full bg-black/70 text-zinc-300 hover:text-white hover:bg-red-600 transition-colors backdrop-blur-sm"
+                        className="absolute top-1 right-1 p-1 rounded-full bg-black/70 text-white hover:bg-destructive transition-colors backdrop-blur-sm cursor-pointer"
                         title="Xóa ảnh này"
                         aria-label="Xóa ảnh"
                       >
@@ -405,28 +405,28 @@ export const OrderReviewModal = ({ orderId, isOpen, onClose }: OrderReviewModalP
           </div>
 
           {/* Guide Hint */}
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-300/90">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-orange-400" />
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-primary/10 border border-primary/20 text-xs text-foreground/90">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
             <span>
               Đánh giá của bạn sẽ được hiển thị công khai trên trang nhà hàng và đóng góp vào điểm chất lượng cho tài xế giao hàng.
             </span>
           </div>
 
           {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={createReview.isPending}
-              className="border-white/10 text-zinc-300 hover:text-white hover:bg-white/10"
+              className="rounded-xl"
             >
               Hủy bỏ
             </Button>
             <Button
               type="submit"
               disabled={createReview.isPending || isAnyUploading}
-              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-medium shadow-lg shadow-orange-500/20 transition-all border-0"
+              className="font-medium shadow-sm transition-all rounded-xl"
             >
               {createReview.isPending ? (
                 <>

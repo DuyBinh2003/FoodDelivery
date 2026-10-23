@@ -249,58 +249,58 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black pb-28 text-white">
+    <div className="min-h-screen bg-background pb-28 text-foreground">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-zinc-900/80 backdrop-blur-md border-b border-white/10 px-4 py-4 flex items-center">
+      <div className="sticky top-0 z-10 bg-background/85 backdrop-blur-md border-b border-border px-4 py-3.5 flex items-center">
         <button
           onClick={() => router.back()}
-          className="p-2 -ml-2 text-white hover:bg-white/10 rounded-full transition-colors"
+          className="p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-bold text-white ml-2">Thanh toán đơn hàng</h1>
+        <h1 className="text-base sm:text-lg font-bold text-foreground ml-2">Thanh toán đơn hàng</h1>
       </div>
 
       <div className="max-w-xl mx-auto p-4 space-y-6">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center mb-6">
-              <CreditCard className="w-12 h-12 text-zinc-500" />
+            <div className="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center mb-4 text-muted-foreground">
+              <CreditCard className="w-8 h-8" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Giỏ hàng trống</h2>
-            <p className="text-zinc-400 mb-8">Bạn chưa có sản phẩm nào trong giỏ hàng.</p>
+            <h2 className="text-lg font-bold text-foreground mb-1.5">Giỏ hàng trống</h2>
+            <p className="text-muted-foreground text-sm mb-6">Bạn chưa có sản phẩm nào trong giỏ hàng.</p>
             <button
               onClick={() => router.push('/menu')}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-xl transition-colors shadow-lg shadow-orange-500/20"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2.5 px-6 rounded-xl transition-colors shadow-sm cursor-pointer"
             >
               Tiếp tục mua sắm
             </button>
           </div>
         ) : isValidating ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-zinc-400">Đang kiểm tra đơn hàng...</p>
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-3" />
+            <p className="text-muted-foreground text-sm">Đang kiểm tra đơn hàng...</p>
           </div>
         ) : (
           <>
             {errorMsg && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 items-start animate-fade-in">
-                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-400">{errorMsg}</p>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3.5 flex gap-3 items-start animate-fade-in">
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-destructive">{errorMsg}</p>
               </div>
             )}
 
             {/* Delivery Info */}
-            <section className="bg-zinc-900 border border-white/5 rounded-3xl p-5 space-y-3">
+            <section className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-sm">
               <div className="flex items-center justify-between">
-                <h2 className="text-white font-semibold flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-orange-500" />
+                <h2 className="text-foreground font-semibold text-sm sm:text-base flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-primary" />
                   Địa chỉ giao hàng
                 </h2>
                 <button
                   type="button"
                   onClick={() => setIsAddressModalOpen(true)}
-                  className="text-xs text-orange-400 hover:text-orange-300 font-medium flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 transition-all active:scale-95"
+                  className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                   {selectedAddress ? 'Đổi địa chỉ' : 'Chọn địa chỉ'}
@@ -309,18 +309,18 @@ export default function CheckoutPage() {
 
               <div
                 onClick={() => setIsAddressModalOpen(true)}
-                className="bg-zinc-800/40 border border-white/5 hover:border-orange-500/30 rounded-2xl p-4 cursor-pointer transition-all group"
+                className="bg-secondary/30 border border-border/60 hover:border-border rounded-xl p-3.5 cursor-pointer transition-colors group"
               >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-white font-semibold flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-foreground font-semibold flex items-center gap-2 text-sm">
                     {finalRecipientName}
                     {finalRecipientPhone ? ` • ${finalRecipientPhone}` : ''}
                   </span>
                   {selectedAddress && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-secondary text-secondary-foreground border border-border">
                       {selectedAddress.label === 'HOME' ? (
                         <>
-                          <Home className="w-3 h-3 text-blue-400" /> Nhà riêng
+                          <Home className="w-3 h-3 text-sky-400" /> Nhà riêng
                         </>
                       ) : selectedAddress.label === 'WORK' ? (
                         <>
@@ -340,13 +340,13 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                <p className="text-zinc-300 text-xs leading-relaxed group-hover:text-white transition-colors">
+                <p className="text-muted-foreground text-xs leading-relaxed group-hover:text-foreground transition-colors">
                   {finalDeliveryAddress}
                 </p>
 
                 {selectedAddress?.delivery_notes && (
-                  <p className="text-[11px] text-zinc-400 italic mt-1.5 pt-1.5 border-t border-zinc-700/40">
-                    <span className="not-italic text-zinc-500 font-medium">Ghi chú: </span>
+                  <p className="text-[11px] text-muted-foreground/80 italic mt-1.5 pt-1.5 border-t border-border/40">
+                    <span className="not-italic text-muted-foreground font-medium">Ghi chú: </span>
                     {selectedAddress.delivery_notes}
                   </p>
                 )}
@@ -354,14 +354,14 @@ export default function CheckoutPage() {
             </section>
 
             {/* Payment Method Selection */}
-            <section className="bg-zinc-900 border border-white/5 rounded-3xl p-5 space-y-4">
+            <section className="bg-card border border-border rounded-2xl p-5 space-y-3.5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h2 className="text-white font-semibold flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-orange-500" />
+                <h2 className="text-foreground font-semibold text-sm sm:text-base flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-primary" />
                   Phương thức thanh toán
                 </h2>
-                <span className="text-xs text-zinc-400 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
                   An toàn & Nhanh chóng
                 </span>
               </div>
@@ -369,41 +369,41 @@ export default function CheckoutPage() {
               {/* Option 1: FoodPay In-App Wallet */}
               <div
                 onClick={() => setPaymentMethod('WALLET')}
-                className={`relative p-4 rounded-2xl border transition-all cursor-pointer ${
+                className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
                   paymentMethod === 'WALLET'
-                    ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10'
-                    : 'border-white/10 bg-zinc-800/30 hover:border-white/20'
+                    ? 'border-primary bg-primary/10 shadow-sm'
+                    : 'border-border/60 bg-secondary/30 hover:border-border'
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-500 mt-0.5">
-                      <Wallet className="w-5 h-5" />
+                    <div className="w-9 h-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center mt-0.5">
+                      <Wallet className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-white font-bold">Ví điện tử FoodPay</span>
-                        <span className="text-[10px] bg-orange-500/20 text-orange-400 font-bold px-2 py-0.5 rounded-full border border-orange-500/30">
+                        <span className="text-foreground font-bold text-sm">Ví điện tử FoodPay</span>
+                        <span className="text-[10px] bg-primary/15 text-primary font-bold px-2 py-0.5 rounded-full border border-primary/25">
                           Khuyên dùng
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-400 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Thanh toán bảo mật tức thì, không cần tiền mặt
                       </p>
 
                       {/* Wallet Balance Display */}
-                      <div className="mt-2.5 flex items-center gap-3">
-                        <span className="text-sm text-zinc-300">
+                      <div className="mt-2 flex items-center gap-2.5">
+                        <span className="text-xs text-muted-foreground">
                           Số dư khả dụng:{' '}
-                          <strong className="text-white font-semibold">
+                          <strong className="text-foreground font-semibold font-mono">
                             {isLoadingWallet ? 'Đang tải...' : formatVND(availableBalance)}
                           </strong>
                         </span>
 
                         {walletData && (
                           isBalanceSufficient ? (
-                            <span className="text-xs text-green-400 flex items-center gap-1 font-medium bg-green-500/10 px-2 py-0.5 rounded-lg border border-green-500/20">
-                              <CheckCircle2 className="w-3.5 h-3.5" /> Đủ số dư
+                            <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                              <CheckCircle2 className="w-3 h-3" /> Đủ số dư
                             </span>
                           ) : (
                             <button
@@ -412,9 +412,9 @@ export default function CheckoutPage() {
                                 e.stopPropagation();
                                 setIsTopupModalOpen(true);
                               }}
-                              className="text-xs bg-orange-500 hover:bg-orange-600 text-white font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all shadow-md shadow-orange-500/20"
+                              className="text-[11px] bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer"
                             >
-                              <PlusCircle className="w-3.5 h-3.5" /> Nạp thêm
+                              <PlusCircle className="w-3 h-3" /> Nạp thêm
                             </button>
                           )
                         )}
@@ -423,10 +423,10 @@ export default function CheckoutPage() {
                   </div>
 
                   <div
-                    className={`w-5 h-5 rounded-full border-[5px] transition-all ${
+                    className={`w-4 h-4 rounded-full border-2 transition-all mt-1 ${
                       paymentMethod === 'WALLET'
-                        ? 'border-orange-500 bg-black'
-                        : 'border-zinc-600 bg-zinc-800'
+                        ? 'border-primary bg-primary'
+                        : 'border-muted-foreground/40 bg-transparent'
                     }`}
                   />
                 </div>
@@ -435,35 +435,35 @@ export default function CheckoutPage() {
               {/* Option 2: VNPAY QR */}
               <div
                 onClick={() => setPaymentMethod('VNPAY')}
-                className={`relative p-4 rounded-2xl border transition-all cursor-pointer ${
+                className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
                   paymentMethod === 'VNPAY'
-                    ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10'
-                    : 'border-white/10 bg-zinc-800/30 hover:border-white/20'
+                    ? 'border-primary bg-primary/10 shadow-sm'
+                    : 'border-border/60 bg-secondary/30 hover:border-border'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center font-black text-xs text-blue-400">
+                    <div className="w-9 h-9 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center font-bold text-xs">
                       VNPAY
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-white font-bold">Cổng thanh toán VNPAY QR</span>
-                        <span className="text-[10px] bg-blue-500/20 text-blue-400 font-semibold px-2 py-0.5 rounded-full border border-blue-500/30">
+                        <span className="text-foreground font-bold text-sm">Cổng thanh toán VNPAY QR</span>
+                        <span className="text-[10px] bg-secondary text-secondary-foreground font-medium px-2 py-0.5 rounded-full border border-border">
                           Thẻ / QR Ngân hàng
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-400 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Quét mã QR qua 40+ ứng dụng ngân hàng & Thẻ quốc tế
                       </p>
                     </div>
                   </div>
 
                   <div
-                    className={`w-5 h-5 rounded-full border-[5px] transition-all ${
+                    className={`w-4 h-4 rounded-full border-2 transition-all ${
                       paymentMethod === 'VNPAY'
-                        ? 'border-blue-500 bg-black'
-                        : 'border-zinc-600 bg-zinc-800'
+                        ? 'border-primary bg-primary'
+                        : 'border-muted-foreground/40 bg-transparent'
                     }`}
                   />
                 </div>
@@ -472,35 +472,35 @@ export default function CheckoutPage() {
               {/* Option 3: MoMo Wallet */}
               <div
                 onClick={() => setPaymentMethod('MOMO')}
-                className={`relative p-4 rounded-2xl border transition-all cursor-pointer ${
+                className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
                   paymentMethod === 'MOMO'
-                    ? 'border-pink-500 bg-pink-500/10 shadow-lg shadow-pink-500/10'
-                    : 'border-white/10 bg-zinc-800/30 hover:border-white/20'
+                    ? 'border-primary bg-primary/10 shadow-sm'
+                    : 'border-border/60 bg-secondary/30 hover:border-border'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-pink-600/20 border border-pink-500/30 flex items-center justify-center font-black text-xs text-pink-400">
+                    <div className="w-9 h-9 rounded-lg bg-pink-500/15 text-pink-400 flex items-center justify-center font-bold text-xs">
                       MOMO
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-white font-bold">Ví điện tử MoMo</span>
-                        <span className="text-[10px] bg-pink-500/20 text-pink-400 font-semibold px-2 py-0.5 rounded-full border border-pink-500/30">
+                        <span className="text-foreground font-bold text-sm">Ví điện tử MoMo</span>
+                        <span className="text-[10px] bg-secondary text-secondary-foreground font-medium px-2 py-0.5 rounded-full border border-border">
                           Ví điện tử
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-400 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Thanh toán bảo mật tức thì qua ứng dụng Ví MoMo
                       </p>
                     </div>
                   </div>
 
                   <div
-                    className={`w-5 h-5 rounded-full border-[5px] transition-all ${
+                    className={`w-4 h-4 rounded-full border-2 transition-all ${
                       paymentMethod === 'MOMO'
-                        ? 'border-pink-500 bg-black'
-                        : 'border-zinc-600 bg-zinc-800'
+                        ? 'border-primary bg-primary'
+                        : 'border-muted-foreground/40 bg-transparent'
                     }`}
                   />
                 </div>
@@ -509,30 +509,30 @@ export default function CheckoutPage() {
               {/* Option 4: Cash On Delivery (COD) */}
               <div
                 onClick={() => setPaymentMethod('COD')}
-                className={`relative p-4 rounded-2xl border transition-all cursor-pointer ${
+                className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
                   paymentMethod === 'COD'
-                    ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10'
-                    : 'border-white/10 bg-zinc-800/30 hover:border-white/20'
+                    ? 'border-primary bg-primary/10 shadow-sm'
+                    : 'border-border/60 bg-secondary/30 hover:border-border'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-white/10 flex items-center justify-center text-zinc-300">
-                      <Banknote className="w-5 h-5" />
+                    <div className="w-9 h-9 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center">
+                      <Banknote className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="text-white font-bold">Tiền mặt khi nhận hàng (COD)</span>
-                      <p className="text-xs text-zinc-400 mt-0.5">
+                      <span className="text-foreground font-bold text-sm">Tiền mặt khi nhận hàng (COD)</span>
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Thanh toán trực tiếp cho tài xế khi giao đồ ăn
                       </p>
                     </div>
                   </div>
 
                   <div
-                    className={`w-5 h-5 rounded-full border-[5px] transition-all ${
+                    className={`w-4 h-4 rounded-full border-2 transition-all ${
                       paymentMethod === 'COD'
-                        ? 'border-orange-500 bg-black'
-                        : 'border-zinc-600 bg-zinc-800'
+                        ? 'border-primary bg-primary'
+                        : 'border-muted-foreground/40 bg-transparent'
                     }`}
                   />
                 </div>
@@ -540,23 +540,23 @@ export default function CheckoutPage() {
             </section>
 
             {/* Order Items Preview */}
-            <section className="bg-zinc-900 border border-white/5 rounded-3xl p-5 space-y-4">
-              <h2 className="text-white font-semibold">Món đã chọn ({getTotalItems()})</h2>
-              <div className="divide-y divide-white/5">
+            <section className="bg-card border border-border rounded-2xl p-5 space-y-3.5 shadow-sm">
+              <h2 className="text-foreground font-semibold text-sm sm:text-base">Món đã chọn ({getTotalItems()})</h2>
+              <div className="divide-y divide-border/60">
                 {items.map((item) => (
                   <div key={item.id} className="py-3 flex justify-between items-start first:pt-0 last:pb-0">
-                    <div className="flex gap-3">
-                      <div className="w-6 h-6 bg-zinc-800 rounded flex items-center justify-center text-xs font-bold text-orange-500 mt-0.5">
+                    <div className="flex gap-2.5">
+                      <div className="w-6 h-6 bg-secondary text-secondary-foreground rounded flex items-center justify-center text-xs font-bold mt-0.5">
                         {item.quantity}x
                       </div>
                       <div>
-                        <h4 className="text-white text-sm font-medium">{item.name}</h4>
+                        <h4 className="text-foreground text-sm font-medium">{item.name}</h4>
                         {item.options && item.options.length > 0 && (
-                          <p className="text-zinc-400 text-xs mt-0.5">{item.options.join(', ')}</p>
+                          <p className="text-muted-foreground text-xs mt-0.5">{item.options.join(', ')}</p>
                         )}
                       </div>
                     </div>
-                    <span className="text-white text-sm font-medium">
+                    <span className="text-foreground text-sm font-medium font-mono">
                       {formatVND(item.price * item.quantity)}
                     </span>
                   </div>
@@ -565,12 +565,12 @@ export default function CheckoutPage() {
             </section>
 
             {/* Customer Note / Message for Restaurant & Driver */}
-            <section className="bg-zinc-900 border border-white/5 rounded-3xl p-5 space-y-3">
-              <h2 className="text-white font-semibold flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-orange-500" />
+            <section className="bg-card border border-border rounded-2xl p-5 space-y-2.5 shadow-sm">
+              <h2 className="text-foreground font-semibold text-sm sm:text-base flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-primary" />
                 Ghi chú cho nhà hàng & tài xế
               </h2>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-muted-foreground">
                 Thêm yêu cầu chế biến (ví dụ: ít hành, nước dùng để riêng, không cay) hoặc lưu ý giao hàng
               </p>
               <textarea
@@ -579,7 +579,7 @@ export default function CheckoutPage() {
                 placeholder="Ví dụ: Ít hành lá, nước lèo để riêng, thêm tương ớt..."
                 rows={2}
                 maxLength={300}
-                className="w-full bg-zinc-800/60 border border-white/10 rounded-2xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition-colors resize-none"
+                className="w-full bg-secondary/30 border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/50 transition-colors resize-none"
               />
             </section>
 
@@ -593,11 +593,11 @@ export default function CheckoutPage() {
             />
 
             {/* Price Summary */}
-            <section className="bg-zinc-900 border border-white/5 rounded-3xl p-5 space-y-3">
-              <h2 className="text-white font-semibold mb-2">Chi tiết thanh toán</h2>
-              <div className="flex justify-between text-zinc-400 text-sm">
+            <section className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-sm">
+              <h2 className="text-foreground font-semibold text-sm sm:text-base mb-1">Chi tiết thanh toán</h2>
+              <div className="flex justify-between text-muted-foreground text-sm">
                 <span>Tiền món ăn (Tạm tính)</span>
-                <span className="text-zinc-200 font-medium font-mono">{formatVND(subtotal)}</span>
+                <span className="text-foreground font-medium font-mono">{formatVND(subtotal)}</span>
               </div>
               {pointsDiscount > 0 && (
                 <div className="flex justify-between text-amber-400 text-sm font-medium animate-in fade-in">
@@ -608,18 +608,18 @@ export default function CheckoutPage() {
                   <span className="font-mono font-bold">-{formatVND(pointsDiscount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-zinc-400 text-sm">
+              <div className="flex justify-between text-muted-foreground text-sm">
                 <span className="flex items-center gap-1.5">
                   Phí giao hàng (Cố định)
-                  <span className="text-[10px] bg-orange-500/15 text-orange-400 px-1.5 py-0.5 rounded font-semibold border border-orange-500/20">
+                  <span className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-semibold border border-border">
                     Mặc định
                   </span>
                 </span>
-                <span className="text-zinc-200 font-medium font-mono">{formatVND(shippingFee)}</span>
+                <span className="text-foreground font-medium font-mono">{formatVND(shippingFee)}</span>
               </div>
-              <div className="pt-3 border-t border-white/10 flex justify-between items-center">
-                <span className="text-white font-bold">Tổng thanh toán</span>
-                <span className="text-xl font-extrabold text-orange-500 font-mono">{formatVND(total)}</span>
+              <div className="pt-3 border-t border-border flex justify-between items-center">
+                <span className="text-foreground font-bold">Tổng thanh toán</span>
+                <span className="text-xl font-bold text-primary font-mono">{formatVND(total)}</span>
               </div>
             </section>
           </>
@@ -640,10 +640,10 @@ export default function CheckoutPage() {
 
       {/* Fixed Bottom Bar */}
       {items.length > 0 && !isValidating && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-zinc-900/95 backdrop-blur-md border-t border-white/10 z-20">
+        <div className="fixed bottom-0 left-0 right-0 p-3.5 sm:p-4 bg-card/95 backdrop-blur-md border-t border-border z-20">
           <div className="max-w-xl mx-auto flex items-center justify-between gap-4">
             <div>
-              <p className="text-zinc-400 text-xs">
+              <p className="text-muted-foreground text-xs">
                 {paymentMethod === 'WALLET'
                   ? 'Thanh toán qua Ví FoodPay'
                   : paymentMethod === 'VNPAY'
@@ -652,37 +652,37 @@ export default function CheckoutPage() {
                   ? 'Thanh toán qua Ví MoMo'
                   : 'Thanh toán tiền mặt (COD)'}
               </p>
-              <p className="text-xl font-extrabold text-white">{formatVND(total)}</p>
+              <p className="text-lg sm:text-xl font-bold text-foreground font-mono">{formatVND(total)}</p>
             </div>
 
             <button
               onClick={handlePlaceOrder}
               disabled={isSubmitting || !!errorMsg}
-              className={`py-3.5 px-8 rounded-2xl font-bold text-white transition-all shadow-lg flex items-center gap-2 cursor-pointer ${
+              className={`py-3 px-6 rounded-xl font-semibold text-white transition-all shadow-sm flex items-center gap-2 cursor-pointer ${
                 isSubmitting || !!errorMsg
-                  ? 'bg-zinc-700 cursor-not-allowed'
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed'
                   : paymentMethod === 'WALLET' && !isBalanceSufficient
-                  ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20'
+                  ? 'bg-amber-600 hover:bg-amber-500'
                   : paymentMethod === 'VNPAY'
-                  ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/25'
+                  ? 'bg-sky-600 hover:bg-sky-500'
                   : paymentMethod === 'MOMO'
-                  ? 'bg-pink-600 hover:bg-pink-500 shadow-pink-600/25'
-                  : 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/25'
+                  ? 'bg-pink-600 hover:bg-pink-500'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground'
               }`}
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Đang xử lý đơn...</span>
                 </>
               ) : paymentMethod === 'WALLET' && !isBalanceSufficient ? (
                 <>
-                  <PlusCircle className="w-5 h-5" />
+                  <PlusCircle className="w-4 h-4" />
                   <span>Nạp tiền & Đặt hàng</span>
                 </>
               ) : paymentMethod === 'VNPAY' || paymentMethod === 'MOMO' ? (
                 <>
-                  <QrCode className="w-5 h-5" />
+                  <QrCode className="w-4 h-4" />
                   <span>Thanh toán QR ngay</span>
                 </>
               ) : (

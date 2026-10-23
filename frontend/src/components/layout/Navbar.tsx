@@ -43,20 +43,20 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/85 backdrop-blur-xl transition-colors">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 shadow-md shadow-orange-500/20 group-hover:shadow-orange-500/40 transition-shadow duration-300">
-            <UtensilsCrossed className="w-4 h-4 text-white" />
+          <div className="p-1.5 rounded-lg bg-primary/15 text-primary border border-primary/25 transition-transform duration-200 group-hover:scale-105">
+            <UtensilsCrossed className="w-4 h-4" />
           </div>
-          <span className="text-base font-bold bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
-            FoodDelivery
+          <span className="text-base font-semibold tracking-tight text-foreground">
+            Food<span className="text-primary font-bold">Delivery</span>
           </span>
         </Link>
 
         {/* Nav links */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
@@ -64,10 +64,13 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${isActive ? 'text-white bg-white/10' : 'text-zinc-400 hover:text-white hover:bg-white/5'
-                  }`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                  isActive
+                    ? 'text-foreground bg-white/[0.08] shadow-xs'
+                    : 'text-zinc-400 hover:text-foreground hover:bg-white/[0.04]'
+                }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{item.label}</span>
               </Link>
             );
@@ -80,21 +83,21 @@ export function Navbar() {
                 <div className="relative ml-4 pl-4 border-l border-white/10" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center gap-2 text-sm text-zinc-300 hover:text-white transition-colors focus:outline-none"
+                    className="flex items-center gap-2 text-xs text-zinc-300 hover:text-foreground transition-colors focus:outline-none"
                   >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500/20 to-red-600/20 flex items-center justify-center text-orange-500 border border-orange-500/20">
-                      <User className="w-4 h-4" />
+                    <div className="w-7.5 h-7.5 rounded-full bg-primary/15 flex items-center justify-center text-primary border border-primary/25">
+                      <User className="w-3.5 h-3.5" />
                     </div>
                     <span className="hidden sm:inline font-medium">{user?.name}</span>
-                    <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 text-zinc-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-3 w-56 bg-zinc-900 border border-white/10 rounded-xl shadow-xl overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 z-50">
+                    <div className="absolute right-0 mt-2.5 w-56 bg-card border border-border rounded-xl shadow-2xl overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 z-50">
                       <Link
                         href="/rewards"
                         onClick={() => setIsDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-amber-300/90 hover:text-amber-200 hover:bg-amber-500/10 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-xs text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-colors"
                       >
                         <Award className="w-4 h-4 text-amber-400" />
                         <span className="font-medium">Điểm & Hạng thành viên</span>
@@ -103,7 +106,7 @@ export function Navbar() {
                       <Link
                         href="/history"
                         onClick={() => setIsDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-xs text-zinc-300 hover:text-foreground hover:bg-white/[0.04] transition-colors"
                       >
                         <History className="w-4 h-4 text-zinc-400" />
                         Lịch sử mua hàng
@@ -112,13 +115,13 @@ export function Navbar() {
                       <Link
                         href="/profile/addresses"
                         onClick={() => setIsDropdownOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-xs text-zinc-300 hover:text-foreground hover:bg-white/[0.04] transition-colors"
                       >
                         <MapPin className="w-4 h-4 text-zinc-400" />
                         Sổ địa chỉ
                       </Link>
 
-                      <div className="h-px bg-white/10 my-1"></div>
+                      <div className="h-px bg-border my-1"></div>
 
                       {/* Driver Section */}
                       {(() => {
@@ -132,15 +135,15 @@ export function Navbar() {
                             <Link
                               href="/driver/dashboard"
                               onClick={() => setIsDropdownOpen(false)}
-                              className="flex items-center justify-between px-4 py-3 text-sm text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors"
+                              className="flex items-center justify-between px-4 py-2.5 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors"
                             >
                               <div className="flex items-center gap-3">
                                 <Bike className="w-4 h-4 text-emerald-400" />
                                 <span className="font-medium">Trung tâm tài xế</span>
                               </div>
                               <span className="flex items-center gap-1.5 text-xs text-zinc-400">
-                                <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-600'}`} />
-                                <span className="text-[11px]">{isOnline ? 'Online' : 'Offline'}</span>
+                                <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-600'}`} />
+                                <span className="text-[10px]">{isOnline ? 'Online' : 'Offline'}</span>
                               </span>
                             </Link>
                           );
@@ -148,12 +151,12 @@ export function Navbar() {
 
                         if (isPendingDriver) {
                           return (
-                            <div className="flex items-center justify-between px-4 py-2.5 text-sm text-amber-400/90 bg-amber-500/5 cursor-default">
+                            <div className="flex items-center justify-between px-4 py-2.5 text-xs text-amber-400/90 bg-amber-500/5 cursor-default">
                               <div className="flex items-center gap-3">
                                 <Bike className="w-4 h-4 text-amber-400" />
                                 <span>Hồ sơ tài xế</span>
                               </div>
-                              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/25">
                                 Đang duyệt
                               </span>
                             </div>
@@ -165,7 +168,7 @@ export function Navbar() {
                             <Link
                               href="/register/driver"
                               onClick={() => setIsDropdownOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                              className="flex items-center gap-3 px-4 py-2.5 text-xs text-zinc-300 hover:text-foreground hover:bg-white/[0.04] transition-colors"
                             >
                               <Bike className="w-4 h-4 text-amber-400" />
                               Đăng ký làm tài xế
@@ -187,7 +190,7 @@ export function Navbar() {
                             <Link
                               href="/partner/restaurant"
                               onClick={() => setIsDropdownOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 text-sm text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors font-medium"
+                              className="flex items-center gap-3 px-4 py-2.5 text-xs text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors font-medium"
                             >
                               <Store className="w-4 h-4 text-orange-400" />
                               Quán của tôi (Đối tác)
@@ -197,12 +200,12 @@ export function Navbar() {
 
                         if (isPendingRestaurant) {
                           return (
-                            <div className="flex items-center justify-between px-4 py-2.5 text-sm text-amber-400/90 bg-amber-500/5 cursor-default">
+                            <div className="flex items-center justify-between px-4 py-2.5 text-xs text-amber-400/90 bg-amber-500/5 cursor-default">
                               <div className="flex items-center gap-3">
                                 <Store className="w-4 h-4 text-amber-400" />
                                 <span>Hồ sơ mở quán</span>
                               </div>
-                              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/25">
                                 Đang duyệt
                               </span>
                             </div>
@@ -214,7 +217,7 @@ export function Navbar() {
                             <Link
                               href="/register/restaurant"
                               onClick={() => setIsDropdownOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                              className="flex items-center gap-3 px-4 py-2.5 text-xs text-zinc-300 hover:text-foreground hover:bg-white/[0.04] transition-colors"
                             >
                               <Store className="w-4 h-4 text-zinc-400" />
                               Đăng ký mở quán
@@ -225,13 +228,13 @@ export function Navbar() {
                         return null;
                       })()}
 
-                      <div className="h-px bg-white/10 my-1"></div>
+                      <div className="h-px bg-border my-1"></div>
                       <button
                         onClick={() => {
                           setIsDropdownOpen(false);
                           logout();
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors text-left"
                       >
                         <LogOut className="w-4 h-4" />
                         Đăng xuất
@@ -242,9 +245,9 @@ export function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 px-4 py-2 ml-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-md shadow-orange-500/20 transition-all duration-200"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 ml-2 rounded-lg text-xs font-medium text-primary-foreground bg-primary hover:brightness-105 active:scale-[0.98] shadow-xs shadow-orange-950/20 transition-all duration-150"
                 >
-                  <LogIn className="w-4 h-4" />
+                  <LogIn className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Đăng nhập</span>
                 </Link>
               )}

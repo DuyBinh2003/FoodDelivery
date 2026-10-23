@@ -42,6 +42,7 @@ Bảng này được tự động cập nhật bởi các Sub-Agent (`@planner` 
 | `order-review-image-upload-and-toast-fix` | `customer` | [#74](https://github.com/DuyBinh2003/FoodDelivery/issues/74) | `[COMPLETED]` | Nâng cấp UI popup review hỗ trợ upload ảnh trực tiếp lên LocalStack S3 (thay vì nhập URL) và khắc phục lỗi không render Toast notification khi hoàn tất review. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/customer/order-review-image-upload-and-toast-fix.md) |
 | `auth-refresh-token-rotation` | `platform` | [#73](https://github.com/DuyBinh2003/FoodDelivery/issues/73) | `[COMPLETED]` | Quản lý phiên đăng nhập với Refresh Token Rotation (RTR), phát hiện Replay Attack và cơ chế thu hồi tức thì qua Redis Blacklist. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/platform/auth-refresh-token-rotation.md) |
 | `gateway-delivery-ws-routing` | `platform` | [#72](https://github.com/DuyBinh2003/FoodDelivery/issues/72) | `[COMPLETED]` | Cấu hình API Gateway NGINX định tuyến toàn diện Delivery Service, hỗ trợ kết nối WebSocket hai chiều cho Socket.io và thiết lập tầng Rate Limiting bảo vệ hệ thống. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/platform/gateway-delivery-ws-routing.md) |
+| `frontend-design-taste-refactor` | `customer` | #80 | `[COMPLETED]` | Refactor toàn diện giao diện Frontend (Next.js) theo chuẩn Taste Skill (Anti-Slop Art Direction, Dark-Room Tone, phân tách Page vs App Screen, giữ nguyên 100% Business Logic). | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/frontend/frontend-design-taste-refactor.md) |
 
 
 ---

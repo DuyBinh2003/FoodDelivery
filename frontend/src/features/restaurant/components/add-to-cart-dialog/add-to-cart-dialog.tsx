@@ -246,7 +246,7 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
   return (
     <>
       <div
-        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200"
+        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200"
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             onClose();
@@ -256,10 +256,10 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
         aria-modal="true"
         aria-labelledby="product-dialog-title"
       >
-        <div className="relative w-full max-w-lg bg-zinc-950 border border-white/10 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh] animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+        <div className="relative w-full max-w-lg bg-card border border-border rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh] animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
 
           {/* Hero Banner */}
-          <div className="relative w-full h-44 sm:h-56 bg-zinc-900 shrink-0 overflow-hidden">
+          <div className="relative w-full h-44 sm:h-56 bg-muted shrink-0 overflow-hidden">
             {item.image_url ? (
               <Image
                 src={item.image_url}
@@ -271,20 +271,20 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
                 priority
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-orange-950/70 via-zinc-900 to-amber-950/60 flex flex-col items-center justify-center gap-2">
-                <Flame className="w-12 h-12 text-orange-500/50" />
-                <span className="text-xs uppercase tracking-wider font-semibold text-orange-400/70">Món ngon nóng hổi</span>
+              <div className="w-full h-full bg-secondary/50 flex flex-col items-center justify-center gap-2">
+                <Flame className="w-10 h-10 text-primary/60" />
+                <span className="text-xs uppercase tracking-wider font-semibold text-primary/80">Món ngon nóng hổi</span>
               </div>
             )}
 
             {/* Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent pointer-events-none" />
 
             {/* Category Badge */}
             <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
               {item.category?.name && (
-                <Badge variant="secondary" className="bg-black/60 hover:bg-black/70 backdrop-blur-md text-zinc-200 border-white/10 px-3 py-1 text-xs font-medium">
+                <Badge variant="secondary" className="bg-background/80 backdrop-blur-md text-foreground border-border px-3 py-1 text-xs font-medium">
                   {item.category.name}
                 </Badge>
               )}
@@ -293,7 +293,7 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-zinc-300 hover:text-white border border-white/10 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-background/80 backdrop-blur-md text-muted-foreground hover:text-foreground border border-border transition-colors cursor-pointer"
               aria-label="Đóng cửa sổ"
             >
               <X className="w-4 h-4" />
@@ -310,19 +310,19 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
           </div>
 
           {/* Scrollable Modal Content */}
-          <div className="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+          <div className="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1">
             {/* Title & Base Price */}
             <div>
               <div className="flex items-start justify-between gap-4">
-                <h2 id="product-dialog-title" className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+                <h2 id="product-dialog-title" className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-snug">
                   {item.name}
                 </h2>
                 <div className="flex flex-col items-end shrink-0">
-                  <span className="text-xl sm:text-2xl font-extrabold text-orange-400">
+                  <span className="text-xl sm:text-2xl font-bold text-primary tabular-nums">
                     {formatCurrency(item.price)}
                   </span>
                   {item.original_price && item.original_price > item.price && (
-                    <span className="text-xs text-zinc-500 line-through">
+                    <span className="text-xs text-muted-foreground line-through tabular-nums">
                       {formatCurrency(item.original_price)}
                     </span>
                   )}
@@ -335,7 +335,7 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
                   {item.tags.map((tag) => (
                     <span
                       key={tag.id}
-                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20"
                     >
                       <TagIcon className="w-3 h-3" />
                       {tag.name}
@@ -346,11 +346,11 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
 
               {/* Description */}
               {item.description ? (
-                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mt-2.5">
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mt-2.5">
                   {item.description}
                 </p>
               ) : (
-                <p className="text-xs text-zinc-500 italic mt-2">
+                <p className="text-xs text-muted-foreground/70 italic mt-2">
                   Món ăn được chuẩn bị tươi mới theo tiêu chuẩn của quán.
                 </p>
               )}
@@ -358,7 +358,7 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
 
             {/* Modifier Groups (Size, Toppings, Level) */}
             {item.options && item.options.length > 0 && (
-              <div className="space-y-6 pt-2 border-t border-white/5">
+              <div className="space-y-6 pt-2 border-t border-border">
                 {item.options.map((group) => {
                   const isSingleChoice = group.required && group.max_choices === 1;
 
@@ -366,21 +366,21 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
                     <div key={group.id} className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <label className="text-sm font-bold text-white">
+                          <label className="text-sm font-bold text-foreground">
                             {group.name}
                           </label>
                           {group.required ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-500/20 text-red-400 border border-red-500/30">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-destructive/15 text-destructive border border-destructive/25">
                               Bắt buộc
                             </span>
                           ) : (
-                            <span className="text-xs text-zinc-500 font-normal">
+                            <span className="text-xs text-muted-foreground font-normal">
                               Tùy chọn
                             </span>
                           )}
                         </div>
                         {group.max_choices && group.max_choices > 1 && (
-                          <span className="text-[11px] text-zinc-400">
+                          <span className="text-[11px] text-muted-foreground">
                             Tối đa {group.max_choices} lựa chọn
                           </span>
                         )}
@@ -404,27 +404,30 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
                                   handleToggleMultiChoice(group, choice);
                                 }
                               }}
-                              className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ${isSelected
-                                  ? 'bg-orange-500/10 border-orange-500/50 shadow-sm'
-                                  : 'bg-zinc-900/60 border-white/5 hover:border-white/15 hover:bg-zinc-900 text-zinc-300'
-                                }`}
+                              className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer ${
+                                isSelected
+                                  ? 'bg-primary/10 border-primary text-foreground'
+                                  : 'bg-secondary/30 border-border hover:border-muted-foreground/30 hover:bg-secondary/60 text-muted-foreground'
+                              }`}
                             >
                               <div className="flex items-center gap-3">
                                 <div
-                                  className={`w-5 h-5 flex items-center justify-center transition-all ${isSingleChoice ? 'rounded-full' : 'rounded-md'
-                                    } ${isSelected
-                                      ? 'bg-orange-500 text-white'
-                                      : 'border border-zinc-600 bg-zinc-800'
-                                    }`}
+                                  className={`w-5 h-5 flex items-center justify-center transition-all ${
+                                    isSingleChoice ? 'rounded-full' : 'rounded-md'
+                                  } ${
+                                    isSelected
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'border border-border bg-secondary'
+                                  }`}
                                 >
                                   {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                                 </div>
-                                <span className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-white font-bold' : 'text-zinc-200'}`}>
+                                <span className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-foreground font-bold' : 'text-foreground/90'}`}>
                                   {choice.name}
                                 </span>
                               </div>
 
-                              <span className="text-xs font-semibold text-orange-400">
+                              <span className="text-xs font-semibold text-primary tabular-nums">
                                 {choice.price > 0 ? `+${formatCurrency(choice.price)}` : '0đ'}
                               </span>
                             </button>
@@ -438,15 +441,15 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
             )}
 
             {/* Custom Note for restaurant */}
-            <div className="space-y-2 pt-2 border-t border-white/5">
+            <div className="space-y-2 pt-2 border-t border-border">
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="custom-item-note"
-                  className="text-sm font-semibold text-zinc-200"
+                  className="text-sm font-semibold text-foreground"
                 >
                   Ghi chú cho quán
                 </label>
-                <span className="text-xs text-zinc-500 font-normal">Không bắt buộc</span>
+                <span className="text-xs text-muted-foreground font-normal">Không bắt buộc</span>
               </div>
               <textarea
                 id="custom-item-note"
@@ -454,35 +457,35 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
                 onChange={(e) => setCustomNote(e.target.value.slice(0, 150))}
                 placeholder="Ghi chú thêm cho quán (VD: để riêng nước dùng, không hành...)"
                 rows={2}
-                className="w-full bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all resize-none"
+                className="w-full bg-secondary/30 border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/50 transition-all resize-none"
               />
-              <div className="flex justify-between items-center text-[11px] text-zinc-500 px-1">
+              <div className="flex justify-between items-center text-[11px] text-muted-foreground px-1">
                 <span>Quán sẽ chuẩn bị theo yêu cầu nếu có thể</span>
                 <span className="tabular-nums">{customNote.length}/150</span>
               </div>
             </div>
 
             {/* Quantity Stepper */}
-            <div className="pt-2 border-t border-white/5 flex items-center justify-between p-3.5 bg-zinc-900/60 rounded-2xl border border-white/5">
-              <span className="text-sm font-semibold text-zinc-200">Số lượng</span>
+            <div className="pt-2 border-t border-border flex items-center justify-between p-3.5 bg-secondary/30 rounded-xl border border-border">
+              <span className="text-sm font-semibold text-foreground">Số lượng</span>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   disabled={quantity <= 1 || !item.is_available}
-                  className="w-10 h-10 rounded-xl bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-xl bg-secondary hover:bg-secondary/80 border border-border disabled:opacity-30 disabled:hover:bg-secondary disabled:cursor-not-allowed flex items-center justify-center text-foreground transition-all active:scale-95 cursor-pointer"
                   aria-label="Giảm số lượng"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="text-lg font-bold min-w-[2.5ch] text-center text-white tabular-nums select-none">
+                <span className="text-base font-bold min-w-[2.5ch] text-center text-foreground tabular-nums select-none">
                   {quantity}
                 </span>
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => q + 1)}
                   disabled={!item.is_available}
-                  className="w-10 h-10 rounded-xl bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-xl bg-secondary hover:bg-secondary/80 border border-border disabled:opacity-30 disabled:hover:bg-secondary disabled:cursor-not-allowed flex items-center justify-center text-foreground transition-all active:scale-95 cursor-pointer"
                   aria-label="Tăng số lượng"
                 >
                   <Plus className="w-4 h-4" />
@@ -492,7 +495,7 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
           </div>
 
           {/* Sticky Bottom Action Bar with Real-time Total Price */}
-          <div className="p-4 sm:p-5 border-t border-white/10 bg-zinc-950/95 backdrop-blur-md flex flex-col gap-2 shrink-0">
+          <div className="p-4 sm:p-5 border-t border-border bg-card/95 backdrop-blur-md flex flex-col gap-2 shrink-0">
             {missingRequiredGroup && (
               <div className="flex items-center gap-1.5 text-xs text-amber-400 font-medium px-1">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
@@ -505,7 +508,7 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
                 type="button"
                 variant="ghost"
                 onClick={onClose}
-                className="text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl cursor-pointer px-4 h-12"
+                className="text-muted-foreground hover:text-foreground rounded-xl cursor-pointer px-4 h-11"
               >
                 Hủy
               </Button>
@@ -514,14 +517,14 @@ function AddToCartModalInner({ item, restaurantId, restaurantName, onClose }: Ad
                 type="button"
                 onClick={handleAddToCart}
                 disabled={!isValid}
-                className="flex-1 h-12 px-5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 disabled:from-zinc-800 disabled:to-zinc-800 disabled:text-zinc-500 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 flex items-center justify-between transition-all duration-200 active:scale-[0.98] cursor-pointer"
+                className="flex-1 h-11 px-5 font-semibold rounded-xl flex items-center justify-between transition-all duration-150 active:scale-[0.98] cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <ShoppingBag className="w-4 h-4" />
                   <span>{item.is_available ? 'Thêm vào giỏ hàng' : 'Tạm hết món'}</span>
                 </div>
                 {item.is_available && (
-                  <span className="font-extrabold text-sm sm:text-base tracking-wide tabular-nums">
+                  <span className="font-bold text-sm sm:text-base tracking-wide tabular-nums">
                     {formatCurrency(totalPrice)}
                   </span>
                 )}

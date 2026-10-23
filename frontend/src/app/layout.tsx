@@ -35,7 +35,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-zinc-950 text-zinc-100">
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col bg-background text-foreground selection:bg-orange-500/20 selection:text-orange-200"
+      >
         {/* Navigation */}
         <Navbar />
 
@@ -46,7 +49,25 @@ export default function RootLayout({
               {children}
             </RoleRouteGuard>
           </UserSocketProvider>
-          <Toaster position="top-right" />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              className: '!bg-zinc-900 !text-zinc-100 !border !border-white/10 !shadow-2xl !backdrop-blur-md !text-sm !rounded-xl',
+              duration: 3500,
+              success: {
+                iconTheme: {
+                  primary: '#ea580c',
+                  secondary: '#ffffff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#ffffff',
+                },
+              },
+            }}
+          />
         </QueryProvider>
       </body>
     </html>

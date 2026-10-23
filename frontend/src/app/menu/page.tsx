@@ -14,13 +14,13 @@ export default async function MenuPage({ searchParams }: { searchParams: Promise
   ]);
 
   return (
-    <main className="flex-1 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950">
+    <main className="flex-1 bg-background">
       <CartClearer />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page header */}
         <div className="mb-10">
-          <h1 className="text-3xl font-bold text-white mb-2">Thực đơn</h1>
-          <p className="text-zinc-400 mb-8">Khám phá các món ngon từ nhà hàng uy tín</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight mb-2">Thực đơn</h1>
+          <p className="text-muted-foreground mb-8">Khám phá các món ngon từ nhà hàng uy tín</p>
 
           {/* Reusable Search Filters Component */}
           <SearchFilters categories={categories} tags={tags} />
@@ -41,7 +41,7 @@ async function MenuSearchResults({ searchParams }: { searchParams: { [key: strin
   if (menuData.length === 0) {
     return (
       <div className="py-20 text-center">
-        <p className="text-zinc-400 text-lg">Không tìm thấy món ăn nào phù hợp với tìm kiếm của bạn.</p>
+        <p className="text-muted-foreground text-lg">Không tìm thấy món ăn nào phù hợp với tìm kiếm của bạn.</p>
       </div>
     );
   }
@@ -64,10 +64,10 @@ function MenuSkeleton() {
     <div className="space-y-12 animate-pulse">
       {[1, 2].map((sectionId) => (
         <div key={sectionId}>
-          <div className="h-7 bg-zinc-800/50 rounded w-48 mb-4"></div>
+          <div className="h-7 bg-muted rounded-lg w-48 mb-4"></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {[1, 2, 3, 4].map((itemId) => (
-              <div key={itemId} className="h-[280px] bg-zinc-800/30 rounded-2xl border border-zinc-800"></div>
+              <div key={itemId} className="h-[280px] bg-card rounded-2xl border border-border"></div>
             ))}
           </div>
         </div>
