@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { UtensilsCrossed, Menu, ClipboardList, LogIn, User, LogOut, History, ChevronDown, Bike, Store, MapPin, Award } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { useEffect, useState, useRef } from 'react';
+import { NotificationCenterPopover } from './notification-center-popover';
 
 const NAV_ITEMS = [
   { href: '/menu', label: 'Thực đơn', icon: Menu },
@@ -77,11 +78,13 @@ export function Navbar() {
           {mounted && (
             <>
               {isAuthenticated ? (
-                <div className="relative ml-4 pl-4 border-l border-white/10" ref={dropdownRef}>
-                  <button
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center gap-2 text-sm text-zinc-300 hover:text-white transition-colors focus:outline-none"
-                  >
+                <div className="flex items-center gap-2 ml-4 pl-4 border-l border-white/10">
+                  <NotificationCenterPopover />
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="flex items-center gap-2 text-sm text-zinc-300 hover:text-white transition-colors focus:outline-none"
+                    >
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500/20 to-red-600/20 flex items-center justify-center text-orange-500 border border-orange-500/20">
                       <User className="w-4 h-4" />
                     </div>
@@ -238,6 +241,7 @@ export function Navbar() {
                       </button>
                     </div>
                   )}
+                  </div>
                 </div>
               ) : (
                 <Link

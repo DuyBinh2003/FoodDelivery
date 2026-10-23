@@ -8,7 +8,8 @@
     "paths": {
       "@/common/*": ["libs/common/src/*"],
       "@/config/*": ["libs/config/src/*"],
-      "@/events/*": ["libs/events/src/*"]
+      "@/events/*": ["libs/events/src/*"],
+      "@/mcp/*": ["apps/mcp-server/src/*"]
     },
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,

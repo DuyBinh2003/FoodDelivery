@@ -204,7 +204,13 @@ async function apiClient<T>(
     const response = await fetch(url.toString(), {
       ...fetchOptions,
       headers,
-      body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
+      body: isFormData
+        ? (body as FormData)
+        : typeof body === 'string'
+        ? body
+        : body
+        ? JSON.stringify(body)
+        : undefined,
       signal: AbortSignal.timeout(timeoutMs),
     });
 

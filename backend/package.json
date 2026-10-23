@@ -19,6 +19,7 @@
     "start:admin": "nest start admin-service --watch --exec \"tsc-alias -p tsconfig.json --dir dist/libs && tsc-alias -p apps/admin-service/tsconfig.json --dir dist/apps/admin-service && node\"",
     "start:search": "nest start search-service --watch --exec \"tsc-alias -p tsconfig.json --dir dist/libs && tsc-alias -p apps/search-service/tsconfig.json --dir dist/apps/search-service && node\"",
     "start:payment": "nest start payment-service --watch --exec \"tsc-alias -p tsconfig.json --dir dist/libs && tsc-alias -p apps/payment-service/tsconfig.json --dir dist/apps/payment-service && node\"",
+    "start:mcp": "tsx apps/mcp-server/src/index.ts",
     "start:all": "concurrently \"npm run start:user\" \"npm run start:admin\" \"npm run start:restaurant\" \"npm run start:order\" \"npm run start:delivery\" \"npm run start:search\" \"npm run start:payment\"",
     "start:prod": "node dist/main",
     "lint": "oxlint apps/ libs/ test/ && node scripts/check-imports.js",
@@ -43,6 +44,7 @@
     "@aws-sdk/client-sns": "^3.1147.0",
     "@aws-sdk/client-sqs": "^3.1131.0",
     "@elastic/elasticsearch": "^8.17.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@nestjs/cache-manager": "^12.0.0",
     "@nestjs/common": "^12.0.1",
     "@nestjs/config": "^12.0.0",
@@ -71,7 +73,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sqs-consumer": "^15.0.3",
-    "typeorm": "^1.1.1"
+    "typeorm": "^1.1.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",

@@ -5,6 +5,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { UserSocketProvider } from "@/components/providers/user-socket-provider";
 import { Toaster } from "react-hot-toast";
 import { RoleRouteGuard } from "@/components/guards/role-route-guard";
+import { AiAssistantWidget } from "@/features/search/components/ai-assistant-widget";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,6 +47,7 @@ export default function RootLayout({
               {children}
             </RoleRouteGuard>
           </UserSocketProvider>
+          <AiAssistantWidget />
           <Toaster position="top-right" />
         </QueryProvider>
       </body>

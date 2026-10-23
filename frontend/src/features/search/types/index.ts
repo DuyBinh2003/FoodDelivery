@@ -24,3 +24,5 @@ export interface MenuSearchParams {
   category?: string;
   tag?: string;
 }
+
+export * from './ai.types';

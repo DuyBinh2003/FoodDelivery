@@ -141,57 +141,124 @@ graph TD
 
 ---
 
-## 4. Kịch Bản Kiểm Thử Toàn Diện (Test Scenarios - 3 Nhánh Bắt Buộc)
+## 4. Thiết Kế Giao Diện Người Dùng & Trải Nghiệm (Frontend UI/UX Implementation)
 
-### Nhánh 1: Happy Path (Kịch bản hoạt động chuẩn)
-1. **AI Recommendation (LLM Engine)**:
-   - Gửi prompt: "trưa nay tôi muốn ăn cơm sườn nướng ít mỡ dưới 50k gần quận 1".
-   - Kết quả: Phân tích đúng intent, truy vấn được món ăn phù hợp trong catalog, trả về thông điệp gợi ý tự nhiên cùng danh sách gợi ý chuẩn cấu trúc JSON.
-2. **AI Multi-turn Chat**:
-   - Gửi câu hỏi bổ sung dựa trên context trước đó, AI phản hồi nhất quán và cập nhật gợi ý.
-3. **Webhook Dispatcher**:
-   - Kích hoạt sự kiện `order.created`, WebhookDispatcher tìm thấy subscription khớp sự kiện, sinh chữ ký `X-Webhook-Signature` HMAC-SHA256 hợp lệ, gửi thành công HTTP 200 tới n8n và ghi log `status = SUCCESS`.
-4. **Subscription Management**:
-   - Đăng ký subscription mới với URL n8n và danh sách events, kiểm tra lưu trữ và tra cứu thành công.
+Để tính năng AI và Luồng tự động hóa thông báo không chỉ dừng lại ở tầng API backend, hệ thống được trang bị 2 phân hệ giao diện hoàn chỉnh trên Frontend Next.js:
 
-### Nhánh 2: Edge Cases (Trường hợp biên & Ngưỡng)
-1. **AI Fallback khi không có API Key hoặc LLM Timeout**:
-   - Giả lập gọi LLM bị timeout quá 4000ms hoặc không cấu hình LLM API Key.
-   - Kết quả: Hệ thống kích hoạt Rule-based Keyword Engine một cách trong suốt, trả về danh sách món ăn ăn khớp với `source: 'FALLBACK_RULE_BASED'` mà không làm sập request của người dùng.
-2. **Prompt không rõ nghĩa hoặc quá ngắn**:
-   - Gửi prompt "đói quá", AI tự động gợi ý các món ăn Bestseller/thịnh hành trong hệ thống mà không văng ngoại lệ.
-3. **Payload Webhook kích thước lớn hoặc có ký tự tiếng Việt đặc thù**:
-   - Chuỗi JSON payload tiếng Việt có dấu được tính toán HMAC chính xác tuyệt đối, khớp chữ ký tại phía nhận n8n.
+### 4.1. Trợ Lý AI Gợi Ý Món Ăn (`AiAssistantWidget` & `AiFoodDialog`)
+- **Vị trí tích hợp**:
+  - Nút nổi **Floating Action Button (FAB)** với icon Sparkles & Robot ở góc phải dưới màn hình (áp dụng tại Trang chủ `/`, Thực đơn `/menu`, và Chi tiết quán `/restaurant/[id]`).
+  - Thanh tìm kiếm thông minh tại Trang chủ: Tích hợp chế độ "Hỏi Trợ lý AI" cho phép người dùng nhập trực tiếp câu hỏi ẩm thực tự nhiên.
+- **Cửa sổ Chat Modal (`AiFoodDialog`)**:
+  - Thiết kế Dark Mode Glassmorphism cao cấp (`bg-slate-900/90 border border-slate-800 backdrop-blur-xl shadow-2xl`), hiệu ứng phát sáng gradient neon tinh tế (Emerald & Indigo).
+  - Thanh gợi ý nhanh (**Quick Prompt Pills**):
+    - *"Hôm nay ốm, muốn ăn món gì ấm bụng?"*
+    - *"Cơm trưa văn phòng no nê dưới 45k"*
+    - *"Thèm đồ ngọt & trà sữa quanh đây"*
+    - *"Món chay thanh đạm, ít dầu mỡ"*
+  - Hiệu ứng thị giác: **Typing Indicator** (ba chấm lượn sóng) khi AI đang phân tích và tìm món.
+- **Thẻ Món Ăn Đề Xuất Trực Tiếp (`AiDishCard`)**:
+  - Hiển thị ngay trong dòng tin nhắn chat: Ảnh món chất lượng cao, tên quán ăn, khoảng cách GPS, giá tiền sau ưu đãi và rating sao vàng.
+  - **Lý do đề xuất (Match Reason Badge)**: Gắn thẻ nổi bật giải thích tại sao AI gợi ý món này (Ví dụ: *"Phù hợp ngân sách < 50k"*, *"Cháo tía tô giải cảm ấm bụng"*).
+  - **Tương tác 1-chạm**:
+    - Nút **"+ Thêm vào giỏ"**: Đưa ngay món ăn vào Giỏ hàng toàn cục (Cart Store) kèm toast thông báo mà không cần rời màn hình chat.
+    - Nút **"Xem quán ăn"**: Chuyển hướng tới trang chi tiết thực đơn của quán.
 
-### Nhánh 3: Error & Rejection Flow (Luồng lỗi & Từ chối)
-1. **Invalid Webhook Target URL**:
-   - Đăng ký subscription với URL không hợp lệ $\rightarrow$ Ném ngoại lệ HTTP 400 Bad Request từ `ValidationPipe`.
-2. **Target n8n sập hoặc trả mã 500 / Connection Refused**:
-   - Gửi webhook tới endpoint n8n bị lỗi, WebhookDispatcher ghi nhận `RETRYING`, kích hoạt retry và sau 3 lần thất bại chuyển trạng thái log thành `FAILED` với thông điệp lỗi được bảo toàn trong `{ cause: error }`.
-3. **Chữ ký Webhook không khớp (Verification Failure)**:
-   - Test utility xác thực chữ ký phát hiện signature giả mạo và từ chối xử lý payload.
+### 4.2. Trung Tâm Thông Báo & Cảnh Báo Tức Thời (`NotificationCenterPopover` & Live Toasts)
+- **Chuông Thông Báo trên Header (`NotificationBell`)**:
+  - Đặt cạnh Avatar người dùng trên Header, hiển thị Badge đỏ đếm số lượng thông báo mới chưa đọc.
+  - Nhấp vào chuông bật ra Popover danh sách các thông báo tự động (Đơn hàng đã được quán nhận, tài xế nhận cuốc, cảnh báo trễ đơn, hoặc ưu đãi cá nhân hóa từ AI).
+- **Toast Cảnh Báo Động (Live Alert Toasts)**:
+  - Khi có sự kiện webhook quan trọng liên quan đến đơn hàng (như n8n trigger cập nhật trạng thái đơn), màn hình sẽ bật Toast với icon động và âm thanh nhẹ nhàng để thông báo cho khách hàng/chủ quán.
 
 ---
 
-## 5. Kế Hoạch Triển Khai Từng Bước (Implementation Steps)
+## 5. Danh Sách Tập Tin Tác Động (File Scope)
 
-1. **Bước 1 (AI Module - `search-service`)**:
+### Backend Services:
+1. `backend/apps/search-service/src/modules/search/dto/recommend-dish.dto.ts` (Mới)
+2. `backend/apps/search-service/src/modules/search/dto/ai-chat.dto.ts` (Mới)
+3. `backend/apps/search-service/src/modules/search/services/ai-assistant.service.ts` (Mới)
+4. `backend/apps/search-service/src/modules/search/ai-assistant.controller.ts` (Mới)
+5. `backend/apps/order-service/src/modules/orders/entities/webhook-subscription.entity.ts` (Mới)
+6. `backend/apps/order-service/src/modules/orders/entities/webhook-delivery-log.entity.ts` (Mới)
+7. `backend/apps/order-service/src/modules/orders/dto/create-webhook-subscription.dto.ts` (Mới)
+8. `backend/apps/order-service/src/modules/orders/dto/dispatch-webhook.dto.ts` (Mới)
+9. `backend/apps/order-service/src/modules/orders/services/webhook-dispatcher.service.ts` (Mới)
+10. `backend/apps/order-service/src/modules/orders/webhooks.controller.ts` (Mới)
+
+### Frontend Client:
+1. `frontend/src/features/search/types/ai.types.ts` (Mới: Kiểu dữ liệu AI Prompt, Response, Suggested Dish)
+2. `frontend/src/features/search/api/ai-assistant-api.ts` (Mới: Hàm gọi API `/search/ai/recommend` & `/search/ai/chat`)
+3. `frontend/src/features/search/components/ai-assistant-widget.tsx` (Mới: Floating Widget & Chat Dialog)
+4. `frontend/src/features/search/components/ai-dish-card.tsx` (Mới: Thẻ món ăn tương tác trong chat)
+5. `frontend/src/components/layout/notification-center-popover.tsx` (Mới: Chuông thông báo & danh sách thông báo đơn hàng)
+6. `frontend/src/app/layout.tsx` (Chỉnh sửa: Nhúng AiAssistantWidget toàn cục để hỗ trợ mọi trang)
+7. `frontend/src/features/search/tests/ai-assistant-ui.test.ts` (Mới: Test suite 3 nhánh cho UI trợ lý AI)
+
+---
+
+## 6. Kịch Bản Kiểm Thử Toàn Diện (Test Scenarios - 3 Nhánh Bắt Buộc)
+
+### Nhánh 1: 🟢 Happy Path (Kịch bản hoạt động chuẩn)
+1. **Backend AI Recommendation (LLM Engine)**:
+   - Gửi prompt: "trưa nay tôi muốn ăn cơm sườn nướng ít mỡ dưới 50k gần quận 1".
+   - Kết quả: Phân tích đúng intent, truy vấn được món ăn phù hợp trong catalog, trả về thông điệp gợi ý tự nhiên cùng danh sách gợi ý chuẩn cấu trúc JSON.
+2. **Backend Webhook Dispatcher**:
+   - Kích hoạt sự kiện `order.created`, WebhookDispatcher tìm thấy subscription khớp sự kiện, sinh chữ ký `X-Webhook-Signature` HMAC-SHA256 hợp lệ, gửi thành công HTTP 200 tới n8n và ghi log `status = SUCCESS`.
+3. **Frontend UI - Tương tác Trợ lý AI**:
+   - Khách hàng bấm nút Floating Action Button AI ở góc màn hình: Modal mở mượt mà với các chip gợi ý nhanh.
+   - Nhấp vào chip gợi ý hoặc gõ prompt: Hiển thị Typing indicator, sau đó trả lời kèm danh sách thẻ `AiDishCard`.
+   - Bấm "+ Thêm vào giỏ" trên thẻ món: Món ăn được nạp ngay vào giỏ hàng, số lượng trên Cart Badge tăng lên chính xác.
+4. **Frontend UI - Thông báo Đơn hàng**:
+   - Chuông thông báo hiển thị badge số lượng thông báo mới, mở popover xem danh sách các sự kiện cập nhật trạng thái đơn hàng.
+
+### Nhánh 2: 🟡 Edge Cases (Trường hợp biên & Ngưỡng)
+1. **Backend AI Fallback khi không có API Key hoặc LLM Timeout**:
+   - Giả lập gọi LLM bị timeout quá 4000ms hoặc không cấu hình LLM API Key.
+   - Kết quả: Hệ thống kích hoạt Rule-based Keyword Engine một cách trong suốt, trả về danh sách món ăn ăn khớp với `source: 'FALLBACK_RULE_BASED'` mà không làm sập request của người dùng.
+2. **Backend Webhook Payload lớn & Tiếng Việt có dấu**:
+   - Chuỗi JSON payload tiếng Việt có dấu được tính toán HMAC chính xác tuyệt đối, khớp chữ ký tại phía nhận n8n.
+3. **Frontend UI Edge Cases**:
+   - Prompt quá ngắn ("đói", "ăn") hoặc câu hỏi không liên quan ẩm thực: AI phản hồi lịch sự kèm gợi ý các món thịnh hành nhất mà giao diện không bị giật lag hay vỡ khung.
+   - Khi món ăn gợi ý tạm thời hết hàng (`is_available = false`): Thẻ món hiển thị mờ với nhãn "Tạm hết món" và vô hiệu hóa nút thêm giỏ hàng an toàn.
+   - Màn hình mobile cỡ nhỏ (375px): Cửa sổ chat AI tự động co giãn full-screen bottom sheet mượt mà, không bị che thanh điều hướng.
+
+### Nhánh 3: 🔴 Error & Rejection Flow (Luồng lỗi & Từ chối)
+1. **Backend Invalid Target URL & Connection Refused**:
+   - Đăng ký subscription với URL không hợp lệ $\rightarrow$ Ném ngoại lệ HTTP 400 Bad Request.
+   - Gửi webhook tới endpoint n8n bị sập $\rightarrow$ Ghi nhận retry và chuyển log sang `FAILED` kèm thông điệp lỗi bảo toàn trong `{ cause: error }`.
+2. **Backend Chữ ký Webhook không khớp (Verification Failure)**:
+   - Test utility xác thực chữ ký phát hiện signature giả mạo và từ chối xử lý payload.
+3. **Frontend UI Error Handling**:
+   - Mất kết nối mạng hoặc Backend Search Service offline (503): Giao diện chat hiển thị hộp thông báo lỗi thân thiện với nút "Thử gửi lại", không gây crash trang ứng dụng.
+   - Thêm món vào giỏ khi nhà hàng đang đóng cửa: Báo toast cảnh báo "Nhà hàng hiện đang nghỉ bán" và giữ nguyên giỏ hàng.
+
+---
+
+## 7. Kế Hoạch Triển Khai Từng Bước (Implementation Steps)
+
+1. **Bước 1 (Backend AI Module - `search-service`)**:
    - Tạo DTOs (`recommend-dish.dto.ts`, `ai-chat.dto.ts`).
    - Xây dựng `AiAssistantService` với bộ phân tích intent, tích hợp LLM client và Rule-based fallback engine.
    - Tạo `AiAssistantController` đăng ký các route `/search/ai/recommend` và `/search/ai/chat`.
    - Đăng ký vào `SearchModule`.
-2. **Bước 2 (Webhooks & n8n Module - `order-service`)**:
+2. **Bước 2 (Backend Webhooks & n8n Module - `order-service`)**:
    - Tạo thực thể `m_webhook_subscription` và `t_webhook_delivery_log`.
    - Tạo DTOs (`create-webhook-subscription.dto.ts`, `dispatch-webhook.dto.ts`).
    - Xây dựng `WebhookDispatcherService` với hàm ký HMAC-SHA256, gửi HTTP request và cơ chế Retry.
    - Tạo `WebhooksController` quản lý subscriptions và endpoint test dispatch.
    - Đăng ký vào `OrdersModule`.
-3. **Bước 3 (Kiểm thử Vitest 3 nhánh)**:
-   - Viết `apps/search-service/src/modules/search/tests/ai-assistant.spec.ts` (Happy, Edge/Fallback, Error).
-   - Viết `apps/order-service/src/modules/orders/tests/webhook-dispatcher.spec.ts` (HMAC signing, Retry backoff, Logging, Error flow).
-   - Vượt qua bộ tứ Local CI Gate: Lint, Typecheck, Test, Build.
-4. **Bước 4 (Tài liệu & Đồng bộ)**:
+3. **Bước 3 (Frontend UI Implementation)**:
+   - Xây dựng kiểu dữ liệu `ai.types.ts` và API client `ai-assistant-api.ts`.
+   - Phát triển component thẻ món ăn thông minh `AiDishCard` hỗ trợ thêm nhanh vào giỏ hàng.
+   - Phát triển Floating Widget & Chat Dialog `AiAssistantWidget` với hiệu ứng typing, chips gợi ý và responsive sheet.
+   - Phát triển `NotificationCenterPopover` hiển thị lịch sử thông báo đơn hàng và webhook events trên Header.
+   - Nhúng Widget toàn cục vào `frontend/src/app/layout.tsx`.
+4. **Bước 4 (Kiểm thử Toàn diện & Local CI Gate)**:
+   - Viết test backend Vitest 3 nhánh: `apps/search-service/src/modules/search/tests/ai-assistant.spec.ts` & `apps/order-service/src/modules/orders/tests/webhook-dispatcher.spec.ts`.
+   - Viết test frontend UI 3 nhánh: `frontend/src/features/search/tests/ai-assistant-ui.test.ts`.
+   - Chạy bộ tứ kiểm soát Local CI Gate: Lint (0 warnings/errors), Typecheck (0 errors), Tests (100% pass), Build (thành công).
+5. **Bước 5 (Tài liệu & Đồng bộ)**:
    - Tạo file workflow mẫu `docs/workflows/n8n-order-notification-flow.json`.
-   - Cập nhật `docs/services/search-service.md` và `docs/services/order-service.md`.
-   - Đổi trạng thái Plan sang `[COMPLETED]` trong `docs/plans/README.md`.
-   - Commit, push và mark PR #87 Ready for review.
+   - Cập nhật `docs/services/search-service.md`, `docs/services/order-service.md`, và `docs/plans/README.md`.

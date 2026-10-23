@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "rootDir": "../..",
+    "outDir": "../../dist",
+    "baseUrl": "./",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "paths": {
+      "@/*": ["src/*"],
+      "@/mcp/*": ["src/*"],
+      "@/common/*": ["../../libs/common/src/*"],
+      "@/config/*": ["../../libs/config/src/*"],
+      "@/events/*": ["../../libs/events/src/*"]
+    }
+  }
+}
