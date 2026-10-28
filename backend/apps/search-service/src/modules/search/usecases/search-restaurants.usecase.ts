@@ -1,5 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ElasticsearchRepository } from '@/modules/search/repositories/elasticsearch.repository.js';
+import {
+  ElasticsearchRepository,
+  RestaurantDocument,
+} from '@/modules/search/repositories/elasticsearch.repository.js';
 
 export interface SearchRestaurantsQuery {
   q?: string;
@@ -11,16 +14,18 @@ export interface SearchRestaurantsQuery {
   tags?: string[];
   freeship?: boolean;
   freeshipDistanceThreshold?: number;
+  open_only?: boolean;
+  sort_by?: 'relevance' | 'distance' | 'rating';
 }
 
 @Injectable()
 export class SearchRestaurantsUseCase {
   constructor(
     @Inject(ElasticsearchRepository)
-    private readonly elasticsearchRepo: ElasticsearchRepository
+    private readonly elasticsearchRepo: ElasticsearchRepository,
   ) {}
 
-  async execute(query: SearchRestaurantsQuery) {
+  async execute(query: SearchRestaurantsQuery): Promise<RestaurantDocument[]> {
     return this.elasticsearchRepo.searchRestaurants(query);
   }
 }

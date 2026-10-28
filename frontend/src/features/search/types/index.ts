@@ -23,4 +23,33 @@ export interface MenuSearchParams {
   q?: string;
   category?: string;
   tag?: string;
+  lat?: number;
+  lon?: number;
+  radius?: string;
+  sort_by?: 'relevance' | 'distance' | 'rating';
+  open_only?: boolean;
+}
+
+/** Món ăn trong gợi ý tìm kiếm */
+export interface SearchSuggestionDish {
+  id: string;
+  name: string;
+  price: number;
+  restaurant_id: string;
+  restaurant_name: string;
+}
+
+/** Nhà hàng trong gợi ý tìm kiếm */
+export interface SearchSuggestionRestaurant {
+  id: string;
+  name: string;
+  rating: number;
+  distance_km?: number;
+}
+
+/** Kết quả trả về từ endpoint gợi ý tìm kiếm tức thời */
+export interface SearchSuggestionResult {
+  keywords: string[];
+  dishes: SearchSuggestionDish[];
+  restaurants: SearchSuggestionRestaurant[];
 }

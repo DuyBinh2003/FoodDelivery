@@ -69,7 +69,7 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
   };
 }
 
-interface ApiRequestOptions extends Omit<RequestInit, 'body' | 'signal'> {
+interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
   params?: Record<string, string | undefined>;
   body?: unknown;
   timeoutMs?: number;
@@ -207,7 +207,11 @@ async function apiClient<T>(
       ...fetchOptions,
       headers,
       body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: fetchOptions.signal
+        ? typeof AbortSignal.any === 'function'
+          ? AbortSignal.any([fetchOptions.signal, AbortSignal.timeout(timeoutMs)])
+          : fetchOptions.signal
+        : AbortSignal.timeout(timeoutMs),
     });
 
     if (!response.ok) {

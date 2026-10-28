@@ -1,75 +1,101 @@
 # Kiến trúc Elasticsearch trong FoodDelivery
 
-Tài liệu này mô tả cách hệ thống FoodDelivery tích hợp và sử dụng Elasticsearch để tối ưu hóa việc tìm kiếm nhà hàng dựa trên vị trí địa lý (geo-location), từ khóa (fuzzy search) và các bộ lọc khác.
+Tài liệu này mô tả cách hệ thống FoodDelivery tích hợp và sử dụng **Elasticsearch (v8)** làm công cụ tìm kiếm và lọc thông minh (Smart Search Engine) cho nhà hàng và món ăn, kết hợp vị trí không gian (Geo-spatial query), xử lý ngôn ngữ tiếng Việt (Vietnamese Analyzer), thuật toán xếp hạng đa tiêu chí (Relevance Ranking), và gợi ý tự động (Completion Suggesters).
+
+---
 
 ## 1. Tổng quan Kiến trúc (Overview)
 
-Hệ thống sử dụng **Elasticsearch (v8)** làm công cụ tìm kiếm chính cho các thao tác truy vấn nhà hàng phức tạp nhằm giảm tải cho PostgreSQL. 
-Mô hình kết hợp:
-- **PostgreSQL**: Lưu trữ nguồn dữ liệu gốc (Master Data).
-- **Elasticsearch**: Đóng vai trò là Read-Model (hoặc Search Index) để query tốc độ cao.
-- **Đồng bộ dữ liệu (Data Sync)**: Sử dụng mô hình Event-driven nội bộ thông qua TypeORM Subscriber.
+Hệ thống áp dụng mô hình tách biệt CQRS (Command Query Responsibility Segregation):
+- **Command Path (Đường Ghi)**: PostgreSQL (`schema_restaurant`) đóng vai trò Single Source of Truth, lưu trữ Master Data nhà hàng và menu.
+- **Query Path (Đường Đọc)**: Elasticsearch (v8) đóng vai trò Read-Model hiệu năng cao, phẳng hóa dữ liệu nhà hàng và món ăn để phục vụ các truy vấn phức tạp với độ trễ $< 30\text{ms}$.
+- **Data Ingestion**: Đồng bộ bất đồng bộ từ `restaurant-service` sang Elasticsearch thông qua `ElasticsearchRepository.syncAllRestaurants()`, kết hợp background reconciliation khi khởi động.
 
-## 2. Cấu trúc Index
+---
 
-Hệ thống lưu trữ dữ liệu vào index có tên `restaurants` với Mapping (định nghĩa trong `ElasticsearchRepository`) như sau:
+## 2. Cấu trúc Chỉ mục (Dual Index Architecture)
 
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `keyword` | Khóa chính của nhà hàng (UUID từ DB) |
-| `name` | `text` | Tên nhà hàng, dùng analyzer `standard` hỗ trợ tìm kiếm full-text và fuzzy |
-| `location` | `geo_point` | Tọa độ (vĩ độ, kinh độ) dùng để lọc theo khoảng cách (`geo_distance`) |
-| `rating` | `float` | Điểm đánh giá nhà hàng |
-| `categories` | `keyword` | Mảng các category ID hoặc Name |
-| `tags` | `keyword` | Mảng các tag ID hoặc Name |
+Hệ thống quản lý 2 index riêng biệt:
 
-## 3. Luồng Ghi và Đồng bộ dữ liệu (Write Flow)
+### 2.1. Cấu hình Analyzer Tiếng Việt (`vi_analyzer` & `autocomplete_analyzer`)
+Cả 2 index đều được áp dụng bộ analyzer tùy biến:
+- `vietnamese_stop`: Loại bỏ các từ tiền tố hoặc từ nối dư thừa trong ẩm thực ("quán", "tiệm", "cửa hàng", "và", "ở").
+- `edge_ngram_filter`: Sinh các token tiền tố độ dài từ 2 đến 20 ký tự để phục vụ tìm kiếm nhanh khi đang gõ phím.
+- `asciifolding`: Tự động loại bỏ dấu tiếng Việt ("phở bò" $\leftrightarrow$ "pho bo", "trà sữa" $\leftrightarrow$ "tra sua").
 
-Mọi thao tác thay đổi dữ liệu của nhà hàng đều được PostgreSQL đóng vai trò Source of Truth. Dữ liệu sau đó sẽ tự động lan truyền (sync) sang Elasticsearch.
+### 2.2. Index `restaurants`
+Lưu trữ thông tin nhà hàng phục vụ tìm kiếm quán và tính khoảng cách:
+```json
+{
+  "properties": {
+    "id": { "type": "keyword" },
+    "name": {
+      "type": "text",
+      "analyzer": "vi_analyzer",
+      "fields": {
+        "autocomplete": { "type": "text", "analyzer": "autocomplete_analyzer" },
+        "keyword": { "type": "keyword" }
+      }
+    },
+    "location": { "type": "geo_point" },
+    "rating": { "type": "float" },
+    "total_reviews": { "type": "integer" },
+    "is_active": { "type": "boolean" },
+    "categories": { "type": "keyword" },
+    "tags": { "type": "keyword" },
+    "suggest": { "type": "completion" }
+  }
+}
+```
 
-**Sơ đồ luồng Ghi:**
-`PostgreSQL (m_restaurant)` ➔ `TypeORM Event (Insert/Update/Remove)` ➔ `RestaurantSubscriber` ➔ `SyncRestaurantIndexUseCase` ➔ `ElasticsearchRepository` ➔ `Elasticsearch`
+### 2.3. Index `menu_items`
+Lưu trữ toàn bộ món ăn độc lập, giải quyết triệt để bài toán tìm món ăn khi tên quán không trùng tên món:
+```json
+{
+  "properties": {
+    "id": { "type": "keyword" },
+    "restaurant_id": { "type": "keyword" },
+    "restaurant_name": { "type": "text", "analyzer": "vi_analyzer" },
+    "name": {
+      "type": "text",
+      "analyzer": "vi_analyzer",
+      "fields": {
+        "autocomplete": { "type": "text", "analyzer": "autocomplete_analyzer" },
+        "keyword": { "type": "keyword" }
+      }
+    },
+    "description": { "type": "text", "analyzer": "vi_analyzer" },
+    "price": { "type": "double" },
+    "is_available": { "type": "boolean" },
+    "tags": { "type": "keyword" },
+    "location": { "type": "geo_point" },
+    "rating": { "type": "float" },
+    "suggest": { "type": "completion" }
+  }
+}
+```
 
-**Chi tiết tiến trình:**
-1. Khi có thao tác Create/Update/Delete trên Entity `Restaurant`, TypeORM kích hoạt event subscriber `RestaurantSubscriber`.
-2. `RestaurantSubscriber` bắt event (`afterInsert`, `afterUpdate`, `afterRemove`). 
-   - Với Update: Nó sẽ query lại full dữ liệu của nhà hàng (bao gồm relation như `categories`) để đảm bảo data được đẩy sang ES là mới nhất.
-3. Chuyển giao dữ liệu cho `SyncRestaurantIndexUseCase` để format và chuyển tiếp.
-4. `ElasticsearchRepository` gọi Elasticsearch Client (v8) thực thi thao tác `index` (upsert) hoặc `delete`.
+---
 
-## 4. Luồng Đọc dữ liệu (Read Flow)
+## 3. Thuật Toán Xếp Hạng Đa Tiêu Chí (Multi-Factor Geo-Relevance Ranking)
 
-Có 2 kịch bản (Use Cases) chính sử dụng Elasticsearch:
+Khi người dùng tìm kiếm (`GET /api/search/restaurants`), hệ thống áp dụng `function_score` Query DSL:
 
-### 4.1. Tìm kiếm Nhà hàng (`/api/search/restaurants`)
-Tìm kiếm các nhà hàng phù hợp với các tiêu chí bộ lọc (location, từ khóa, rating, categories, v.v.).
+$$\text{FinalScore} = \text{TextRelevance (BM25)} \times \text{DistanceDecay (Gauss)} \times \text{RatingFactor (Sqrt)}$$
 
-**Luồng hoạt động:**
-`Client` ➔ `SearchController` ➔ `SearchRestaurantsUseCase` ➔ `ElasticsearchRepository` ➔ `Elasticsearch`
+1. **Text Relevance (BM25)**:
+   - Khớp trường `name^3`, `name.autocomplete^2`, `categories^2`, `tags` với `fuzziness: 'AUTO'`.
+2. **Hàm suy giảm khoảng cách (`gauss` decay)**:
+   - Điểm suy giảm dần theo khoảng cách từ vị trí người dùng (`origin: {lat, lon}`, `scale: 3km`, `decay: 0.5`, `weight: 2.0`). Quán càng gần điểm càng cao, nhưng quán ở xa có rating xuất sắc vẫn có cơ hội xuất hiện ở thứ hạng tốt.
+3. **Trọng số Đánh giá (`field_value_factor`)**:
+   - Nhân với điểm `rating` có modifier `sqrt` (`missing: 3.0`, `weight: 1.5`), ưu tiên các quán có chất lượng dịch vụ được đánh giá cao.
 
-**Chi tiết Query:**
-- Gửi một truy vấn dạng `bool` query.
-- `must`: Thực hiện `match` query trên field `name` với tùy chọn `fuzziness: 'AUTO'` (nếu có tham số `q`).
-- `filter`: 
-  - Lọc `range` đối với `rating`.
-  - Lọc `terms` đối với `categories` và `tags`.
-  - Lọc `geo_distance` đối với `location` (Giới hạn bán kính hiển thị, mặc định 10km quanh user).
-- `sort`: Sắp xếp tăng dần theo khoảng cách `_geo_distance` tính từ vị trí user.
+---
 
-### 4.2. Tìm kiếm Menu/Món ăn (`/api/search/menu`)
-Vì món ăn thay đổi rất thường xuyên về trạng thái (`is_available`, giá cả), hệ thống áp dụng chiến lược kết hợp giữa Elasticsearch và PostgreSQL.
+## 4. Gợi Ý Tự Động (Autocomplete Suggesters & Keystroke Pipeline)
 
-**Luồng hoạt động:**
-1. **Bước 1 (ES)**: Gọi `SearchRestaurantsUseCase` truyền các bộ lọc vào Elasticsearch để lấy danh sách các **nhà hàng phù hợp** ở khu vực gần đó.
-2. **Bước 2 (PG)**: Trích xuất mảng `restaurant_id` từ kết quả của ES. Chuyển cho `SearchReadRepository` để query danh sách món ăn từ PostgreSQL (`m_menu_item`) giới hạn trong danh sách nhà hàng đó (`WHERE restaurant_id IN (...)`).
-3. **Bước 3 (Map)**: Map các menu item vào đúng nhà hàng và trả về kết quả cho Client.
-
-## 5. Ưu và Nhược điểm của Thiết kế hiện tại
-
-**Ưu điểm:**
-- Tối ưu hóa cực tốt cho tính năng tìm kiếm vị trí (geo-spatial query) và fuzzy matching, điều mà PostgreSQL xử lý tốn kém hơn nhiều.
-- Giữ logic đồng bộ gần với Data Layer nhờ dùng TypeORM Subscriber, dễ triển khai.
-
-**Điểm cần lưu ý / Tối ưu sau này:**
-- Subscriber đồng bộ hiện tại chạy đồng bộ (await sync trong event TypeORM) -> Có thể làm tăng thời gian phản hồi API Write. Cân nhắc đổi sang dùng Message Queue (như SQS/RabbitMQ) hoặc CDC (như Debezium) nếu hệ thống phình to.
-- Tính năng Search Menu phải JOIN/Query lại Postgres ở bước 2, tốt cho tính nhất quán của Menu nhưng nếu số lượng nhà hàng match quá lớn, query `IN (...)` có thể gây tắc nghẽn. Có thể tính đến việc index cả món ăn vào Elasticsearch dưới dạng Nested object hoặc index riêng biệt.
+Endpoint `GET /api/search/suggestions?q=...` xử lý song song trên 2 index:
+1. Tìm nhà hàng khớp tiền tố trong `restaurants`.
+2. Tìm món ăn khớp tiền tố trong `menu_items`.
+3. Trả về payload gồm: `keywords`, `dishes` (kèm giá và tên quán), `restaurants` (kèm cự ly km và rating).
+4. Phía Frontend tích hợp cơ chế Loading 2 tầng (`isDebouncing` + `isFetching`) và `AbortController` tự động hủy request cũ khi người dùng gõ phím liên tục, tránh giật lag và race condition.
