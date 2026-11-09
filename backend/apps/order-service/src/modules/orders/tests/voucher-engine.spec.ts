@@ -41,6 +41,8 @@ import { GetAvailableVouchersUseCase } from '@/modules/orders/usecases/get-avail
 import { VoucherType } from '@/modules/orders/enums/voucher-type.enum.js';
 import { VoucherSponsor } from '@/modules/orders/enums/voucher-sponsor.enum.js';
 import { VoucherUsageStatus } from '@/modules/orders/enums/voucher-usage-status.enum.js';
+import { VoucherCategory } from '@/modules/orders/enums/voucher-category.enum.js';
+import { DistributionType } from '@/modules/orders/enums/distribution-type.enum.js';
 import type { Voucher } from '@/modules/orders/entities/voucher.entity.js';
 import type { VoucherUsage } from '@/modules/orders/entities/voucher-usage.entity.js';
 import type { VoucherRepository } from '@/modules/orders/repositories/voucher.repository.js';
@@ -67,17 +69,23 @@ describe('Voucher & Promotion Engine (Issue #75)', () => {
 
   const mockBaseVoucher: Voucher = {
     id: 'voucher-uuid-001',
+    campaign_id: null,
     code: 'GIAM20',
     name: 'Giảm 20% đơn từ 100k',
     description: 'Giảm 20% tối đa 30.000 VND',
     voucher_type: VoucherType.PERCENTAGE,
+    voucher_category: VoucherCategory.PLATFORM_DISCOUNT,
+    distribution_type: DistributionType.COLLECTIBLE,
     sponsor_type: VoucherSponsor.PLATFORM,
     restaurant_id: null,
+    target_restaurant_id: null,
     discount_value: 20,
     max_discount_amount: 30000,
     min_order_amount: 100000,
     total_quantity: 100,
+    claimed_quantity: 10,
     used_quantity: 10,
+    max_claims_per_user: 2,
     max_usage_per_user: 2,
     valid_from: new Date('2026-01-01T00:00:00Z'),
     valid_to: new Date('2026-12-31T23:59:59Z'),
@@ -187,9 +195,13 @@ describe('Voucher & Promotion Engine (Issue #75)', () => {
       const mockUsage: VoucherUsage = {
         id: 'usage-123',
         voucher_id: mockBaseVoucher.id,
+        campaign_id: null,
         order_id: 'order-999',
         customer_id: 'user-001',
         discount_amount: 20000,
+        platform_funded_amount: 20000,
+        merchant_funded_amount: 0,
+        partner_funded_amount: 0,
         status: VoucherUsageStatus.APPLIED,
         applied_at: new Date(),
         reverted_at: null,

@@ -31,6 +31,8 @@ import {
   Home,
   Briefcase,
   QrCode,
+  Tag,
+  Zap,
 } from 'lucide-react';
 import {
   AddressSelectorModal,
@@ -38,6 +40,8 @@ import {
   type UserAddress,
 } from '@/features/address';
 import { LoyaltyCheckoutSection } from '@/features/loyalty';
+import { VoucherSelectionDrawer } from '@/features/promotions/components/voucher-selection-drawer';
+import type { BestComboResult } from '@/features/promotions/services/promotion-api.client';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -57,6 +61,8 @@ export default function CheckoutPage() {
   const [orderNote, setOrderNote] = useState('');
   const [pointsToUse, setPointsToUse] = useState<number>(0);
   const [pointsDiscount, setPointsDiscount] = useState<number>(0);
+  const [selectedVouchers, setSelectedVouchers] = useState<BestComboResult['selected_vouchers']>([]);
+  const [isVoucherDrawerOpen, setIsVoucherDrawerOpen] = useState(false);
 
   // Address Book state
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
@@ -80,7 +86,18 @@ export default function CheckoutPage() {
 
   const subtotal = getSubtotal();
   const shippingFee = 15000;
-  const total = Math.max(0, subtotal - pointsDiscount) + shippingFee;
+
+  const shippingVoucherDiscount = selectedVouchers
+    .filter((v) => v.category === 'FREE_SHIPPING')
+    .reduce((sum, v) => sum + v.discount_amount, 0);
+
+  const foodVoucherDiscount = selectedVouchers
+    .filter((v) => v.category !== 'FREE_SHIPPING')
+    .reduce((sum, v) => sum + v.discount_amount, 0);
+
+  const effectiveFoodTotal = Math.max(0, subtotal - pointsDiscount - foodVoucherDiscount);
+  const effectiveShipping = Math.max(0, shippingFee - shippingVoucherDiscount);
+  const total = effectiveFoodTotal + effectiveShipping;
 
   const availableBalance = Number(walletData?.balance?.available_balance || 0);
   const isBalanceSufficient = availableBalance >= total;
@@ -193,6 +210,8 @@ export default function CheckoutPage() {
         recipient_phone: finalRecipientPhone,
         note: orderNote.trim() || undefined,
         points_to_use: pointsToUse > 0 ? pointsToUse : undefined,
+        voucher_id: selectedVouchers[0]?.id,
+        voucher_code: selectedVouchers.length > 0 ? selectedVouchers.map((v) => v.code).join('+') : undefined,
         items: items.map((item) => ({
           menu_item_id: item.item_id,
           name: item.name,
@@ -592,6 +611,51 @@ export default function CheckoutPage() {
               }}
             />
 
+            {/* Voucher Section */}
+            <section className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-foreground font-semibold text-sm sm:text-base flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-primary" />
+                  Mã Giảm Giá & Voucher
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setIsVoucherDrawerOpen(true)}
+                  className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors cursor-pointer"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  {selectedVouchers.length > 0 ? 'Đổi voucher' : 'Chọn hoặc nhập mã'}
+                </button>
+              </div>
+
+              {selectedVouchers.length > 0 ? (
+                <div className="space-y-2 pt-1">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedVouchers.map((v) => (
+                      <span
+                        key={v.id}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/10 border border-amber-500/30 text-amber-300"
+                      >
+                        <Tag className="w-3 h-3" />
+                        {v.code} (-{formatVND(v.discount_amount)})
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-xs text-emerald-400 font-medium">
+                    ✓ Đã áp dụng {selectedVouchers.length} ưu đãi (Tiết kiệm {formatVND(foodVoucherDiscount + shippingVoucherDiscount)})
+                  </p>
+                </div>
+              ) : (
+                <div
+                  onClick={() => setIsVoucherDrawerOpen(true)}
+                  className="p-3 rounded-xl bg-secondary/30 border border-border/60 hover:border-border cursor-pointer flex items-center justify-between text-xs text-muted-foreground transition-colors"
+                >
+                  <span>Chưa áp dụng voucher. Nhấn để chọn combo giảm sâu nhất!</span>
+                  <span className="text-primary font-bold">Chọn ngay →</span>
+                </div>
+              )}
+            </section>
+
             {/* Price Summary */}
             <section className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-sm">
               <h2 className="text-foreground font-semibold text-sm sm:text-base mb-1">Chi tiết thanh toán</h2>
@@ -608,6 +672,15 @@ export default function CheckoutPage() {
                   <span className="font-mono font-bold">-{formatVND(pointsDiscount)}</span>
                 </div>
               )}
+              {foodVoucherDiscount > 0 && (
+                <div className="flex justify-between text-amber-400 text-sm font-medium animate-in fade-in">
+                  <span className="flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5" />
+                    Giảm giá món ăn (Voucher)
+                  </span>
+                  <span className="font-mono font-bold">-{formatVND(foodVoucherDiscount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-muted-foreground text-sm">
                 <span className="flex items-center gap-1.5">
                   Phí giao hàng (Cố định)
@@ -617,6 +690,15 @@ export default function CheckoutPage() {
                 </span>
                 <span className="text-foreground font-medium font-mono">{formatVND(shippingFee)}</span>
               </div>
+              {shippingVoucherDiscount > 0 && (
+                <div className="flex justify-between text-emerald-400 text-sm font-medium animate-in fade-in">
+                  <span className="flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5" />
+                    Giảm phí giao hàng (Freeship)
+                  </span>
+                  <span className="font-mono font-bold">-{formatVND(shippingVoucherDiscount)}</span>
+                </div>
+              )}
               <div className="pt-3 border-t border-border flex justify-between items-center">
                 <span className="text-foreground font-bold">Tổng thanh toán</span>
                 <span className="text-xl font-bold text-primary font-mono">{formatVND(total)}</span>
@@ -625,6 +707,18 @@ export default function CheckoutPage() {
           </>
         )}
       </div>
+
+      {/* Voucher Selection Drawer */}
+      <VoucherSelectionDrawer
+        isOpen={isVoucherDrawerOpen}
+        onClose={() => setIsVoucherDrawerOpen(false)}
+        restaurantId={restaurantId || ''}
+        subtotal={subtotal}
+        deliveryFee={shippingFee}
+        paymentMethod={paymentMethod}
+        selectedVoucherIds={selectedVouchers.map((v) => v.id)}
+        onApplyVouchers={(vouchers) => setSelectedVouchers(vouchers)}
+      />
 
       {/* Quick Topup Modal */}
       {walletData && (

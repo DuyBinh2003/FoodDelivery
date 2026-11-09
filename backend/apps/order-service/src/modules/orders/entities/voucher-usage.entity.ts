@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import type { Relation } from 'typeorm';
 import { VoucherUsageStatus } from '@/modules/orders/enums/voucher-usage-status.enum.js';
 import type { Voucher } from '@/modules/orders/entities/voucher.entity.js';
+import type { Campaign } from '@/modules/orders/entities/campaign.entity.js';
 
 @Entity('t_voucher_usage', { schema: 'schema_order' })
 export class VoucherUsage {
@@ -10,6 +11,9 @@ export class VoucherUsage {
 
   @Column({ type: 'uuid' })
   voucher_id: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  campaign_id: string | null;
 
   @Column({ type: 'uuid' })
   order_id: string;
@@ -20,10 +24,19 @@ export class VoucherUsage {
   @Column({ type: 'numeric', precision: 15, scale: 2 })
   discount_amount: number;
 
+  @Column({ type: 'numeric', precision: 15, scale: 2, default: 0 })
+  platform_funded_amount: number;
+
+  @Column({ type: 'numeric', precision: 15, scale: 2, default: 0 })
+  merchant_funded_amount: number;
+
+  @Column({ type: 'numeric', precision: 15, scale: 2, default: 0 })
+  partner_funded_amount: number;
+
   @Column({ type: 'varchar', length: 30, default: VoucherUsageStatus.APPLIED })
   status: VoucherUsageStatus;
 
-  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamptz' })
   applied_at: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
@@ -38,4 +51,8 @@ export class VoucherUsage {
   @ManyToOne('Voucher', 'usages')
   @JoinColumn({ name: 'voucher_id' })
   voucher: Relation<Voucher>;
+
+  @ManyToOne('Campaign', { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'campaign_id' })
+  campaign?: Relation<Campaign | null>;
 }

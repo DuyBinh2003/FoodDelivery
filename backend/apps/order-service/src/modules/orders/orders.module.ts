@@ -9,9 +9,15 @@ import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
 import { Voucher } from '@/modules/orders/entities/voucher.entity.js';
 import { VoucherUsage } from '@/modules/orders/entities/voucher-usage.entity.js';
+import { Campaign } from '@/modules/orders/entities/campaign.entity.js';
+import { VoucherRule } from '@/modules/orders/entities/voucher-rule.entity.js';
+import { UserVoucher } from '@/modules/orders/entities/user-voucher.entity.js';
+import { VoucherReservation } from '@/modules/orders/entities/voucher-reservation.entity.js';
+import { MerchantCampaignBudget } from '@/modules/orders/entities/merchant-campaign-budget.entity.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
 import { VoucherRepository } from '@/modules/orders/repositories/voucher.repository.js';
+import { PromotionRedisRepository } from '@/modules/orders/repositories/promotion.redis.repository.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
 import { GetOrderUseCase } from '@/modules/orders/usecases/get-order.usecase.js';
@@ -32,6 +38,17 @@ import { ValidateVoucherUseCase } from '@/modules/orders/usecases/validate-vouch
 import { ApplyVoucherUseCase } from '@/modules/orders/usecases/apply-voucher.usecase.js';
 import { RevertVoucherUseCase } from '@/modules/orders/usecases/revert-voucher.usecase.js';
 import { GetAvailableVouchersUseCase } from '@/modules/orders/usecases/get-available-vouchers.usecase.js';
+import { ClaimVoucherUseCase } from '@/modules/orders/usecases/claim-voucher.usecase.js';
+import { GetUserVoucherWalletUseCase } from '@/modules/orders/usecases/get-user-voucher-wallet.usecase.js';
+import { GetVoucherFeedUseCase } from '@/modules/orders/usecases/get-voucher-feed.usecase.js';
+import { RecommendBestComboUseCase } from '@/modules/orders/usecases/recommend-best-combo.usecase.js';
+import { ReserveVouchersUseCase } from '@/modules/orders/usecases/reserve-vouchers.usecase.js';
+import { CommitVoucherReservationUseCase } from '@/modules/orders/usecases/commit-voucher-reservation.usecase.js';
+import { ReleaseVoucherReservationUseCase } from '@/modules/orders/usecases/release-voucher-reservation.usecase.js';
+import { CreateCampaignUseCase } from '@/modules/orders/usecases/create-campaign.usecase.js';
+import { EmergencyKillCampaignUseCase } from '@/modules/orders/usecases/emergency-kill-campaign.usecase.js';
+import { GetCampaignBurnRateUseCase } from '@/modules/orders/usecases/get-campaign-burn-rate.usecase.js';
+import { JoinCoFundedCampaignUseCase } from '@/modules/orders/usecases/join-co-funded-campaign.usecase.js';
 import { VouchersController } from '@/modules/orders/vouchers.controller.js';
 import { GetRestaurantReviewsUseCase } from '@/modules/orders/usecases/get-restaurant-reviews.usecase.js';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
@@ -42,9 +59,19 @@ import { StorageModule } from '@/common/storage/index.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, OrderReview, Voucher, VoucherUsage]),
+    TypeOrmModule.forFeature([
+      Order,
+      OrderItem,
+      OrderReview,
+      Voucher,
+      VoucherUsage,
+      Campaign,
+      VoucherRule,
+      UserVoucher,
+      VoucherReservation,
+      MerchantCampaignBudget,
+    ]),
     StorageModule,
-    TypeOrmModule.forFeature([Order, OrderItem, OrderReview]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [OrdersController, OrdersInternalController, VouchersController],
@@ -52,6 +79,7 @@ import { StorageModule } from '@/common/storage/index.js';
     OrderReadRepository,
     OrderWriteRepository,
     OrderRedisRepository,
+    PromotionRedisRepository,
     OrderIngestionConsumer,
     OrderEventsService,
     SqsService,
@@ -77,12 +105,24 @@ import { StorageModule } from '@/common/storage/index.js';
     ApplyVoucherUseCase,
     RevertVoucherUseCase,
     GetAvailableVouchersUseCase,
+    ClaimVoucherUseCase,
+    GetUserVoucherWalletUseCase,
+    GetVoucherFeedUseCase,
+    RecommendBestComboUseCase,
+    ReserveVouchersUseCase,
+    CommitVoucherReservationUseCase,
+    ReleaseVoucherReservationUseCase,
+    CreateCampaignUseCase,
+    EmergencyKillCampaignUseCase,
+    GetCampaignBurnRateUseCase,
+    JoinCoFundedCampaignUseCase,
     GetRestaurantReviewsUseCase,
   ],
   exports: [
     OrderReadRepository,
     OrderWriteRepository,
     OrderRedisRepository,
+    PromotionRedisRepository,
     OrderEventsService,
     SqsService,
     SnsService,
@@ -106,8 +146,18 @@ import { StorageModule } from '@/common/storage/index.js';
     ApplyVoucherUseCase,
     RevertVoucherUseCase,
     GetAvailableVouchersUseCase,
+    ClaimVoucherUseCase,
+    GetUserVoucherWalletUseCase,
+    GetVoucherFeedUseCase,
+    RecommendBestComboUseCase,
+    ReserveVouchersUseCase,
+    CommitVoucherReservationUseCase,
+    ReleaseVoucherReservationUseCase,
+    CreateCampaignUseCase,
+    EmergencyKillCampaignUseCase,
+    GetCampaignBurnRateUseCase,
+    JoinCoFundedCampaignUseCase,
     GetRestaurantReviewsUseCase,
   ],
 })
-export class OrdersModule { }
-
+export class OrdersModule {}

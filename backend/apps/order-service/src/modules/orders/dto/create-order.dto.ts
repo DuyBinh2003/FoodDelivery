@@ -86,6 +86,14 @@ export class CreateOrderDto {
   @Min(0)
   points_to_use?: number;
 
+  @IsOptional()
+  @IsUUID()
+  voucher_id?: string;
+
+  @IsOptional()
+  @IsString()
+  voucher_code?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)

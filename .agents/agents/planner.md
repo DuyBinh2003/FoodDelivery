@@ -43,9 +43,10 @@ Khởi tạo và ghi bản kế hoạch vào đúng thư mục miền nghiệp v
    - DTOs / Interfaces / Types (Input/Output).
    - Database changes (Bảng mới, cột mới, migrations, indexing).
    - Service / Usecase logic flow: Trình tự các bước xử lý nghiệp vụ.
-   - **UI/UX & Art Direction (nếu là task Frontend)**:
-     - Xác định rõ loại giao diện: **Page** (Landing page, trang thực đơn) hay **App Screen** (Admin, Driver, Merchant dashboard).
-     - Định hướng Art Direction (bố cục, typography, palette, anti-slop rules) theo `design-taste-frontend` và `ui-ux-pro-max`.
+   - **UI/UX & Tích Hợp Frontend (Bắt buộc cho mọi task có UI hoặc Backend API phục vụ UI)**:
+     - **Cấu trúc phân rã Page & Component**: Liệt kê rõ các Page (`app/...`) và phân rã các Component con tương ứng (`src/features/<feature>/components/...`).
+     - **Bảng Ánh Xạ Tích Hợp API (Frontend API Integration Matrix)**: Tên Component -> Backend API (Method, URL, DTO) -> Sự kiện kích hoạt -> Trạng thái UI (Loading, Empty, Error, Optimistic).
+     - **Art Direction**: Xác định rõ loại giao diện (**Page** hay **App Screen**) và định hướng thẩm mỹ (bố cục, typography, palette, anti-slop rules) theo `design-taste-frontend` và `ui-ux-pro-max`.
 3. **Danh sách tập tin tác động (File Scope)**:
    - File tạo mới (đặt tên đúng `naming-convention-policy`).
    - File chỉnh sửa (nêu rõ hàm hoặc khối logic cần sửa).

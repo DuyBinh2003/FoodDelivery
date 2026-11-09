@@ -56,6 +56,10 @@ const nextConfig: NextConfig = {
         destination: `${requireEnv('NEXT_PUBLIC_ORDER_SERVICE_URL')}/orders/:path*`,
       },
       {
+        source: '/api/vouchers/:path*',
+        destination: `${requireEnv('NEXT_PUBLIC_ORDER_SERVICE_URL')}/vouchers/:path*`,
+      },
+      {
         source: '/api/users/:path*',
         destination: `${requireEnv('NEXT_PUBLIC_USER_SERVICE_URL')}/users/:path*`,
       },

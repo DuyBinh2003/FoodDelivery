@@ -41,6 +41,7 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
       baseUrl = getRequiredEnv('NEXT_PUBLIC_RESTAURANT_SERVICE_URL');
       break;
     case 'orders':
+    case 'vouchers':
       baseUrl = getRequiredEnv('NEXT_PUBLIC_ORDER_SERVICE_URL');
       break;
     case 'delivery':

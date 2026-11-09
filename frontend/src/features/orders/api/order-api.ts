@@ -11,6 +11,8 @@ export interface CreateOrderPayload {
   note?: string;
   payment_method?: 'CASH' | 'MOMO' | 'VNPAY';
   points_to_use?: number;
+  voucher_id?: string;
+  voucher_code?: string;
   items: Array<{
     menu_item_id: string;
     name?: string;
