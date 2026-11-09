@@ -51,3 +51,4 @@ export class OutboxEvent {
   @Column({ type: 'timestamptz', nullable: true })
   published_at: Date | null;
 }
+

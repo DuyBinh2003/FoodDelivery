@@ -11,3 +11,4 @@ import { MessagingModule } from '@/common/messaging/messaging.module.js';
   exports: [TransactionalOutboxService, OutboxRelayWorker, TypeOrmModule],
 })
 export class OutboxModule {}
+

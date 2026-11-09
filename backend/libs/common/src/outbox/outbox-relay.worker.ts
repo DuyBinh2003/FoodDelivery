@@ -72,3 +72,4 @@ export class OutboxRelayWorker {
     this.logger.debug(`No message broker available, simulated publish for event: ${eventType}`);
   }
 }
+
