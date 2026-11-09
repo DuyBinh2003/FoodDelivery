@@ -192,6 +192,21 @@ async function apiClient<T>(
     ...(customHeaders as Record<string, string>),
   };
 
+  // Two-Tier Idempotency Key Injection (Issue #82)
+  const method = (fetchOptions.method || 'GET').toUpperCase();
+  const isMutatingMethod = ['POST', 'PUT', 'PATCH'].includes(method);
+  const hasIdempotencyKey = Object.keys(headers).some(
+    (k) => k.toLowerCase() === 'idempotency-key' || k.toLowerCase() === 'x-idempotency-key',
+  );
+
+  if (isMutatingMethod && !hasIdempotencyKey) {
+    const generatedKey =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `idemp-${Math.random().toString(36).substring(2)}-${Date.now()}`;
+    headers['Idempotency-Key'] = generatedKey;
+  }
+
   if (typeof window !== 'undefined') {
     const token = document.cookie
       .split('; ')

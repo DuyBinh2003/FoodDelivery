@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Chống Cache Stampede (50.000 RPS) & Atomic Lua Inventory Deduction
 
-`[DRAFT]` • **Issue liên kết:** #81 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
+`[COMPLETED]` • **Issue liên kết:** #81 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
 
 ---
 
@@ -148,12 +148,12 @@ Toàn bộ test phải có Traceability Header và bao phủ 100% 3 nhánh:
 
 ## 5. ✅ Checklist Tiêu Chuẩn Cần Vượt Qua (Local CI Gate)
 
-- [ ] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
-- [ ] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
-- [ ] **Unit Tests (Vitest)**:
-  - [ ] `libs/common/tests/cache-stampede.spec.ts` pass 100%.
-  - [ ] `libs/common/tests/atomic-inventory-lua.spec.ts` pass 100%.
-  - [ ] `restaurant-service/tests/menu-singleflight.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/cart/tests/out-of-stock-toast.spec.ts` pass 100%.
-- [ ] **Build Check**: `npm run build` thành công trên cả backend và frontend.
-- [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]` trong mọi test case.
+- [x] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
+- [x] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
+- [x] **Unit Tests (Vitest)**:
+  - [x] `libs/common/src/cache/tests/cache-stampede.spec.ts` pass 100%.
+  - [x] `libs/common/src/cache/tests/atomic-inventory.spec.ts` pass 100%.
+  - [x] `apps/restaurant-service/src/modules/restaurants/tests/restaurant-menu-options.spec.ts` pass 100%.
+  - [x] `frontend/src/features/cart/tests/out-of-stock.test.ts` & `inventory-badge.test.ts` pass 100%.
+- [x] **Build Check**: `npm run build` thành công trên cả backend và frontend.
+- [x] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]` trong mọi test case.

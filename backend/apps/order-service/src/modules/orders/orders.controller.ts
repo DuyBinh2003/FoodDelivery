@@ -45,6 +45,7 @@ import { ClaimDriverTripUseCase } from '@/modules/orders/usecases/claim-driver-t
 import { GetAvailableDriverTripsUseCase } from '@/modules/orders/usecases/get-available-driver-trips.usecase.js';
 import { GetRestaurantOrdersUseCase } from '@/modules/orders/usecases/get-restaurant-orders.usecase.js';
 import { OrderStatus } from '@/modules/orders/entities/order.entity.js';
+import { UseIdempotency } from '@/common/idempotency/idempotency.decorator.js';
 
 @Controller('orders')
 export class OrdersController {
@@ -94,6 +95,7 @@ export class OrdersController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @UseIdempotency({ lockTtlSeconds: 120, cacheTtlSeconds: 86400 })
   create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() user: JwtPayload) {
     return this.createOrderUseCase.execute({
       ...createOrderDto,

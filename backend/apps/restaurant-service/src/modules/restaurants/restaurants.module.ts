@@ -33,10 +33,12 @@ import { GetCategoriesUseCase } from '@/modules/restaurants/usecases/get-categor
 import { GetTagsUseCase } from '@/modules/restaurants/usecases/get-tags.usecase.js';
 import { CreateTagUseCase } from '@/modules/restaurants/usecases/create-tag.usecase.js';
 import { StorageModule } from '@/common/storage/index.js';
+import { CacheStampedeModule } from '@/common/cache/cache.module.js';
 
 @Module({
   imports: [
     StorageModule,
+    CacheStampedeModule,
     TypeOrmModule.forFeature([Restaurant, MenuItem, Category, Tag, Config]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
