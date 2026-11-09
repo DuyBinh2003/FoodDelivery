@@ -71,6 +71,22 @@ sequenceDiagram
     end
 ```
 
+### 3.3. Thiết Kế Trải Nghiệm Người Dùng Phía Frontend (Next.js Driver & Customer Experience)
+
+1. **Phía Cổng Tài Xế (`/driver/dashboard`)**:
+   - **Thẻ Nhận Chuyến Điều Phối Realtime (`DriverTripDispatchModal`)**:
+     - Hiển thị vòng tròn đếm ngược 15 giây SVG hoạt họa (`Circular Countdown 15s`) kèm thanh tiến trình co dần.
+     - Phát âm thanh cảnh báo nhận cuốc xe (`Web Audio API` / âm thanh chuông) và kích hoạt rung (`navigator.vibrate([200, 100, 200])`).
+     - Hiển thị thông tin then chốt: Cự ly từ vị trí hiện tại đến quán, cự ly từ quán đến khách, giá trị cuốc xe thực nhận (sau khi trừ phí sàn).
+     - Nút `[Chấp Nhận Cuốc]`: Nhấn 1 chạm, hiển thị trạng thái đang khóa đơn (`Atomic Claiming...`), nếu thành công chuyển ngay sang giao diện dẫn đường lộ trình OSRM.
+   - **Chỉ Báo Tín Hiệu GPS Thời Gian Thực (GPS Accuracy Indicator)**:
+     - Biểu tượng sóng GPS ở góc trên: Xanh lục (Độ chính xác $< 15\text{m}$), Vàng cam ($15\text{m} - 50\text{m}$), Đỏ cảnh báo ($> 50\text{m}$ hoặc mất quyền truy cập vị trí kèm nút hướng dẫn cấp lại quyền GPS).
+2. **Phía Khách Hàng Theo Dõi Đơn (`/orders/[id]/tracking`)**:
+   - **Làm Mịn Chuyển Động Tài Xế (Coordinate Interpolation on Leaflet)**:
+     - Áp dụng thuật toán nội suy tọa độ (Linear / Catmull-Rom spline) giữa các lần nhận ping GPS từ WebSocket, giúp biểu tượng xe máy di chuyển mượt mà bám cua đường thay vì giật cục từng chặng.
+     - Tự động xoay góc icon xe máy theo hướng vector di chuyển (`bearing / heading angle`).
+     - Thanh thời gian ETA cập nhật liên tục dựa trên cự ly còn lại thực tế và tốc độ di chuyển trung bình.
+
 ---
 
 ## 4. 🧪 Kịch Bản Kiểm Thử 3 Nhánh (Testing Policy Compliance)
@@ -101,5 +117,7 @@ sequenceDiagram
   - [ ] `libs/common/tests/geo-spatial-engine.spec.ts` pass 100%.
   - [ ] `delivery-service/tests/driver-location-ingestion.spec.ts` pass 100%.
   - [ ] `delivery-service/tests/driver-dispatch-matching.spec.ts` pass 100%.
+  - [ ] `frontend/src/features/driver/tests/driver-trip-dispatch-modal.spec.ts` pass 100%.
+  - [ ] `frontend/src/features/order/tests/driver-marker-interpolation.spec.ts` pass 100%.
 - [ ] **Build Check**: `npm run build` thành công.
 - [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.

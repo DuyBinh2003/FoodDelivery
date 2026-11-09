@@ -92,6 +92,29 @@ sequenceDiagram
   - `created_at`: TIMESTAMP WITH TIME ZONE.
   - `published_at`: TIMESTAMP WITH TIME ZONE NULL.
 
+### 3.3. Thiết Kế Trải Nghiệm Người Dùng Phía Frontend (Next.js 15 UI/UX Integration)
+
+1. **Client-Side Idempotency Injection & Double-Click Guard**:
+   - `shared/api/api-client.ts`: Tự động tạo và đính kèm header `Idempotency-Key: uuidv4()` cho mọi mutating request (`POST /orders`, `POST /wallets/topup`, `POST /ledger/transactions`).
+   - Nút `[Thanh toán & Đặt đơn]` tại Checkout:
+     - Ngay khi người dùng nhấn, nút chuyển sang trạng thái `disabled` kèm Spinner quay tròn: `"Đang bảo mật giao dịch..."`.
+     - Ngăn chặn hoàn toàn việc người dùng click nhiều lần (double-click/spamming) khi mạng lag.
+2. **Màn Hình Tiến Trình Xử Lý Saga Thời Gian Thực (Order Saga Stepper)**:
+   - Khi nhận HTTP `202 Accepted` với `orderId`, người dùng được điều hướng mượt mà sang trang `/orders/[id]/processing`.
+   - Component Stepper trực quan hiển thị 3 mốc tiến trình thời gian thực:
+     - Bước 1: `Khởi tạo đơn hàng & Giữ chỗ món ăn` (Hoàn tất)
+     - Bước 2: `Xác thực thanh toán & Sổ cái ví` (Đang xử lý / Hoàn tất)
+     - Bước 3: `Kết nối hệ thống điều phối tài xế` (Đang tìm kiếm tài xế gần nhất)
+   - Kết nối WebSocket `/orders` hoặc Polling thông minh (SWR/TanStack Query) mỗi 2 giây để nhận sự kiện Saga chuyển bước.
+3. **Xử Lý Trực Quan Khi Saga Bù Trừ / Rollback (Compensating Rollback Modal)**:
+   - Khi Saga thất bại (ví dụ: Không tìm thấy tài xế sau 5 phút hoặc thanh toán không đủ số dư):
+     - Hiển thị Modal thông báo trang trọng, minh bạch và lịch sự:
+       - Tiêu đề: `"Không thể hoàn tất đơn hàng"`
+       - Nội dung: `"Rất tiếc, hiện tại không có tài xế phù hợp nhận cuốc xe của bạn. Toàn bộ số tiền [Số tiền]đ và [Số điểm] điểm thưởng đã được hoàn trả ngay lập tức vào ví của bạn."`
+     - Cung cấp 2 nút hành động thoát rõ ràng:
+       - `[Kiểm tra số dư ví]`: Chuyển hướng sang `/profile/wallet`.
+       - `[Đặt lại đơn hàng]`: Khôi phục giỏ hàng và quay về trang menu.
+
 ---
 
 ## 4. 🧪 Kịch Bản Kiểm Thử 3 Nhánh (Testing Policy Compliance)
@@ -122,5 +145,7 @@ sequenceDiagram
   - [ ] `libs/common/tests/idempotency-interceptor.spec.ts` pass 100%.
   - [ ] `libs/common/tests/transactional-outbox.spec.ts` pass 100%.
   - [ ] `order-service/tests/saga-order-orchestrator.spec.ts` pass 100%.
+  - [ ] `frontend/src/features/cart/tests/idempotency-header-injection.spec.ts` pass 100%.
+  - [ ] `frontend/src/features/order/tests/saga-stepper-and-rollback-modal.spec.ts` pass 100%.
 - [ ] **Build Check**: `npm run build` thành công toàn diện.
 - [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.

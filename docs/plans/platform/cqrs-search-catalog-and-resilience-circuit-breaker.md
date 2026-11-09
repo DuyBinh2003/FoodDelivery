@@ -72,6 +72,19 @@ sequenceDiagram
     end
 ```
 
+### 3.3. Thiết Kế Trải Nghiệm Người Dùng Phía Frontend (Next.js Search & Circuit Breaker Degradation UX)
+
+1. **Giao Diện Suy Thoái Nhẹ Nhàng (Graceful Degradation Banner)**:
+   - Khi Search Service gặp sự cố và Circuit Breaker chuyển sang trạng thái `OPEN` (trả về fallback header `X-Circuit-Status: OPEN`):
+     - Trang tìm kiếm (`/search` hoặc `SearchBar`) không bao giờ được crash trắng trang hay hiển thị thông báo lỗi 500 thô.
+     - Hiển thị Banner màu xanh lam nhẹ nhàng trên đầu danh sách: `"Hệ thống tìm kiếm tức thời đang được tối ưu. Đang gợi ý các món ăn & quán ngon phổ biến gần bạn."`
+2. **Khung Tìm Kiếm Dự Phòng & Gợi Ý Thay Thế (Fallback Catalog Grid)**:
+   - Tự động hiển thị danh mục món ăn thịnh hành (`Trending Categories`) được cache sẵn tại LocalStorage/Service Worker.
+   - Thẻ món ăn và quán ăn hiển thị đầy đủ thông tin: ảnh món, giá tiền, cự ly và đánh giá sao từ dữ liệu snapshot an toàn.
+   - Nút `[Thử tìm lại]`: Áp dụng kỹ thuật Debounce và Exponential Backoff (3s, 6s, 12s) để tránh người dùng bấm liên tục làm quá tải thêm gateway.
+3. **Đồng Bộ Huy Hiệu Món Ăn Thời Gian Thực (CQRS Projection Badges)**:
+   - Nhờ bản chiếu CQRS đồng bộ dưới 100ms, thẻ món ăn trong kết quả tìm kiếm hiển thị ngay lập tức nhãn `Tạm hết hàng` hoặc `Giảm giá 20%` mà người dùng không cần phải click vào trang chi tiết của quán mới phát hiện ra.
+
 ---
 
 ## 4. 🧪 Kịch Bản Kiểm Thử 3 Nhánh (Testing Policy Compliance)
@@ -102,5 +115,6 @@ sequenceDiagram
   - [ ] `libs/common/tests/circuit-breaker.spec.ts` pass 100%.
   - [ ] `search-service/tests/elasticsearch-sync-projection.spec.ts` pass 100%.
   - [ ] `search-service/tests/circuit-breaker-fallback.spec.ts` pass 100%.
+  - [ ] `frontend/src/features/search/tests/circuit-breaker-degradation-banner.spec.ts` pass 100%.
 - [ ] **Build Check**: `npm run build` thành công.
 - [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.

@@ -105,6 +105,23 @@ local remaining = redis.call('DECRBY', KEYS[1], deduct_num)
 return remaining -- Thành công: Trả về số tồn kho còn lại
 ```
 
+### 3.4. Thiết Kế Trải Nghiệm Người Dùng Phía Frontend (Next.js 15 UI/UX Integration)
+
+Nhằm đảm bảo người dùng không bị bối rối khi hàng nghìn người cùng tranh mua các món Flash Sale, tầng Frontend cần được thiết kế phản ứng nhanh và hướng dẫn hành động rõ ràng:
+
+1. **Hiển Thị Tồn Kho & Cảnh Báo Sắp Hết Hàng**:
+   - Thẻ món ăn (`MenuItemCard`) và Popup chọn món (`AddToCartDialog`):
+     - Khi `stock <= 5` và `stock > 0`: Hiển thị badge động nhấp nháy màu cam `Chỉ còn X suất cuối`.
+     - Khi `stock === 0`: Tự động chuyển thẻ món sang grayscale nhẹ, gắn nhãn màu đỏ `Đã Hết Hàng`, và vô hiệu hóa (`disabled`) nút "Thêm vào giỏ" / nút số lượng.
+2. **Xử Lý Xung Đột Hết Hàng Tại Bước Đặt Đơn (Checkout Conflict Handling)**:
+   - Nếu người dùng đã thêm món vào giỏ khi còn hàng, nhưng trong lúc ở trang `/checkout` món ăn bị người khác mua hết:
+     - API ném mã lỗi nghiệp vụ `OUT_OF_STOCK` kèm danh sách ID món hết hàng.
+     - Interceptor tại `apiClient` trích xuất thông tin và kích hoạt Toast cảnh báo tiếng Việt thân thiện: `"Món [Tên Món] vừa hết hàng do lượng đặt tăng đột biến. Giỏ hàng đã được cập nhật."`
+     - UI Checkout tự động đánh dấu đỏ item hết hàng trong danh sách, hiển thị nút `[Loại bỏ món này]` hoặc `[Chọn món thay thế]`, nút `[Đặt đơn]` tạm thời bị disable cho đến khi giỏ hàng hợp lệ.
+3. **Optimistic Updates & Server State Sync (TanStack Query)**:
+   - Sử dụng hook `useMutation` với `onMutate` để cập nhật số lượng tức thời trên giỏ hàng, đồng thời rollback nếu phát hiện lỗi từ server.
+   - Lắng nghe sự kiện WebSocket `ITEM_STOCK_DEPLETED` từ server để tự động kích hoạt `queryClient.invalidateQueries({ queryKey: ['restaurant-menu', restaurantId] })` giúp menu đồng bộ tồn kho thời gian thực mà không cần F5 trang.
+
 ---
 
 ## 4. 🧪 Kịch Bản Kiểm Thử 3 Nhánh (Testing Policy Compliance)
@@ -137,5 +154,6 @@ Toàn bộ test phải có Traceability Header và bao phủ 100% 3 nhánh:
   - [ ] `libs/common/tests/cache-stampede.spec.ts` pass 100%.
   - [ ] `libs/common/tests/atomic-inventory-lua.spec.ts` pass 100%.
   - [ ] `restaurant-service/tests/menu-singleflight.spec.ts` pass 100%.
+  - [ ] `frontend/src/features/cart/tests/out-of-stock-toast.spec.ts` pass 100%.
 - [ ] **Build Check**: `npm run build` thành công trên cả backend và frontend.
 - [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]` trong mọi test case.

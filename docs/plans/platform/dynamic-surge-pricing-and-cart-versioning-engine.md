@@ -76,6 +76,25 @@ sequenceDiagram
     end
 ```
 
+### 3.3. Thiết Kế Trải Nghiệm Người Dùng Phía Frontend (Next.js Cart & Checkout UX)
+
+1. **Huy Hiệu Phụ Phí Minh Bạch (Surge Pricing Transparency Badge)**:
+   - Tại trang `/checkout`, nếu có phụ phí cao điểm hoặc thời tiết:
+     - Hiển thị badge màu hổ phách/cam: `⚡ Phụ phí giờ cao điểm (+15%)` hoặc `🌧️ Phụ phí thời tiết mưa`.
+     - Tooltip tương tác giải thích rõ ràng: `"Do thời tiết mưa lớn và nhu cầu đặt món tăng cao trong khu vực của bạn, mức phụ phí được áp dụng nhằm khuyến khích tài xế nhận cuốc nhanh chóng hơn."`
+     - Phân rã giá tiền minh bạch từng dòng: Giá món, Phí giao hàng gốc, Phụ phí cao điểm, Giảm giá voucher, Tổng thanh toán.
+2. **Đồng Hồ Đếm Ngược Khóa Giá (Price Lock Countdown Timer)**:
+   - Thanh thông báo cố định trên nút thanh toán: `"Giá được giữ nguyên trong: 04:59"`.
+   - Đồng hồ đếm lùi từng giây; khi thời gian còn dưới 60 giây, chuyển sang màu đỏ nhấp nháy nhẹ để nhắc nhở người dùng hoàn tất đặt đơn.
+3. **Modal Xử Lý Hết Hạn Vé Khóa Giá (Expired Price Ticket Dialog)**:
+   - Khi hết 5 phút hoặc khi API trả về mã `PRICE_TICKET_EXPIRED` (HTTP 410):
+     - Hiển thị Dialog thân thiện, không làm gián đoạn hay xóa giỏ hàng:
+       - Tiêu đề: `"Báo giá đơn hàng vừa được làm mới"`
+       - Bảng so sánh chênh lệch trực quan:
+         - Giá cũ: `125.000đ` ➔ Giá mới: `120.000đ` (Tiết kiệm thêm `5.000đ` do phụ phí giảm).
+       - Nút bấm: `[Xác nhận & Cập nhật giá]`.
+     - Bấm xác nhận sẽ tự động lấy `ticket_id` mới với TTL 5 phút và cập nhật tổng tiền trên UI tức thì.
+
 ---
 
 ## 4. 🧪 Kịch Bản Kiểm Thử 3 Nhánh (Testing Policy Compliance)
@@ -104,5 +123,7 @@ sequenceDiagram
   - [ ] `libs/common/tests/pricing-pipeline-engine.spec.ts` pass 100%.
   - [ ] `libs/common/tests/price-lock-ticket.spec.ts` pass 100%.
   - [ ] `order-service/tests/checkout-price-integrity.spec.ts` pass 100%.
+  - [ ] `frontend/src/features/cart/tests/price-lock-countdown-timer.spec.ts` pass 100%.
+  - [ ] `frontend/src/features/cart/tests/expired-price-ticket-dialog.spec.ts` pass 100%.
 - [ ] **Build Check**: `npm run build` thành công.
 - [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
