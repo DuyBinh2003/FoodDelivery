@@ -58,6 +58,7 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
 import { StorageModule } from '@/common/storage/index.js';
 import { OrderSagaOrchestrator } from '@/modules/orders/services/order-saga-orchestrator.service.js';
 import { IdempotencyModule } from '@/common/idempotency/idempotency.module.js';
+import { CacheStampedeModule } from '@/common/cache/cache.module.js';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { IdempotencyModule } from '@/common/idempotency/idempotency.module.js';
     ]),
     StorageModule,
     IdempotencyModule,
+    CacheStampedeModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [OrdersController, OrdersInternalController, VouchersController],
