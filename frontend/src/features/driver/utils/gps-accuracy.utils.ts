@@ -88,3 +88,4 @@ export function getGpsAccuracyBadgeConfig(level: GpsAccuracyLevel): GpsAccuracyB
       };
   }
 }
+

@@ -39,3 +39,4 @@ export function calculateBearing(
   // Normalize to 0° - 360°
   return (initialBearingDegrees + 360) % 360;
 }
+

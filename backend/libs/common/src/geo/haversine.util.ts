@@ -59,3 +59,4 @@ export function calculateHaversineDistance(
   // Round to 3 decimal places (1 meter precision)
   return Math.round(distance * 1000) / 1000;
 }
+

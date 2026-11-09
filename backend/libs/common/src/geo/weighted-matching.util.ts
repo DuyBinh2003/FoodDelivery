@@ -62,3 +62,4 @@ export function rankCandidatesByWeightedScore(
     }))
     .sort((a, b) => a.score - b.score);
 }
+

@@ -70,3 +70,4 @@ export function calculateDynamicEta(
 
   return Math.max(1, minutes);
 }
+
