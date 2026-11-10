@@ -59,6 +59,8 @@ import { StorageModule } from '@/common/storage/index.js';
 import { OrderSagaOrchestrator } from '@/modules/orders/services/order-saga-orchestrator.service.js';
 import { IdempotencyModule } from '@/common/idempotency/idempotency.module.js';
 import { CacheStampedeModule } from '@/common/cache/cache.module.js';
+import { PricingModule } from '@/common/pricing/pricing.module.js';
+import { CheckoutQuoteUseCase } from '@/modules/orders/usecases/checkout-quote.usecase.js';
 
 @Module({
   imports: [
@@ -77,6 +79,7 @@ import { CacheStampedeModule } from '@/common/cache/cache.module.js';
     StorageModule,
     IdempotencyModule,
     CacheStampedeModule,
+    PricingModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [OrdersController, OrdersInternalController, VouchersController],
@@ -123,6 +126,7 @@ import { CacheStampedeModule } from '@/common/cache/cache.module.js';
     JoinCoFundedCampaignUseCase,
     GetRestaurantReviewsUseCase,
     OrderSagaOrchestrator,
+    CheckoutQuoteUseCase,
   ],
   exports: [
     OrderReadRepository,
@@ -165,6 +169,7 @@ import { CacheStampedeModule } from '@/common/cache/cache.module.js';
     JoinCoFundedCampaignUseCase,
     GetRestaurantReviewsUseCase,
     OrderSagaOrchestrator,
+    CheckoutQuoteUseCase,
   ],
 })
 export class OrdersModule {}
