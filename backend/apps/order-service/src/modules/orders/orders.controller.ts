@@ -21,6 +21,8 @@ import { Observable } from 'rxjs';
 import { OrderEventsService } from '@/modules/orders/services/order-events.service.js';
 import { S3StorageService } from '@/common/storage/index.js';
 import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
+import { CheckoutQuoteDto } from '@/modules/orders/dto/checkout-quote.dto.js';
+import { CheckoutQuoteUseCase } from '@/modules/orders/usecases/checkout-quote.usecase.js';
 import { UpdateOrderStatusDto } from '@/modules/orders/dto/update-order-status.dto.js';
 import { QueryOrdersDto } from '@/modules/orders/dto/query-orders.dto.js';
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
@@ -45,6 +47,7 @@ import { ClaimDriverTripUseCase } from '@/modules/orders/usecases/claim-driver-t
 import { GetAvailableDriverTripsUseCase } from '@/modules/orders/usecases/get-available-driver-trips.usecase.js';
 import { GetRestaurantOrdersUseCase } from '@/modules/orders/usecases/get-restaurant-orders.usecase.js';
 import { OrderStatus } from '@/modules/orders/entities/order.entity.js';
+import { UseIdempotency } from '@/common/idempotency/idempotency.decorator.js';
 
 @Controller('orders')
 export class OrdersController {
@@ -81,19 +84,27 @@ export class OrdersController {
     private readonly orderEventsService: OrderEventsService,
     @Inject(S3StorageService)
     private readonly s3StorageService: S3StorageService,
+    @Inject(CheckoutQuoteUseCase)
+    private readonly checkoutQuoteUseCase: CheckoutQuoteUseCase,
   ) {}
 
-  // --- Validate Cart (public — không cần auth) ---
+  // --- Validate Cart & Checkout Quote (public — không cần auth) ---
 
   @Post('validate-cart')
   async validateCart(@Body() dto: ValidateCartDto) {
     return this.validateCartUseCase.execute(dto);
   }
 
+  @Post('checkout-quote')
+  async checkoutQuote(@Body() dto: CheckoutQuoteDto) {
+    return this.checkoutQuoteUseCase.execute(dto);
+  }
+
   // --- Customer Endpoints ---
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @UseIdempotency({ lockTtlSeconds: 120, cacheTtlSeconds: 86400 })
   create(@Body() createOrderDto: CreateOrderDto, @CurrentUser() user: JwtPayload) {
     return this.createOrderUseCase.execute({
       ...createOrderDto,

@@ -24,6 +24,7 @@ import type { ClaimDriverTripUseCase } from '@/modules/orders/usecases/claim-dri
 import type { GetAvailableDriverTripsUseCase } from '@/modules/orders/usecases/get-available-driver-trips.usecase.js';
 import type { GetRestaurantOrdersUseCase } from '@/modules/orders/usecases/get-restaurant-orders.usecase.js';
 import type { GetRestaurantReviewsUseCase } from '@/modules/orders/usecases/get-restaurant-reviews.usecase.js';
+import type { CheckoutQuoteUseCase } from '@/modules/orders/usecases/checkout-quote.usecase.js';
 import type { OrderEventsService } from '@/modules/orders/services/order-events.service.js';
 
 describe('Order Review Media Upload Flow', () => {
@@ -77,6 +78,7 @@ describe('Order Review Media Upload Flow', () => {
       {} as unknown as GetRestaurantReviewsUseCase,
       {} as unknown as OrderEventsService,
       mockS3StorageService as unknown as S3StorageService,
+      {} as unknown as CheckoutQuoteUseCase,
     );
   });
 

@@ -94,6 +94,10 @@ export class CreateOrderDto {
   @IsString()
   voucher_code?: string;
 
+  @IsOptional()
+  @IsString()
+  price_lock_ticket_id?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)
