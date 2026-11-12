@@ -56,6 +56,8 @@ import { SnsService } from '@/common/messaging/sns.service.js';
 import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingestion.consumer.js';
 import { OrderEventsService } from '@/modules/orders/services/order-events.service.js';
 import { StorageModule } from '@/common/storage/index.js';
+import { OrderSagaOrchestrator } from '@/modules/orders/services/order-saga-orchestrator.service.js';
+import { IdempotencyModule } from '@/common/idempotency/idempotency.module.js';
 
 @Module({
   imports: [
@@ -72,6 +74,7 @@ import { StorageModule } from '@/common/storage/index.js';
       MerchantCampaignBudget,
     ]),
     StorageModule,
+    IdempotencyModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [OrdersController, OrdersInternalController, VouchersController],
@@ -117,6 +120,7 @@ import { StorageModule } from '@/common/storage/index.js';
     GetCampaignBurnRateUseCase,
     JoinCoFundedCampaignUseCase,
     GetRestaurantReviewsUseCase,
+    OrderSagaOrchestrator,
   ],
   exports: [
     OrderReadRepository,
@@ -158,6 +162,7 @@ import { StorageModule } from '@/common/storage/index.js';
     GetCampaignBurnRateUseCase,
     JoinCoFundedCampaignUseCase,
     GetRestaurantReviewsUseCase,
+    OrderSagaOrchestrator,
   ],
 })
 export class OrdersModule {}

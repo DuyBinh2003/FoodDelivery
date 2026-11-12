@@ -1,9 +1,10 @@
-import { Controller, Get, Patch, Param, Body, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Param, Body, ParseUUIDPipe, Query } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderStatus } from '@/modules/orders/entities/order.entity.js';
 import { UpdateOrderStatusDto } from '@/modules/orders/dto/update-order-status.dto.js';
+import { OrderSagaOrchestrator, OrderSagaStep } from '@/modules/orders/services/order-saga-orchestrator.service.js';
 
 @Controller('internal')
 export class OrdersInternalController {
@@ -12,6 +13,8 @@ export class OrdersInternalController {
     private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
     @Inject(OrderReadRepository)
     private readonly orderReadRepo: OrderReadRepository,
+    @Inject(OrderSagaOrchestrator)
+    private readonly sagaOrchestrator: OrderSagaOrchestrator,
   ) {}
 
   @Get('orders/metrics')
@@ -61,6 +64,19 @@ export class OrdersInternalController {
   ) {
     const dto: UpdateOrderStatusDto = { status };
     return this.updateOrderStatusUseCase.execute({ orderId: id, dto });
+  }
+
+  @Post('orders/:id/saga-compensate')
+  async compensateOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('failedStep') failedStep?: OrderSagaStep,
+    @Body('reason') reason?: string,
+  ) {
+    return this.sagaOrchestrator.compensate(
+      id,
+      failedStep || OrderSagaStep.DISPATCH_DRIVER,
+      reason || 'Internal compensation trigger',
+    );
   }
 }
 
