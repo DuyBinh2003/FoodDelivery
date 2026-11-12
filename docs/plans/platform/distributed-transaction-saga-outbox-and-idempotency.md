@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Distributed Transaction, Saga Orchestration & Idempotency Engine
 
-`[DRAFT]` • **Issue liên kết:** #82 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
+`[COMPLETED]` • **Issue liên kết:** #82 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
 
 ---
 
@@ -139,13 +139,13 @@ sequenceDiagram
 
 ## 5. ✅ Checklist Tiêu Chuẩn Cần Vượt Qua (Local CI Gate)
 
-- [ ] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
-- [ ] **Type Check**: `npx tsc --noEmit` đạt 0 errors.
-- [ ] **Unit Tests (Vitest)**:
-  - [ ] `libs/common/tests/idempotency-interceptor.spec.ts` pass 100%.
-  - [ ] `libs/common/tests/transactional-outbox.spec.ts` pass 100%.
-  - [ ] `order-service/tests/saga-order-orchestrator.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/cart/tests/idempotency-header-injection.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/order/tests/saga-stepper-and-rollback-modal.spec.ts` pass 100%.
-- [ ] **Build Check**: `npm run build` thành công toàn diện.
-- [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
+- [x] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
+- [x] **Type Check**: `npx tsc --noEmit` đạt 0 errors.
+- [x] **Unit Tests (Vitest & Node Test)**:
+  - [x] `libs/common/src/idempotency/tests/idempotency.spec.ts` pass 100% (8 tests).
+  - [x] `libs/common/src/outbox/tests/transactional-outbox.spec.ts` pass 100% (6 tests).
+  - [x] `order-service/tests/order-saga-orchestrator.spec.ts` pass 100% (6 tests).
+  - [x] `frontend/src/features/orders/tests/idempotency-header.test.ts` pass 100% (6 tests).
+  - [x] `frontend/src/features/orders/tests/saga-stepper.test.ts` pass 100% (6 tests).
+- [x] **Build Check**: `npm run build` thành công toàn diện (NestJS backend & Next.js frontend).
+- [x] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
