@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useOrderTracking } from '@/features/orders/hooks/useOrderTracking';
 import { OrderReviewModal } from '@/features/orders/components/OrderReviewModal';
+import { OrderLiveChatWidget } from '@/features/orders/components/OrderLiveChatWidget';
 import { OrderLiveHeader } from './components/order-live-header';
 import { OrderStatusBanner } from './components/order-status-banner';
 import { OrderLiveStepper } from './components/order-live-stepper';
@@ -15,6 +16,7 @@ import type { OrderTrackerProps } from './types';
 
 export default function OrderTracker({ order: initialOrder, paymentDetails }: OrderTrackerProps) {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Hook kết nối Server-Sent Events (SSE) thời gian thực & hỗ trợ cancel
   const {
@@ -66,7 +68,10 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
 
       {/* 4. Driver Information Card (Delivering or Completed) */}
       {hasDriver && activeOrder.driver && (
-        <OrderDriverCard driver={activeOrder.driver} />
+        <OrderDriverCard
+          driver={activeOrder.driver}
+          onOpenChat={() => setIsChatOpen(true)}
+        />
       )}
 
       {/* 5. Visual Route Animation Map (From Restaurant to Customer) */}
@@ -117,6 +122,16 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
         orderId={activeOrder.id}
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
+      />
+
+      {/* 9. Real-time Live Chat Widget (Floating Action Button & Chat Drawer) */}
+      <OrderLiveChatWidget
+        orderId={activeOrder.id}
+        driverName={activeOrder.driver?.name || 'Tài xế giao hàng'}
+        restaurantName={activeOrder.restaurant_name}
+        role="CUSTOMER"
+        isOpen={isChatOpen}
+        onOpenChange={setIsChatOpen}
       />
     </div>
   );

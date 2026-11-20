@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { OrderDriverCardProps } from '../types';
 
-export function OrderDriverCard({ driver }: OrderDriverCardProps) {
+export function OrderDriverCard({ driver, onOpenChat }: OrderDriverCardProps) {
   const handleCall = () => {
     if (driver.phone) {
       window.location.href = `tel:${driver.phone}`;
@@ -71,7 +71,7 @@ export function OrderDriverCard({ driver }: OrderDriverCardProps) {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => alert(`Gửi tin nhắn nhanh tới tài xế: ${driver.name}`)}
+            onClick={onOpenChat}
             className="border-white/10 bg-white/5 hover:bg-white/10 text-zinc-200 text-xs h-9 px-3 rounded-xl gap-1.5"
           >
             <MessageSquare className="w-3.5 h-3.5 text-zinc-400" />

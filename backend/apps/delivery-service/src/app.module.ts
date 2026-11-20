@@ -6,6 +6,7 @@ import configuration from '@/config/configuration.js';
 import { DriversModule } from '@/modules/drivers/drivers.module.js';
 import { TrackingModule } from '@/modules/tracking/tracking.module.js';
 import { DispatchModule } from '@/modules/dispatch/dispatch.module.js';
+import { ChatModule } from '@/modules/chat/chat.module.js';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { DispatchModule } from '@/modules/dispatch/dispatch.module.js';
     DriversModule,
     TrackingModule,
     DispatchModule,
+    ChatModule,
   ],
 })
 export class AppModule {}

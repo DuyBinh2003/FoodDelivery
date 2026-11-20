@@ -38,6 +38,7 @@ export interface OrderDriverCardProps {
     vehicle_plate?: string;
     vehicle_type?: string;
   };
+  onOpenChat?: () => void;
 }
 
 export interface OrderVisualRouteProps {
