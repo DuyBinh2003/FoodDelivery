@@ -132,3 +132,18 @@ export async function uploadRestaurantMedia(
     body: formData,
   });
 }
+
+export async function getMyOperatingHours(): Promise<import('../types/operating-hours.types').OperatingHourItem[]> {
+  return await apiClient('/restaurants/partner/my-restaurant/operating-hours', {
+    cache: 'no-store',
+  });
+}
+
+export async function updateMyOperatingHours(
+  payload: import('../types/operating-hours.types').UpdateOperatingHoursPayload,
+): Promise<{ success: boolean; message: string }> {
+  return await apiClient('/restaurants/partner/my-restaurant/operating-hours', {
+    method: 'PUT',
+    body: payload,
+  });
+}

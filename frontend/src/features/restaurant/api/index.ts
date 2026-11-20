@@ -13,6 +13,18 @@ export async function getRestaurantMenu(id: string): Promise<MenuItem[]> {
   });
 }
 
+export async function getOperatingHours(id: string): Promise<import('../types/operating-hours.types').OperatingHourItem[]> {
+  return await apiClient(`/restaurants/${id}/operating-hours`, {
+    cache: 'no-store',
+  });
+}
+
+export async function getOperatingStatus(id: string): Promise<import('../types/operating-hours.types').RestaurantOperatingStatus> {
+  return await apiClient(`/restaurants/${id}/operating-status`, {
+    cache: 'no-store',
+  });
+}
+
 export async function submitRestaurantRegistration(payload: Record<string, unknown>): Promise<void> {
   console.log("registering restaurant:", payload);
   return await apiClient<void>('/users/registrations', {
