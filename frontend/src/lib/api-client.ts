@@ -1,4 +1,5 @@
 import { getRequiredEnv } from './env';
+import { extractTraceId } from './trace-utils';
 
 const DEFAULT_TIMEOUT_MS = process.env.NEXT_PUBLIC_API_TIMEOUT
   ? Number(process.env.NEXT_PUBLIC_API_TIMEOUT)
@@ -84,6 +85,7 @@ export interface ApiErrorResponse {
   success?: boolean;
   statusCode?: number;
   errorCode?: string;
+  traceId?: string;
   message?: string;
   errors?: unknown[];
   timestamp?: string;
@@ -94,19 +96,21 @@ export class ApiError extends Error {
   public status: number;
   public statusCode: number;
   public errorCode?: string;
+  public traceId?: string;
   public errors?: unknown[];
   public data?: unknown;
 
   constructor(
     status: number,
     message: string,
-    options?: { errorCode?: string; errors?: unknown[]; data?: unknown }
+    options?: { errorCode?: string; traceId?: string; errors?: unknown[]; data?: unknown }
   ) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.statusCode = status;
     this.errorCode = options?.errorCode;
+    this.traceId = options?.traceId;
     this.errors = options?.errors;
     this.data = options?.data;
   }
@@ -288,9 +292,11 @@ async function apiClient<T>(
           : undefined;
 
       const resolvedMessage = backendMessage || getDefaultStatusMessage(response.status);
+      const traceId = extractTraceId(response.headers, errorData);
 
       throw new ApiError(response.status, resolvedMessage, {
         errorCode: errorData?.errorCode,
+        traceId,
         errors: errorData?.errors,
         data: errorData,
       });

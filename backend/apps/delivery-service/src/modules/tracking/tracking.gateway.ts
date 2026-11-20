@@ -7,10 +7,11 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Logger, Inject, forwardRef, type OnModuleInit } from '@nestjs/common';
+import { Logger, Inject, Optional, forwardRef, type OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Server, Socket } from 'socket.io';
 import { TrackingService } from '@/modules/tracking/tracking.service.js';
+import { MetricsService } from '@/common/metrics/index.js';
 import { UpdateDriverLocationDto } from '@/modules/tracking/dto/update-location.dto.js';
 import type { DriverLocationData } from '@/modules/tracking/repositories/driver-location.redis.repository.js';
 import type { DispatchService, TripOfferPayload } from '@/modules/dispatch/dispatch.service.js';
@@ -32,6 +33,8 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
     @Inject(forwardRef(() => TrackingService))
     private readonly trackingService: TrackingService,
     private readonly moduleRef: ModuleRef,
+    @Optional()
+    private readonly metricsService?: MetricsService,
   ) {}
 
   async onModuleInit() {
@@ -41,10 +44,12 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected to /delivery: ${client.id}`);
+    this.metricsService?.incrementWsClients();
   }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected from /delivery: ${client.id}`);
+    this.metricsService?.decrementWsClients();
   }
 
   @SubscribeMessage('order:track')
