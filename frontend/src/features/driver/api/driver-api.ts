@@ -4,6 +4,7 @@ import type {
   DriverSummary,
   DriverReviewsResponse,
   DriverStatus,
+  DeliveryProofItem,
 } from '@/features/driver/types/driver.types';
 
 export async function getDriverTrips(): Promise<DriverTrip[]> {
@@ -47,5 +48,50 @@ export async function getAvailableDriverTrips(): Promise<DriverTrip[]> {
 export async function claimDriverTrip(orderId: string): Promise<DriverTrip> {
   return await apiClient<DriverTrip>(`/orders/${orderId}/driver-claim`, {
     method: 'POST',
+  });
+}
+
+export async function uploadDeliveryProofPhoto(
+  orderId: string,
+  file: File,
+): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`/api/delivery/orders/${orderId}/proof/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Tải ảnh bằng chứng thất bại');
+  }
+
+  return await res.json();
+}
+
+export interface SubmitDeliveryProofInput {
+  driver_id: string;
+  proof_type: 'PICKED_UP' | 'DELIVERED';
+  image_url: string;
+  captured_lat: number;
+  captured_lng: number;
+  notes?: string;
+}
+
+export async function submitDeliveryProof(
+  orderId: string,
+  input: SubmitDeliveryProofInput,
+): Promise<DeliveryProofItem> {
+  return await apiClient<DeliveryProofItem>(`/delivery/orders/${orderId}/proof`, {
+    method: 'POST',
+    body: input,
+  });
+}
+
+export async function getDeliveryProofs(orderId: string): Promise<DeliveryProofItem[]> {
+  return await apiClient<DeliveryProofItem[]>(`/delivery/orders/${orderId}/proof`, {
+    cache: 'no-store',
   });
 }
