@@ -29,6 +29,10 @@ function monorepoPathResolverPlugin(): Plugin {
         const sub = source.replace('@/events/', '');
         return resolveWithExtension(path.resolve(import.meta.dirname, 'libs/events/src', sub));
       }
+      if (source.startsWith('@/mcp/')) {
+        const sub = source.replace('@/mcp/', '');
+        return resolveWithExtension(path.resolve(import.meta.dirname, 'apps/mcp-server/src', sub));
+      }
       if (source.startsWith('@/')) {
         const sub = source.replace('@/', '');
         if (importer) {

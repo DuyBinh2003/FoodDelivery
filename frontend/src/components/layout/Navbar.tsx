@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { UtensilsCrossed, Menu, ClipboardList, LogIn, User, LogOut, History, ChevronDown, Bike, Store, MapPin, Award } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { useEffect, useState, useRef } from 'react';
+import { NotificationCenterPopover } from './notification-center-popover';
 
 const NAV_ITEMS = [
   { href: '/menu', label: 'Thực đơn', icon: Menu },
@@ -241,6 +242,7 @@ export function Navbar() {
                       </button>
                     </div>
                   )}
+                  </div>
                 </div>
               ) : (
                 <Link

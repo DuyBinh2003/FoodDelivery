@@ -7,6 +7,10 @@ import { OrdersController } from '@/modules/orders/orders.controller.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
 import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
+import { WebhookSubscription } from '@/modules/orders/entities/webhook-subscription.entity.js';
+import { WebhookDeliveryLog } from '@/modules/orders/entities/webhook-delivery-log.entity.js';
+import { WebhookDispatcherService } from '@/modules/orders/services/webhook-dispatcher.service.js';
+import { WebhooksController } from '@/modules/orders/webhooks.controller.js';
 import { Voucher } from '@/modules/orders/entities/voucher.entity.js';
 import { VoucherUsage } from '@/modules/orders/entities/voucher-usage.entity.js';
 import { Campaign } from '@/modules/orders/entities/campaign.entity.js';
@@ -64,6 +68,10 @@ import { CheckoutQuoteUseCase } from '@/modules/orders/usecases/checkout-quote.u
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Order, OrderItem, OrderReview, WebhookSubscription, WebhookDeliveryLog]),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+  ],
+  controllers: [OrdersController, OrdersInternalController, WebhooksController],
     TypeOrmModule.forFeature([
       Order,
       OrderItem,
@@ -90,6 +98,7 @@ import { CheckoutQuoteUseCase } from '@/modules/orders/usecases/checkout-quote.u
     PromotionRedisRepository,
     OrderIngestionConsumer,
     OrderEventsService,
+    WebhookDispatcherService,
     SqsService,
     SnsService,
     JwtStrategy,
@@ -134,6 +143,7 @@ import { CheckoutQuoteUseCase } from '@/modules/orders/usecases/checkout-quote.u
     OrderRedisRepository,
     PromotionRedisRepository,
     OrderEventsService,
+    WebhookDispatcherService,
     SqsService,
     SnsService,
     CreateOrderUseCase,

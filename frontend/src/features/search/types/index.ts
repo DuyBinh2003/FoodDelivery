@@ -53,3 +53,5 @@ export interface SearchSuggestionResult {
   dishes: SearchSuggestionDish[];
   restaurants: SearchSuggestionRestaurant[];
 }
+
+export * from './ai.types';
