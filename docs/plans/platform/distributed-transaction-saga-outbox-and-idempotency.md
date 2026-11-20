@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Distributed Transaction, Saga Orchestration & Idempotency Engine
 
-`[DRAFT]` • **Issue liên kết:** #82 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
+`[COMPLETED]` • **Issue liên kết:** #82 (PR #88) • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
 
 ---
 

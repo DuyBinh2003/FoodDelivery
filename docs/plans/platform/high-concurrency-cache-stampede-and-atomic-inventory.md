@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Chống Cache Stampede (50.000 RPS) & Atomic Lua Inventory Deduction
 
-`[DRAFT]` • **Issue liên kết:** #81 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
+`[COMPLETED]` • **Issue liên kết:** #81 (PR #89) • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
 
 ---
 

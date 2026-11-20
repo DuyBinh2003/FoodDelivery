@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Dynamic Surge Pricing & Cart Versioning (Price Lock Ticket) Engine
 
-`[DRAFT]` • **Issue liên kết:** #84 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
+`[COMPLETED]` • **Issue liên kết:** #84 (PR #91) • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
 
 ---
 
