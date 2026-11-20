@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Hệ Thống Rút Tiền Ngân Hàng & Quyết Toán Đối Tác (Payout & Bank Withdrawal Engine)
 
-`[COMPLETED]` • **Issue liên kết:** #31, #D4, #R5 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-11-09
+`[COMPLETED]` • **Issue liên kết:** [#93](https://github.com/DuyBinh2003/FoodDelivery/pull/93), #31, #D4, #R5 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-11-09
 
 ---
 
