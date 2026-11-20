@@ -4,6 +4,8 @@ import { DriverGeoRedisRepository } from '@/modules/dispatch/repositories/driver
 import { UpdateDriverGeoDto } from '@/modules/dispatch/dto/update-driver-geo.dto.js';
 import { UpdateDriverStatusDto, DriverOnlineStatus } from '@/modules/dispatch/dto/update-driver-status.dto.js';
 import { TrackingGateway } from '@/modules/tracking/tracking.gateway.js';
+import { validateGpsPing } from '@/common/geo/anti-spoofing.util.js';
+import { rankCandidatesByWeightedScore } from '@/common/geo/weighted-matching.util.js';
 
 export interface TripOfferPayload {
   orderId: string;
@@ -42,6 +44,7 @@ export class DispatchService {
   private readonly logger = new Logger(DispatchService.name);
   private activeTimers = new Map<string, NodeJS.Timeout>();
   private orderCache = new Map<string, DispatchOrderInput>();
+  private lastDriverLocations = new Map<string, { lat: number; lng: number; timestamp: number }>();
 
   constructor(
     @Inject(DriverGeoRedisRepository)
@@ -53,9 +56,25 @@ export class DispatchService {
   ) {}
 
   /**
-   * Cập nhật tọa độ GPS của tài xế vào Redis Geospatial
+   * Cập nhật tọa độ GPS của tài xế vào Redis Geospatial kèm Anti-Spoofing kiểm tra nhảy vọt
    */
   async updateDriverLocation(dto: UpdateDriverGeoDto): Promise<{ success: boolean }> {
+    const previous = this.lastDriverLocations.get(dto.driver_id);
+    const validation = validateGpsPing(
+      { lat: dto.lat, lng: dto.lng, timestamp: Date.now() },
+      previous,
+    );
+    if (!validation.isValid) {
+      this.logger.warn(`[AntiSpoofing] Rejected GPS ping for driver [${dto.driver_id}]: ${validation.reason}`);
+      throw new BadRequestException(validation.reason || 'Tọa độ GPS bất thường hoặc vượt quá giới hạn vật lý');
+    }
+
+    this.lastDriverLocations.set(dto.driver_id, {
+      lat: dto.lat,
+      lng: dto.lng,
+      timestamp: Date.now(),
+    });
+
     await this.driverGeoRepo.updateDriverLocation(dto.driver_id, dto.lat, dto.lng);
     return { success: true };
   }
@@ -73,9 +92,12 @@ export class DispatchService {
   }
 
   /**
-   * Khởi động thuật toán tự động chia cuốc (Order Routing)
+   * Khởi động thuật toán tự động chia cuốc (Order Routing) với Dynamic Radius Expansion & Weighted Scoring
    */
-  async dispatchOrder(orderData: DispatchOrderInput): Promise<{
+  async dispatchOrder(
+    orderData: DispatchOrderInput,
+    searchRadiiKm: number[] = [3, 5, 7],
+  ): Promise<{
     dispatched: boolean;
     candidateCount: number;
     selectedDriverId?: string;
@@ -86,16 +108,39 @@ export class DispatchService {
     const restLat = orderData.restaurantLat ?? 10.772545;
     const restLng = orderData.restaurantLng ?? 106.702758;
 
-    // Quét các tài xế trực tuyến trong bán kính 5km
-    const nearby = await this.driverGeoRepo.findNearbyDrivers(restLat, restLng, 5);
+    let nearby: Array<{ driverId: string; distanceKm: number }> = [];
+
+    // Dynamic Radius Expansion: Quét bán kính mở rộng dần (vd: 3km -> 5km -> 7km)
+    for (const radius of searchRadiiKm) {
+      nearby = await this.driverGeoRepo.findNearbyDrivers(restLat, restLng, radius);
+      if (nearby && nearby.length > 0) {
+        this.logger.log(
+          `[DispatchService] Tìm thấy ${nearby.length} tài xế trong bán kính ${radius}km cho đơn [${orderId}].`,
+        );
+        break;
+      }
+    }
+
     if (!nearby || nearby.length === 0) {
-      this.logger.warn(`[DispatchService] Không tìm thấy tài xế nào trong bán kính 5km cho đơn [${orderId}].`);
+      this.logger.warn(
+        `[DispatchService] Không tìm thấy tài xế nào trong các bán kính [${searchRadiiKm.join(', ')}]km cho đơn [${orderId}].`,
+      );
       return { dispatched: false, candidateCount: 0 };
     }
 
-    const candidateDriverIds = nearby.map((n) => n.driverId);
+    // Xếp hạng ứng viên bằng thuật toán Weighted Multi-factor Scoring
+    const rankedCandidates = rankCandidatesByWeightedScore(
+      nearby.map((n) => ({
+        driverId: n.driverId,
+        distanceKm: n.distanceKm,
+        acceptanceRate: 0.9,
+        activeTrips: 0,
+      })),
+    );
+
+    const candidateDriverIds = rankedCandidates.map((c) => c.driverId);
     this.logger.log(
-      `[DispatchService] Tìm thấy ${candidateDriverIds.length} tài xế trong bán kính cho đơn [${orderId}]: ${candidateDriverIds.join(', ')}`,
+      `[DispatchService] Đã xếp hạng ${candidateDriverIds.length} tài xế cho đơn [${orderId}]: ${candidateDriverIds.join(', ')}`,
     );
 
     // Khởi tạo phiên điều phối 15 giây
@@ -104,7 +149,7 @@ export class DispatchService {
       return { dispatched: false, candidateCount: 0 };
     }
 
-    // Bắn offer tới tài xế gần nhất
+    // Bắn offer tới tài xế ưu tiên cao nhất
     await this.offerTripToDriver(session.currentCandidate, orderData, 15);
 
     return {

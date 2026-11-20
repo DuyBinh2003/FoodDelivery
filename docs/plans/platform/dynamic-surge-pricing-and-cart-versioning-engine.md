@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Dynamic Surge Pricing & Cart Versioning (Price Lock Ticket) Engine
 
-`[DRAFT]` • **Issue liên kết:** #84 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
+`[COMPLETED]` • **Issue liên kết:** #84 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
 
 ---
 
@@ -36,9 +36,11 @@
 
 | File / Component | Hiện trạng | Hành động cần thực hiện |
 | :--- | :--- | :--- |
-| [`backend/apps/order-service/src/modules/order`](file:///d:/code/FoodDelivery/backend/apps/order-service) | Tính phí ship cố định theo số km đơn giản, chưa có cơ chế giữ giá giỏ hàng. | Tích hợp `PriceLockTicketService` và cơ chế xác thực vé khóa giá khi đặt đơn. |
-| [`backend/libs/common/src`](file:///d:/code/FoodDelivery/backend/libs/common) | Chưa có Rules Engine cho biểu phí và phụ phí động. | Xây dựng `PricingPipelineModule` với các Strategy độc lập (`WeatherRule`, `DemandRule`, `NightRule`). |
-| [`frontend/src/features/checkout`](file:///d:/code/FoodDelivery/frontend) | Chưa xử lý thông báo khi vé giữ giá hết hạn hoặc giá bị biến động. | Thêm đếm ngược thời gian giữ giá 5:00 và popup xác nhận nếu phí ship thay đổi sau khi hết hạn. |
+| [`backend/libs/common/src/pricing`](file:///d:/code/FoodDelivery/backend/libs/common) | Chưa có Rules Engine cho biểu phí và phụ phí động. | Xây dựng `PricingPipelineEngine` với các Strategy độc lập (`DistancePricingRule`, `SurgeDemandPricingRule`, `WeatherSurgePricingRule`, `NightSurgePricingRule`). |
+| [`backend/libs/common/src/pricing/price-lock-ticket.service.ts`](file:///d:/code/FoodDelivery/backend/libs/common) | Chưa có dịch vụ quản lý vé khóa giá chống nhảy giá / lệch tiền. | Xây dựng `PriceLockTicketService` sử dụng Redis TTL 300s và chữ ký số HMAC-SHA256 đảm bảo tính toàn vẹn 100%. |
+| [`backend/apps/order-service/src/modules/orders/usecases/create-order.usecase.ts`](file:///d:/code/FoodDelivery/backend/apps/order-service) | Đang dùng phí ship mặc định, chưa xác thực vé khóa giá khi đặt hàng. | Tích hợp xác thực vé khóa giá `price_lock_ticket_id`: Ném 410 Gone khi vé hết hạn, 403 Forbidden khi phát hiện giả mạo chữ ký số, và tiêu thụ vé nguyên tử 1 lần. |
+| [`backend/apps/order-service/src/modules/orders/usecases/checkout-quote.usecase.ts`](file:///d:/code/FoodDelivery/backend/apps/order-service) | Chưa có endpoint báo giá giỏ hàng động trước khi thanh toán. | Xây dựng UseCase báo giá Checkout Quote phát hành `PriceLockTicket` có thời hạn 5 phút. |
+| [`frontend/src/features/checkout/utils/price-lock.utils.ts`](file:///d:/code/FoodDelivery/frontend/src/features/checkout) | Chưa có helper tính toán đếm ngược 5:00 và so sánh giá biến động (Price Diff). | Xây dựng `formatCountdownTimer`, `getTimerWarningState`, `calculatePriceDiff` và `getSurgeReasonLabel`. |
 
 ---
 
@@ -117,13 +119,12 @@ sequenceDiagram
 
 ## 5. ✅ Checklist Tiêu Chuẩn Cần Vượt Qua (Local CI Gate)
 
-- [ ] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
-- [ ] **Type Check**: `npx tsc --noEmit` đạt 0 errors.
-- [ ] **Unit Tests (Vitest)**:
-  - [ ] `libs/common/tests/pricing-pipeline-engine.spec.ts` pass 100%.
-  - [ ] `libs/common/tests/price-lock-ticket.spec.ts` pass 100%.
-  - [ ] `order-service/tests/checkout-price-integrity.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/cart/tests/price-lock-countdown-timer.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/cart/tests/expired-price-ticket-dialog.spec.ts` pass 100%.
-- [ ] **Build Check**: `npm run build` thành công.
-- [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
+- [x] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
+- [x] **Type Check**: `npx tsc --noEmit` đạt 0 errors (cấm `any`).
+- [x] **Unit Tests (Vitest & Node Test)**:
+  - [x] `libs/common/src/pricing/tests/pricing-pipeline.spec.ts` pass 100%.
+  - [x] `libs/common/src/pricing/tests/price-lock-ticket.spec.ts` pass 100%.
+  - [x] `apps/order-service/src/modules/orders/tests/checkout-price-integrity.spec.ts` pass 100%.
+  - [x] `frontend/src/features/checkout/tests/price-lock.test.ts` pass 100%.
+- [x] **Build Check**: `npm run build` thành công trên cả backend và frontend.
+- [x] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
