@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, Param, Query, UseGuards, Inject } from '@nestjs/common';
 import { AdminService } from '@/modules/admin/admin.service.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
@@ -151,5 +151,36 @@ export class AdminController {
   @Put('configs')
   updateConfig(@Body() dto: { key: string; value: string }) {
     return this.adminService.updateConfig(dto.key, dto.value);
+  }
+
+  @Get('payouts')
+  getPayouts(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('requesterId') requesterId?: string,
+  ) {
+    return this.adminService.getPayouts({
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 20,
+      status,
+      requesterId,
+    });
+  }
+
+  @Patch('payouts/:id/approve')
+  approvePayout(
+    @Param('id') id: string,
+    @Body() body: { bank_transaction_ref: string; processed_by?: string },
+  ) {
+    return this.adminService.approvePayout(id, body);
+  }
+
+  @Patch('payouts/:id/reject')
+  rejectPayout(
+    @Param('id') id: string,
+    @Body() body: { rejection_reason: string; processed_by?: string },
+  ) {
+    return this.adminService.rejectPayout(id, body);
   }
 }

@@ -18,6 +18,7 @@ import {
   UtensilsCrossed,
   ArrowRight,
   ChefHat,
+  Banknote,
 } from 'lucide-react';
 import {
   getMyRestaurant,
@@ -41,6 +42,7 @@ import { MenuItemDialog } from '@/features/restaurant/components/partner/menu-it
 import { RestaurantProfileDialog } from '@/features/restaurant/components/partner/restaurant-profile-dialog';
 import { KitchenOrdersTab } from '@/features/restaurant/components/partner/kitchen-orders-tab';
 import { FoodItemDetailDialog } from '@/features/restaurant/components/partner/food-item-detail-dialog';
+import { WithdrawModal } from '@/features/payment/components/WithdrawModal';
 
 export function PartnerDashboard() {
   const [restaurant, setRestaurant] = useState<PartnerRestaurant | null>(null);
@@ -61,6 +63,7 @@ export function PartnerDashboard() {
   const [editingItem, setEditingItem] = useState<PartnerMenuItem | null>(null);
   const [viewingMenuItem, setViewingMenuItem] = useState<PartnerMenuItem | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'menu' | 'orders'>('orders');
 
@@ -429,6 +432,14 @@ export function PartnerDashboard() {
             </div>
 
             <button
+              onClick={() => setIsWithdrawModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-sm font-medium text-emerald-400 border border-emerald-500/20 transition-colors"
+            >
+              <Banknote className="w-4 h-4" />
+              <span>Rút doanh thu</span>
+            </button>
+
+            <button
               onClick={() => setIsProfileModalOpen(true)}
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-sm font-medium text-zinc-300 hover:text-white border border-white/10 transition-colors"
             >
@@ -772,6 +783,16 @@ export function PartnerDashboard() {
         onToggleAvailability={handleToggleItemAvailability}
         customerComment={null}
         customerOptions={null}
+      />
+
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        requesterId={restaurant.id}
+        requesterType="RESTAURANT"
+        onSuccess={() => {
+          showToast('success', 'Yêu cầu rút doanh thu đã được tạo thành công!');
+        }}
       />
     </div>
   );

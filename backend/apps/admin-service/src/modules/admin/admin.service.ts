@@ -355,4 +355,61 @@ export class AdminService {
     }
     return results;
   }
+
+  async getPayouts(params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    requesterId?: string;
+  } = {}) {
+    const query = new URLSearchParams();
+    if (params.page) query.set('page', params.page.toString());
+    if (params.limit) query.set('limit', params.limit.toString());
+    if (params.status && params.status !== 'ALL') query.set('status', params.status);
+    if (params.requesterId) query.set('requesterId', params.requesterId);
+
+    const res = await fetch(`${this.paymentUrl}/wallets/withdrawals?${query.toString()}`).catch((err) => {
+      this.logger.warn('Failed to fetch payouts from payment-service:', err);
+      return null;
+    });
+
+    if (!res || !res.ok) {
+      return { items: [], total: 0, page: params.page || 1, limit: params.limit || 20, totalPages: 1 };
+    }
+    return res.json().catch(() => ({ items: [], total: 0, page: 1, limit: 20, totalPages: 1 }));
+  }
+
+  async approvePayout(id: string, body: { bank_transaction_ref: string; processed_by?: string }) {
+    const res = await fetch(`${this.paymentUrl}/wallets/withdrawals/${id}/approve`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).catch((err) => {
+      this.logger.error(`Failed to approve payout ${id}:`, err);
+      throw new BadRequestException('Không thể kết nối đến payment-service để duyệt rút tiền');
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ message: 'Duyệt rút tiền thất bại' }));
+      throw new BadRequestException(errData.message || 'Duyệt rút tiền thất bại');
+    }
+    return res.json();
+  }
+
+  async rejectPayout(id: string, body: { rejection_reason: string; processed_by?: string }) {
+    const res = await fetch(`${this.paymentUrl}/wallets/withdrawals/${id}/reject`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).catch((err) => {
+      this.logger.error(`Failed to reject payout ${id}:`, err);
+      throw new BadRequestException('Không thể kết nối đến payment-service để từ chối rút tiền');
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ message: 'Từ chối rút tiền thất bại' }));
+      throw new BadRequestException(errData.message || 'Từ chối rút tiền thất bại');
+    }
+    return res.json();
+  }
 }

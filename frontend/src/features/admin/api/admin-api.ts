@@ -8,6 +8,7 @@ import {
   AdminRestaurant,
   AdminPaginatedResponse,
   SystemConfigItem,
+  AdminPayoutItem,
 } from '@/features/admin/types';
 
 export const adminApi = {
@@ -83,6 +84,34 @@ export const adminApi = {
     return apiClient<SystemConfigItem[]>('/admin/configs/bulk', {
       method: 'PUT',
       body: { configs },
+    });
+  },
+
+  getPayouts(params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    requesterId?: string;
+  } = {}): Promise<AdminPaginatedResponse<AdminPayoutItem>> {
+    const query = new URLSearchParams();
+    if (params.page) query.set('page', params.page.toString());
+    if (params.limit) query.set('limit', params.limit.toString());
+    if (params.status && params.status !== 'ALL') query.set('status', params.status);
+    if (params.requesterId) query.set('requesterId', params.requesterId);
+    return apiClient<AdminPaginatedResponse<AdminPayoutItem>>(`/admin/payouts?${query.toString()}`);
+  },
+
+  approvePayout(id: string, bank_transaction_ref: string): Promise<AdminPayoutItem> {
+    return apiClient<AdminPayoutItem>(`/admin/payouts/${id}/approve`, {
+      method: 'PATCH',
+      body: { bank_transaction_ref },
+    });
+  },
+
+  rejectPayout(id: string, rejection_reason: string): Promise<AdminPayoutItem> {
+    return apiClient<AdminPayoutItem>(`/admin/payouts/${id}/reject`, {
+      method: 'PATCH',
+      body: { rejection_reason },
     });
   },
 };

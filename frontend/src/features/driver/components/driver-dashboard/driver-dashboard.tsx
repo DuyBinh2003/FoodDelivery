@@ -11,6 +11,7 @@ import {
   AlertCircle,
   ArrowRight,
   CheckCircle2,
+  Banknote,
 } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import {
@@ -34,6 +35,7 @@ import { DriverTripsList } from './driver-trips-list';
 import { DriverReviewsTab } from './driver-reviews-tab';
 import { DriverAvailableTrips } from './driver-available-trips';
 import { IncomingTripModal } from './incoming-trip-modal';
+import { WithdrawModal } from '@/features/payment/components/WithdrawModal';
 import { useDriverDispatch } from '@/features/driver/hooks/useDriverDispatch';
 import { ErrorState } from '@/components/ui/error-state/error-state';
 import { getErrorMessage } from '@/lib/error-handler';
@@ -48,6 +50,7 @@ export function DriverDashboard() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'available' | 'trips' | 'reviews'>('available');
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null
   );
@@ -419,14 +422,24 @@ export function DriverDashboard() {
               </button>
             </div>
 
-            <button
-              onClick={loadData}
-              disabled={loading}
-              className="p-2 rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              title="Làm mới dữ liệu"
-            >
-              <RotateCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsWithdrawOpen(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+              >
+                <Banknote className="w-4 h-4" />
+                <span>Rút Tiền Ngân Hàng</span>
+              </button>
+
+              <button
+                onClick={loadData}
+                disabled={loading}
+                className="p-2 rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                title="Làm mới dữ liệu"
+              >
+                <RotateCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
 
           {/* Active Tab Component */}
@@ -464,6 +477,19 @@ export function DriverDashboard() {
         onAccept={handleModalAccept}
         onReject={handleModalReject}
         onTimeout={handleTimeout}
+      />
+
+      {/* Partner/Driver Bank Withdrawal Modal */}
+      <WithdrawModal
+        isOpen={isWithdrawOpen}
+        onClose={() => setIsWithdrawOpen(false)}
+        requesterId={driverId || ''}
+        requesterType="DRIVER"
+        availableBalance={summary?.total_earnings || 0}
+        onSuccess={() => {
+          showToast('success', 'Yêu cầu rút tiền thành công!');
+          void loadData();
+        }}
       />
     </div>
   );

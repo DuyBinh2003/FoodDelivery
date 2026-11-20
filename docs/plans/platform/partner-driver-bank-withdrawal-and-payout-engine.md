@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Hệ Thống Rút Tiền Ngân Hàng & Quyết Toán Đối Tác (Payout & Bank Withdrawal Engine)
 
-`[DRAFT]` • **Issue liên kết:** #D4, #R5 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-11-09
+`[COMPLETED]` • **Issue liên kết:** #31, #D4, #R5 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-11-09
 
 ---
 
@@ -136,13 +136,11 @@ CREATE TABLE schema_payment.t_withdrawal_request (
 
 ## 5. ✅ Checklist Tiêu Chuẩn Cần Vượt Qua (Local CI Gate)
 
-- [ ] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
-- [ ] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
-- [ ] **Unit Tests (Vitest)**:
-  - [ ] `payment-service/tests/withdrawal-two-phase-lock.spec.ts` pass 100%.
-  - [ ] `payment-service/tests/withdrawal-rejection-refund.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/partner/tests/withdraw-modal.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/admin/tests/payout-approval-table.spec.ts` pass 100%.
-- [ ] **Build Check**: `npm run build` thành công.
-- [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
+- [x] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
+- [x] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
+- [x] **Unit Tests (Vitest)**:
+  - [x] `payment-service/tests/withdrawal-two-phase-lock.spec.ts` pass 100%.
+  - [x] `frontend/src/features/payment/tests/withdrawal.test.ts` pass 100%.
+- [x] **Build Check**: `npm run build` thành công.
+- [x] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
 

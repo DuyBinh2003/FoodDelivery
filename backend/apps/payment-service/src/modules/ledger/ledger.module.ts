@@ -7,6 +7,7 @@ import { LedgerEntry } from '@/modules/ledger/entities/ledger-entry.entity.js';
 import { PaymentIntent } from '@/modules/ledger/entities/payment-intent.entity.js';
 import { IdempotencyKey } from '@/modules/ledger/entities/idempotency-key.entity.js';
 import { Outbox } from '@/modules/ledger/entities/outbox.entity.js';
+import { WithdrawalRequest } from '@/modules/ledger/entities/withdrawal-request.entity.js';
 
 import { WalletReadRepository } from '@/modules/ledger/repositories/wallet.read.repository.js';
 import { WalletWriteRepository } from '@/modules/ledger/repositories/wallet.write.repository.js';
@@ -23,6 +24,7 @@ import { GetPlatformTreasuryUseCase } from '@/modules/ledger/usecases/get-platfo
 import { ProcessPaymentUseCase } from '@/modules/ledger/usecases/process-payment.usecase.js';
 import { ProcessGatewayWebhookUseCase } from '@/modules/ledger/usecases/process-gateway-webhook.usecase.js';
 import { PaymentGatewayService } from '@/modules/ledger/services/payment-gateway.service.js';
+import { WithdrawalUseCase } from '@/modules/ledger/usecases/withdrawal.usecase.js';
 
 import { WalletController } from '@/modules/ledger/wallet.controller.js';
 import { LedgerController } from '@/modules/ledger/ledger.controller.js';
@@ -40,6 +42,7 @@ import { LedgerInternalController } from '@/modules/ledger/ledger.internal.contr
       PaymentIntent,
       IdempotencyKey,
       Outbox,
+      WithdrawalRequest,
     ]),
   ],
   controllers: [
@@ -63,6 +66,7 @@ import { LedgerInternalController } from '@/modules/ledger/ledger.internal.contr
     PaymentGatewayService,
     SettleTripCommissionUseCase,
     GetPlatformTreasuryUseCase,
+    WithdrawalUseCase,
   ],
   exports: [
     WalletReadRepository,
@@ -78,6 +82,7 @@ import { LedgerInternalController } from '@/modules/ledger/ledger.internal.contr
     ProcessPaymentUseCase,
     SettleTripCommissionUseCase,
     GetPlatformTreasuryUseCase,
+    WithdrawalUseCase,
   ],
 })
 export class LedgerModule {}

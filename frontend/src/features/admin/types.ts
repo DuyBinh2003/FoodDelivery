@@ -91,6 +91,7 @@ export interface AdminOrder {
 
 export interface AdminPaginatedResponse<T> {
   data: T[];
+  items?: T[];
   total: number;
   page: number;
   limit: number;
@@ -153,3 +154,23 @@ export interface ConfigDefinition {
   max?: number;
   step?: number;
 }
+
+export interface AdminPayoutItem {
+  id: string;
+  wallet_account_id: string;
+  requester_id: string;
+  requester_type: 'DRIVER' | 'RESTAURANT';
+  amount: string;
+  fee: string;
+  net_amount: string;
+  bank_code: string;
+  bank_account_number: string;
+  bank_account_name: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PROCESSING' | 'COMPLETED';
+  rejection_reason?: string | null;
+  bank_transaction_ref?: string | null;
+  processed_by?: string | null;
+  processed_at?: string | null;
+  created_at: string;
+}
+
