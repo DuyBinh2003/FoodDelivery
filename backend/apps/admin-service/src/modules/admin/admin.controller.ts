@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, Param, Query, UseGuards, Inject } from '@nestjs/common';
 import { AdminService } from '@/modules/admin/admin.service.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '@/common/guards/roles.guard.js';
@@ -6,6 +6,7 @@ import { Roles } from '@/common/decorators/roles.decorator.js';
 import { UserRole } from '@/common/enums/user-role.enum.js';
 import { ReviewApprovalDto } from '@/modules/admin/dto/review-approval.dto.js';
 import { UpdateBulkConfigsDto } from '@/modules/admin/dto/update-system-config.dto.js';
+import { ResolveDisputeDto } from '@/modules/admin/dto/resolve-dispute.dto.js';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -151,5 +152,45 @@ export class AdminController {
   @Put('configs')
   updateConfig(@Body() dto: { key: string; value: string }) {
     return this.adminService.updateConfig(dto.key, dto.value);
+  }
+
+  // --- CS Disputes Endpoints ---
+
+  @Get('disputes')
+  getDisputes(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('orderId') orderId?: string,
+    @Query('customerId') customerId?: string,
+  ) {
+    return this.adminService.getDisputes({
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 20,
+      status,
+      orderId,
+      customerId,
+    });
+  }
+
+  @Get('disputes/:id/details')
+  getDisputeDetails(@Param('id') id: string) {
+    return this.adminService.getDisputeDetails(id);
+  }
+
+  @Patch('disputes/:id/resolve')
+  resolveDispute(
+    @Param('id') id: string,
+    @Body() dto: ResolveDisputeDto,
+  ) {
+    return this.adminService.resolveDispute(id, dto);
+  }
+
+  @Patch('disputes/:id/reject')
+  rejectDispute(
+    @Param('id') id: string,
+    @Body() body: { notes: string; assigned_cs_id?: string },
+  ) {
+    return this.adminService.rejectDispute(id, body.notes, body.assigned_cs_id);
   }
 }

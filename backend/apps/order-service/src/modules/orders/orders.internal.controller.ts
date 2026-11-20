@@ -1,6 +1,7 @@
 import { Controller, Get, Patch, Param, Body, ParseUUIDPipe, Query } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { UpdateOrderStatusUseCase } from '@/modules/orders/usecases/update-order-status.usecase.js';
+import { GetOrderUseCase } from '@/modules/orders/usecases/get-order.usecase.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderStatus } from '@/modules/orders/entities/order.entity.js';
 import { UpdateOrderStatusDto } from '@/modules/orders/dto/update-order-status.dto.js';
@@ -10,6 +11,8 @@ export class OrdersInternalController {
   constructor(
     @Inject(UpdateOrderStatusUseCase)
     private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
+    @Inject(GetOrderUseCase)
+    private readonly getOrderUseCase: GetOrderUseCase,
     @Inject(OrderReadRepository)
     private readonly orderReadRepo: OrderReadRepository,
   ) {}
@@ -61,6 +64,26 @@ export class OrdersInternalController {
   ) {
     const dto: UpdateOrderStatusDto = { status };
     return this.updateOrderStatusUseCase.execute({ orderId: id, dto });
+  }
+
+  @Get('orders/:id')
+  async getOrderDetails(@Param('id', ParseUUIDPipe) id: string) {
+    return this.getOrderUseCase.execute({ orderId: id });
+  }
+
+  @Patch('orders/:id/force-cancel')
+  async forceCancel(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('reason') _reason?: string,
+  ) {
+    const dto: UpdateOrderStatusDto = {
+      status: OrderStatus.CANCELLED,
+    };
+    return this.updateOrderStatusUseCase.execute({
+      orderId: id,
+      dto,
+      changedBy: 'CS_ADMIN_INTERVENTION',
+    });
   }
 }
 

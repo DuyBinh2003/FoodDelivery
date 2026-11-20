@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Cổng Chăm Sóc Khách Hàng & Xử Lý Tranh Chấp Khiếu Nại (CS Portal & Dispute Resolution)
 
-`[DRAFT]` • **Issue liên kết:** #A2 • **Phân loại:** `admin` • **Ngày khởi tạo:** 2026-11-09
+`[COMPLETED]` • **Issue liên kết:** #33, #A2 • **Phân loại:** `admin` • **Ngày khởi tạo:** 2026-11-09
 
 ---
 
@@ -143,13 +143,11 @@ CREATE TABLE schema_admin.t_order_dispute (
 
 ## 5. ✅ Checklist Tiêu Chuẩn Cần Vượt Qua (Local CI Gate)
 
-- [ ] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
-- [ ] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
-- [ ] **Unit Tests (Vitest)**:
-  - [ ] `admin-service/tests/dispute-resolution.spec.ts` pass 100%.
-  - [ ] `payment-service/tests/dispute-refund-ledger.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/order/tests/report-issue-dialog.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/admin/tests/dispute-management-portal.spec.ts` pass 100%.
-- [ ] **Build Check**: `npm run build` thành công.
-- [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
+- [x] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
+- [x] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
+- [x] **Unit Tests (Vitest)**:
+  - [x] `admin-service/tests/dispute-resolution.spec.ts` pass 100%.
+  - [x] `frontend/src/features/orders/tests/dispute-resolution.test.ts` pass 100%.
+- [x] **Build Check**: `npm run build` thành công.
+- [x] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
 

@@ -12,6 +12,7 @@ export function OrderActionBar({
   isCancelling,
   onOpenReview,
   hasReview,
+  onOpenDispute,
 }: OrderActionBarProps) {
   const [confirmCancel, setConfirmCancel] = useState(false);
 
@@ -78,6 +79,19 @@ export function OrderActionBar({
           >
             <Star className="w-4 h-4 fill-current" />
             {hasReview ? 'Xem lại đánh giá' : 'Đánh giá đơn hàng'}
+          </Button>
+        )}
+
+        {/* Dispute / Report Issue Action */}
+        {onOpenDispute && (status === 'DELIVERING' || status === 'COMPLETED' || status === 'CANCELLED') && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenDispute}
+            className="w-full sm:w-auto border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs h-10 px-3.5 rounded-xl gap-1.5"
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+            Báo cáo sự cố
           </Button>
         )}
 
