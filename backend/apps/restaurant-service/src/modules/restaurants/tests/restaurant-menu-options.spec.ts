@@ -12,6 +12,7 @@ import { UpdatePartnerMenuItemUseCase } from '@/modules/restaurants/usecases/upd
 import type { RestaurantReadRepository } from '@/modules/restaurants/repositories/restaurant.read.repository.js';
 import type { RestaurantWriteRepository } from '@/modules/restaurants/repositories/restaurant.write.repository.js';
 import type { Cache } from 'cache-manager';
+import type { CacheStampedeService } from '@/common/cache/cache-stampede.service.js';
 import type { MenuItem } from '@/modules/restaurants/entities/menu-item.entity.js';
 import type { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
 
@@ -23,6 +24,7 @@ describe('Restaurant Menu Options & Caching Suite (Backend)', () => {
   let mockReadRepo: Partial<RestaurantReadRepository>;
   let mockWriteRepo: Partial<RestaurantWriteRepository>;
   let mockCache: Partial<Cache>;
+  let mockCacheStampedeService: Partial<CacheStampedeService>;
 
   const mockRestaurantId = 'rest-uuid-1';
   const mockOwnerId = 'owner-uuid-1';
@@ -117,9 +119,13 @@ describe('Restaurant Menu Options & Caching Suite (Backend)', () => {
       del: vi.fn().mockResolvedValue(undefined),
     };
 
+    mockCacheStampedeService = {
+      getOrSet: vi.fn().mockImplementation((_key: string, fetcher: () => Promise<unknown>) => fetcher()),
+    };
+
     getMenuItemsUseCase = new GetMenuItemsUseCase(
       mockReadRepo as RestaurantReadRepository,
-      mockCache as Cache,
+      mockCacheStampedeService as CacheStampedeService,
     );
 
     createPartnerMenuItemUseCase = new CreatePartnerMenuItemUseCase(
@@ -140,9 +146,12 @@ describe('Restaurant Menu Options & Caching Suite (Backend)', () => {
       const result = await getMenuItemsUseCase.execute({ restaurantId: mockRestaurantId });
 
       expect(mockReadRepo.findById).toHaveBeenCalledWith(mockRestaurantId);
-      expect(mockCache.get).toHaveBeenCalledWith(`restaurant:${mockRestaurantId}:menu`);
+      expect(mockCacheStampedeService.getOrSet).toHaveBeenCalledWith(
+        `restaurant:${mockRestaurantId}:menu`,
+        expect.any(Function),
+        { ttlSeconds: 60, beta: 1.0 },
+      );
       expect(mockReadRepo.findMenuItems).toHaveBeenCalledWith(mockRestaurantId);
-      expect(mockCache.set).toHaveBeenCalledWith(`restaurant:${mockRestaurantId}:menu`, mockMenuItems, 60000);
 
       expect(result).toHaveLength(2);
       expect(result[0].name).toBe('Phở Bò Tái');
@@ -153,11 +162,15 @@ describe('Restaurant Menu Options & Caching Suite (Backend)', () => {
     });
 
     it('2. Trả về thực đơn ngay từ Redis Cache mà không gọi xuống Database khi cache tồn tại', async () => {
-      mockCache.get = vi.fn().mockResolvedValue(mockMenuItems);
+      mockCacheStampedeService.getOrSet = vi.fn().mockResolvedValue(mockMenuItems);
 
       const result = await getMenuItemsUseCase.execute({ restaurantId: mockRestaurantId });
 
-      expect(mockCache.get).toHaveBeenCalledWith(`restaurant:${mockRestaurantId}:menu`);
+      expect(mockCacheStampedeService.getOrSet).toHaveBeenCalledWith(
+        `restaurant:${mockRestaurantId}:menu`,
+        expect.any(Function),
+        { ttlSeconds: 60, beta: 1.0 },
+      );
       expect(mockReadRepo.findMenuItems).not.toHaveBeenCalled();
       expect(result).toEqual(mockMenuItems);
     });
@@ -200,7 +213,11 @@ describe('Restaurant Menu Options & Caching Suite (Backend)', () => {
       const result = await getMenuItemsUseCase.execute({ restaurantId: mockRestaurantId });
 
       expect(result).toEqual([]);
-      expect(mockCache.set).toHaveBeenCalledWith(`restaurant:${mockRestaurantId}:menu`, [], 60000);
+      expect(mockCacheStampedeService.getOrSet).toHaveBeenCalledWith(
+        `restaurant:${mockRestaurantId}:menu`,
+        expect.any(Function),
+        { ttlSeconds: 60, beta: 1.0 },
+      );
     });
   });
 

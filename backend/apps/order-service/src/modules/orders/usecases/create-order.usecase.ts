@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, Optional, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import { Order, OrderStatus } from '@/modules/orders/entities/order.entity.js';
@@ -6,6 +6,8 @@ import { CreateOrderDto } from '@/modules/orders/dto/create-order.dto.js';
 import { OrderRedisRepository, InflightOrderData } from '@/modules/orders/repositories/order.redis.repository.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
 import { OrderEventTypes } from '@/events/index.js';
+import { AtomicInventoryService } from '@/common/cache/atomic-inventory.service.js';
+import { PriceLockTicketService } from '@/common/pricing/price-lock-ticket.service.js';
 
 export interface CreateOrderCommand extends CreateOrderDto {
   /** customer_id lấy từ JWT payload, không nhận từ body */
@@ -20,15 +22,57 @@ export class CreateOrderUseCase {
     @Inject(OrderRedisRepository) private readonly orderRedisRepo: OrderRedisRepository,
     @Inject(SqsService) private readonly sqsService: SqsService,
     @Inject(ConfigService) private readonly configService: ConfigService,
+    @Optional() @Inject(AtomicInventoryService) private readonly atomicInventoryService?: AtomicInventoryService,
+    @Optional() @Inject(PriceLockTicketService) private readonly priceLockTicketService?: PriceLockTicketService,
   ) {}
 
   async execute(command: CreateOrderCommand): Promise<Order> {
+    // 0. Atomic Lua Inventory Deduction (Issue #81)
+    if (this.atomicInventoryService) {
+      const deductedItems: Array<{ itemId: string; quantity: number }> = [];
+      for (const item of command.items) {
+        const deductRes = await this.atomicInventoryService.deductStock(
+          item.menu_item_id,
+          item.quantity,
+        );
+
+        if (deductRes.notFound) {
+          continue;
+        }
+
+        if (!deductRes.success) {
+          // Rollback các món đã trừ trước đó
+          for (const d of deductedItems) {
+            await this.atomicInventoryService.increaseStock(d.itemId, d.quantity);
+          }
+          throw new BadRequestException(
+            `Món ăn "${item.name || 'Sản phẩm'}" đã hết hàng hoặc không đủ số lượng (còn lại: ${deductRes.remaining})`,
+          );
+        }
+
+        deductedItems.push({ itemId: item.menu_item_id, quantity: item.quantity });
+      }
+    }
+
     const orderId = randomUUID();
     const subtotal = command.items.reduce(
       (sum, item) => sum + item.quantity * item.unit_price,
       0,
     );
-    const deliveryFee = 15000;
+    let deliveryFee = 15000;
+    let lockedTotalAmount: number | null = null;
+
+    // 0.1 Xác thực và khóa giá theo Price Lock Ticket nếu có (Issue #84)
+    if (command.price_lock_ticket_id && this.priceLockTicketService) {
+      const ticket = await this.priceLockTicketService.verifyAndConsumeTicket(
+        command.price_lock_ticket_id,
+      );
+      deliveryFee = ticket.breakdown.totalShippingFee;
+      lockedTotalAmount = ticket.breakdown.totalAmount;
+      this.logger.log(
+        `[PriceLock] Order locked to ticket [${command.price_lock_ticket_id}]: deliveryFee=${deliveryFee}, totalAmount=${lockedTotalAmount}`,
+      );
+    }
 
     // Tính toán giảm trừ điểm thưởng (Loyalty Points)
     let pointsUsed = 0;
@@ -78,7 +122,10 @@ export class CreateOrderUseCase {
       }
     }
 
-    const totalAmount = Math.max(0, subtotal - pointsDiscount) + deliveryFee;
+    const totalAmount =
+      lockedTotalAmount !== null
+        ? lockedTotalAmount
+        : Math.max(0, subtotal - pointsDiscount) + deliveryFee;
 
     const now = new Date().toISOString();
     const orderData: InflightOrderData = {

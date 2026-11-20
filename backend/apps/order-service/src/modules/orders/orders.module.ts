@@ -7,8 +7,21 @@ import { OrdersController } from '@/modules/orders/orders.controller.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
 import { OrderItem } from '@/modules/orders/entities/order-item.entity.js';
 import { OrderReview } from '@/modules/orders/entities/order-review.entity.js';
+import { WebhookSubscription } from '@/modules/orders/entities/webhook-subscription.entity.js';
+import { WebhookDeliveryLog } from '@/modules/orders/entities/webhook-delivery-log.entity.js';
+import { WebhookDispatcherService } from '@/modules/orders/services/webhook-dispatcher.service.js';
+import { WebhooksController } from '@/modules/orders/webhooks.controller.js';
+import { Voucher } from '@/modules/orders/entities/voucher.entity.js';
+import { VoucherUsage } from '@/modules/orders/entities/voucher-usage.entity.js';
+import { Campaign } from '@/modules/orders/entities/campaign.entity.js';
+import { VoucherRule } from '@/modules/orders/entities/voucher-rule.entity.js';
+import { UserVoucher } from '@/modules/orders/entities/user-voucher.entity.js';
+import { VoucherReservation } from '@/modules/orders/entities/voucher-reservation.entity.js';
+import { MerchantCampaignBudget } from '@/modules/orders/entities/merchant-campaign-budget.entity.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
+import { VoucherRepository } from '@/modules/orders/repositories/voucher.repository.js';
+import { PromotionRedisRepository } from '@/modules/orders/repositories/promotion.redis.repository.js';
 import { SqsService } from '@/common/messaging/sqs.service.js';
 import { CreateOrderUseCase } from '@/modules/orders/usecases/create-order.usecase.js';
 import { GetOrderUseCase } from '@/modules/orders/usecases/get-order.usecase.js';
@@ -24,23 +37,68 @@ import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admi
 import { ClaimDriverTripUseCase } from '@/modules/orders/usecases/claim-driver-trip.usecase.js';
 import { GetAvailableDriverTripsUseCase } from '@/modules/orders/usecases/get-available-driver-trips.usecase.js';
 import { GetRestaurantOrdersUseCase } from '@/modules/orders/usecases/get-restaurant-orders.usecase.js';
+import { CreateVoucherUseCase } from '@/modules/orders/usecases/create-voucher.usecase.js';
+import { ValidateVoucherUseCase } from '@/modules/orders/usecases/validate-voucher.usecase.js';
+import { ApplyVoucherUseCase } from '@/modules/orders/usecases/apply-voucher.usecase.js';
+import { RevertVoucherUseCase } from '@/modules/orders/usecases/revert-voucher.usecase.js';
+import { GetAvailableVouchersUseCase } from '@/modules/orders/usecases/get-available-vouchers.usecase.js';
+import { ClaimVoucherUseCase } from '@/modules/orders/usecases/claim-voucher.usecase.js';
+import { GetUserVoucherWalletUseCase } from '@/modules/orders/usecases/get-user-voucher-wallet.usecase.js';
+import { GetVoucherFeedUseCase } from '@/modules/orders/usecases/get-voucher-feed.usecase.js';
+import { RecommendBestComboUseCase } from '@/modules/orders/usecases/recommend-best-combo.usecase.js';
+import { ReserveVouchersUseCase } from '@/modules/orders/usecases/reserve-vouchers.usecase.js';
+import { CommitVoucherReservationUseCase } from '@/modules/orders/usecases/commit-voucher-reservation.usecase.js';
+import { ReleaseVoucherReservationUseCase } from '@/modules/orders/usecases/release-voucher-reservation.usecase.js';
+import { CreateCampaignUseCase } from '@/modules/orders/usecases/create-campaign.usecase.js';
+import { EmergencyKillCampaignUseCase } from '@/modules/orders/usecases/emergency-kill-campaign.usecase.js';
+import { GetCampaignBurnRateUseCase } from '@/modules/orders/usecases/get-campaign-burn-rate.usecase.js';
+import { JoinCoFundedCampaignUseCase } from '@/modules/orders/usecases/join-co-funded-campaign.usecase.js';
+import { VouchersController } from '@/modules/orders/vouchers.controller.js';
+import { GetRestaurantReviewsUseCase } from '@/modules/orders/usecases/get-restaurant-reviews.usecase.js';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { SnsService } from '@/common/messaging/sns.service.js';
 import { OrderIngestionConsumer } from '@/modules/orders/consumers/order-ingestion.consumer.js';
 import { OrderEventsService } from '@/modules/orders/services/order-events.service.js';
+import { StorageModule } from '@/common/storage/index.js';
+import { OrderSagaOrchestrator } from '@/modules/orders/services/order-saga-orchestrator.service.js';
+import { IdempotencyModule } from '@/common/idempotency/idempotency.module.js';
+import { CacheStampedeModule } from '@/common/cache/cache.module.js';
+import { PricingModule } from '@/common/pricing/pricing.module.js';
+import { CheckoutQuoteUseCase } from '@/modules/orders/usecases/checkout-quote.usecase.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, OrderReview]),
+    TypeOrmModule.forFeature([Order, OrderItem, OrderReview, WebhookSubscription, WebhookDeliveryLog]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
-  controllers: [OrdersController, OrdersInternalController],
+  controllers: [OrdersController, OrdersInternalController, WebhooksController],
+    TypeOrmModule.forFeature([
+      Order,
+      OrderItem,
+      OrderReview,
+      Voucher,
+      VoucherUsage,
+      Campaign,
+      VoucherRule,
+      UserVoucher,
+      VoucherReservation,
+      MerchantCampaignBudget,
+    ]),
+    StorageModule,
+    IdempotencyModule,
+    CacheStampedeModule,
+    PricingModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+  ],
+  controllers: [OrdersController, OrdersInternalController, VouchersController],
   providers: [
     OrderReadRepository,
     OrderWriteRepository,
     OrderRedisRepository,
+    PromotionRedisRepository,
     OrderIngestionConsumer,
     OrderEventsService,
+    WebhookDispatcherService,
     SqsService,
     SnsService,
     JwtStrategy,
@@ -58,12 +116,34 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
     ClaimDriverTripUseCase,
     GetAvailableDriverTripsUseCase,
     GetRestaurantOrdersUseCase,
+    VoucherRepository,
+    CreateVoucherUseCase,
+    ValidateVoucherUseCase,
+    ApplyVoucherUseCase,
+    RevertVoucherUseCase,
+    GetAvailableVouchersUseCase,
+    ClaimVoucherUseCase,
+    GetUserVoucherWalletUseCase,
+    GetVoucherFeedUseCase,
+    RecommendBestComboUseCase,
+    ReserveVouchersUseCase,
+    CommitVoucherReservationUseCase,
+    ReleaseVoucherReservationUseCase,
+    CreateCampaignUseCase,
+    EmergencyKillCampaignUseCase,
+    GetCampaignBurnRateUseCase,
+    JoinCoFundedCampaignUseCase,
+    GetRestaurantReviewsUseCase,
+    OrderSagaOrchestrator,
+    CheckoutQuoteUseCase,
   ],
   exports: [
     OrderReadRepository,
     OrderWriteRepository,
     OrderRedisRepository,
+    PromotionRedisRepository,
     OrderEventsService,
+    WebhookDispatcherService,
     SqsService,
     SnsService,
     CreateOrderUseCase,
@@ -80,7 +160,26 @@ import { OrderEventsService } from '@/modules/orders/services/order-events.servi
     ClaimDriverTripUseCase,
     GetAvailableDriverTripsUseCase,
     GetRestaurantOrdersUseCase,
+    VoucherRepository,
+    CreateVoucherUseCase,
+    ValidateVoucherUseCase,
+    ApplyVoucherUseCase,
+    RevertVoucherUseCase,
+    GetAvailableVouchersUseCase,
+    ClaimVoucherUseCase,
+    GetUserVoucherWalletUseCase,
+    GetVoucherFeedUseCase,
+    RecommendBestComboUseCase,
+    ReserveVouchersUseCase,
+    CommitVoucherReservationUseCase,
+    ReleaseVoucherReservationUseCase,
+    CreateCampaignUseCase,
+    EmergencyKillCampaignUseCase,
+    GetCampaignBurnRateUseCase,
+    JoinCoFundedCampaignUseCase,
+    GetRestaurantReviewsUseCase,
+    OrderSagaOrchestrator,
+    CheckoutQuoteUseCase,
   ],
 })
-export class OrdersModule { }
-
+export class OrdersModule {}

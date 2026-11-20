@@ -1,1 +1,6 @@
-export { getCategories, getTags, getMenuItems } from '@/features/search/api/search-api';
+export {
+  getCategories,
+  getTags,
+  getMenuItems,
+  getSearchSuggestions,
+} from '@/features/search/api/search-api';

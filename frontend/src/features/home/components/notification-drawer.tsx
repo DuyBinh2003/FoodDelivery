@@ -65,38 +65,38 @@ export function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md h-full bg-zinc-950 border-l border-white/10 p-6 flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-300">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="w-full max-w-md h-full bg-card border-l border-border p-6 flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-200">
         <div>
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
-                <Bell className="w-5 h-5" />
+          <div className="flex items-center justify-between pb-3.5 border-b border-border mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-lg bg-primary/15 text-primary border border-primary/25">
+                <Bell className="w-4 h-4" />
               </div>
-              <h3 className="text-lg font-bold text-white">Trung tâm Thông báo</h3>
+              <h3 className="text-sm font-semibold text-foreground tracking-tight">Trung tâm Thông báo</h3>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg bg-secondary hover:bg-white/[0.08] text-zinc-400 hover:text-foreground transition-colors cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between mb-3.5">
+            <div className="flex items-center gap-1">
               {(['all', 'promo', 'order'] as const).map((tab) => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                     activeTab === tab
-                      ? 'bg-amber-500 text-zinc-950'
-                      : 'bg-white/5 text-zinc-400 hover:text-white'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-secondary text-secondary-foreground hover:text-foreground'
                   }`}
                 >
                   {tab === 'all' ? 'Tất cả' : tab === 'promo' ? 'Khuyến mãi' : 'Đơn hàng'}
@@ -107,16 +107,16 @@ export function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps)
             <button
               type="button"
               onClick={handleMarkAllRead}
-              className="text-[11px] text-zinc-400 hover:text-amber-400 font-medium cursor-pointer"
+              className="text-[11px] text-zinc-400 hover:text-primary font-medium cursor-pointer transition-colors"
             >
               Đã đọc tất cả
             </button>
           </div>
 
           {/* List */}
-          <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-220px)] pr-1 no-scrollbar">
+          <div className="space-y-2.5 overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
             {filteredNotifs.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500 text-xs">
+              <div className="p-8 text-center text-muted-foreground text-xs">
                 Không có thông báo nào trong mục này.
               </div>
             ) : (
@@ -125,33 +125,33 @@ export function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps)
                   key={item.id}
                   href={item.link || '#'}
                   onClick={onClose}
-                  className={`block p-3.5 rounded-2xl border transition-all ${
+                  className={`block p-3 rounded-xl border transition-colors ${
                     !item.isRead
-                      ? 'bg-zinc-900/90 border-amber-500/30'
-                      : 'bg-zinc-900/40 border-white/5 opacity-80'
+                      ? 'bg-primary/[0.03] border-primary/30'
+                      : 'bg-card/40 border-border text-muted-foreground'
                   }`}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-2.5">
                     <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
                         item.type === 'promo'
-                          ? 'bg-red-500/15 text-red-400'
-                          : 'bg-emerald-500/15 text-emerald-400'
+                          ? 'bg-primary/15 text-primary border border-primary/25'
+                          : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
                       }`}
                     >
                       {item.type === 'promo' ? (
-                        <Tag className="w-4 h-4" />
+                        <Tag className="w-3.5 h-3.5" />
                       ) : (
-                        <Package className="w-4 h-4" />
+                        <Package className="w-3.5 h-3.5" />
                       )}
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-xs text-white truncate">{item.title}</h4>
-                        <span className="text-[10px] text-zinc-500">{item.time}</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-medium text-xs text-foreground truncate">{item.title}</h4>
+                        <span className="text-[10px] text-zinc-500 shrink-0">{item.time}</span>
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
                         {item.content}
                       </p>
                     </div>
@@ -163,14 +163,14 @@ export function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps)
         </div>
 
         {/* Footer */}
-        <div className="pt-4 border-t border-white/10 text-center">
+        <div className="pt-3.5 border-t border-border text-center">
           <Link
             href="/rewards"
             onClick={onClose}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-amber-400 hover:text-amber-300"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
           >
             <span>Xem thêm ưu đãi tích điểm thành viên</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
       </div>

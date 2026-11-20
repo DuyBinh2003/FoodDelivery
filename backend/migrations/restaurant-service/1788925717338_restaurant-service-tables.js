@@ -59,6 +59,7 @@ export const up = (pgm) => {
     rating: { type: 'numeric(3,2)', default: 0 },
     banner_url: { type: 'text', nullable: true },
     is_active: { type: 'boolean', default: true },
+    verification_status: { type: 'varchar(50)', notNull: true, default: "'PENDING'" },
     created_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     updated_at: { type: 'timestamptz', default: pgm.func('current_timestamp') },
     is_deleted: { type: 'boolean', default: false }

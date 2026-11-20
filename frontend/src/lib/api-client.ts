@@ -41,6 +41,7 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
       baseUrl = getRequiredEnv('NEXT_PUBLIC_RESTAURANT_SERVICE_URL');
       break;
     case 'orders':
+    case 'vouchers':
       baseUrl = getRequiredEnv('NEXT_PUBLIC_ORDER_SERVICE_URL');
       break;
     case 'delivery':
@@ -53,6 +54,9 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
     case 'payment':
     case 'ledger':
       baseUrl = getRequiredEnv('NEXT_PUBLIC_PAYMENT_SERVICE_URL');
+      break;
+    case 'ai':
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_AI_SERVICE_URL');
       break;
     default:
       if (typeof window !== 'undefined') {
@@ -69,10 +73,11 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
   };
 }
 
-interface ApiRequestOptions extends Omit<RequestInit, 'body' | 'signal'> {
+interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
   params?: Record<string, string | undefined>;
   body?: unknown;
   timeoutMs?: number;
+  _isRetry?: boolean;
 }
 
 export interface ApiErrorResponse {
@@ -150,6 +155,7 @@ function handleUnauthorizedSession() {
 
   // Clear authentication cookies
   document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+  document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
 
   try {
     localStorage.removeItem('food_delivery_user');
@@ -159,6 +165,23 @@ function handleUnauthorizedSession() {
   setTimeout(() => {
     window.location.replace(`/login?expired=1&redirect=${redirectUrl}`);
   }, 1000);
+}
+
+/**
+ * Helper to retrieve client-side access token from cookie or localStorage
+ */
+export function getClientAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const token = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('access_token='))
+    ?.split('=')[1];
+  if (token) return token;
+  try {
+    return localStorage.getItem('token') || null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -189,12 +212,23 @@ async function apiClient<T>(
     ...(customHeaders as Record<string, string>),
   };
 
-  if (typeof window !== 'undefined') {
-    const token = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('access_token='))
-      ?.split('=')[1];
+  // Two-Tier Idempotency Key Injection (Issue #82)
+  const method = (fetchOptions.method || 'GET').toUpperCase();
+  const isMutatingMethod = ['POST', 'PUT', 'PATCH'].includes(method);
+  const hasIdempotencyKey = Object.keys(headers).some(
+    (k) => k.toLowerCase() === 'idempotency-key' || k.toLowerCase() === 'x-idempotency-key',
+  );
 
+  if (isMutatingMethod && !hasIdempotencyKey) {
+    const generatedKey =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `idemp-${Math.random().toString(36).substring(2)}-${Date.now()}`;
+    headers['Idempotency-Key'] = generatedKey;
+  }
+
+  if (typeof window !== 'undefined') {
+    const token = getClientAuthToken();
     if (token && !headers['Authorization']) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -205,13 +239,61 @@ async function apiClient<T>(
       ...fetchOptions,
       headers,
       body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: fetchOptions.signal
+        ? typeof AbortSignal.any === 'function'
+          ? AbortSignal.any([fetchOptions.signal, AbortSignal.timeout(timeoutMs)])
+          : fetchOptions.signal
+        : AbortSignal.timeout(timeoutMs),
     });
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => null)) as ApiErrorResponse | null;
 
       if (response.status === 401) {
+        // Attempt silent Refresh Token Rotation if in browser and not a retry and not auth endpoints
+        const isAuthEndpoint =
+          endpoint.includes('/auth/login') ||
+          endpoint.includes('/auth/refresh') ||
+          endpoint.includes('/auth/register');
+
+        if (typeof window !== 'undefined' && !options._isRetry && !isAuthEndpoint) {
+          const refreshToken = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('refresh_token='))
+            ?.split('=')[1];
+
+          if (refreshToken) {
+            try {
+              const refreshData = await apiClient<{ access_token: string; refresh_token?: string }>(
+                '/auth/refresh',
+                {
+                  method: 'POST',
+                  body: { refresh_token: refreshToken },
+                  _isRetry: true,
+                },
+              );
+
+              if (refreshData?.access_token) {
+                document.cookie = `access_token=${refreshData.access_token}; path=/; max-age=${15 * 60}; SameSite=Lax`;
+                if (refreshData.refresh_token) {
+                  document.cookie = `refresh_token=${refreshData.refresh_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+                }
+
+                return apiClient<T>(endpoint, {
+                  ...options,
+                  _isRetry: true,
+                  headers: {
+                    ...(options.headers as Record<string, string>),
+                    Authorization: `Bearer ${refreshData.access_token}`,
+                  },
+                });
+              }
+            } catch {
+              // Refresh failed or blacklisted token, fallback to logout
+            }
+          }
+        }
+
         handleUnauthorizedSession();
       }
 

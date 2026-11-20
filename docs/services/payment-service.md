@@ -61,3 +61,22 @@ Payment Service là dịch vụ cốt lõi quản lý dòng tiền, số dư ví
   - `idempotencyKey`: Khóa lũy đẳng
   - `entries`: Mảng các bút toán (`walletAccountId`, `entryType`, `amount`)
 - **Validation**: Tự động chặn nếu `sum(DEBIT) != sum(CREDIT)` hoặc amount <= 0.
+
+### 5. Tạo Link Thanh Toán & QR Pay Cổng Trực Tuyến (`POST /payment/gateway/create-url`)
+- **Mô tả**: Sinh URL thanh toán có chữ ký HMAC (SHA-512 cho VNPay, SHA-256 cho MoMo) kèm payload QR Pay.
+- **Body**:
+  - `amount`: Số tiền thanh toán/nạp ví (tối thiểu 1.000 VND)
+  - `paymentMethod`: `VNPAY` | `MOMO`
+  - `walletAccountId`: UUID của ví nạp tiền
+  - `orderId`: (Tùy chọn) Mã đơn hàng nếu thanh toán đơn trực tiếp
+  - `returnUrl`: URL chuyển hướng sau khi thanh toán
+- **Trả về**:
+  - `paymentUrl`: Đường dẫn chuyển hướng người dùng
+  - `qrPayload`: Dữ liệu quét mã QR Pay
+  - `transactionRef`: Mã tham chiếu giao dịch
+
+### 6. Webhook IPN Listener (`POST /payment/webhooks/vnpay`, `POST /payment/webhooks/momo`)
+- **Mô tả**: Tiếp nhận thông báo tức thời từ VNPay/MoMo, xác thực chữ ký HMAC chống giả mạo, kiểm tra tính lũy đẳng (Idempotency) qua `t_idempotency_key` và hạch toán số dư ví.
+- **Cơ chế Idempotency**:
+  - Khóa `idempotency_key` dạng `{GATEWAY}_{TXN_REF}`.
+  - Nếu đã xử lý thành công, trả về ngay kết quả thành công cho Gateway mà không nạp trùng tiền.

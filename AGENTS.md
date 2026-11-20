@@ -41,8 +41,9 @@ Tất cả các yêu cầu về:
 
 ## 6. QUY CHUẨN FRONTEND & UI/UX (Next.js)
 - Kiến trúc App Router, Feature-Based Design.
-- Giao diện cao cấp, UX/UI animation hiện đại.
-**Hành động tham chiếu**: Đọc `.agents/skills/nextjs-patterns/SKILL.md` và `.agents/skills/ui-ux-pro-max/SKILL.md`.
+- Giao diện cao cấp, UX/UI animation hiện đại, định hướng thẩm mỹ chống khuôn mẫu sáo rỗng (Anti-slop / Art Direction).
+- Phân định rõ thiết kế cho **Page** (Landing page, trang món ăn, marketing) và **App Screen** (Admin, Driver, Merchant dashboard).
+**Hành động tham chiếu**: Đọc `.agents/skills/nextjs-patterns/SKILL.md`, `.agents/skills/ui-ux-pro-max/SKILL.md`, và `.agents/skills/design-taste-frontend/SKILL.md`.
 
 ## 7. QUY CHUẨN TÀI LIỆU DỰ ÁN (Documentation Policy)
 - Cấu trúc phân cấp nghiêm ngặt trong `docs/`: `architecture/`, `services/`, `business/`, `features/<actor>/`, `frontend/`.

@@ -1,62 +1,121 @@
-# Kiến trúc Tìm kiếm & Lọc thông minh (Smart Search)
+# Kiến trúc Tìm kiếm & Lọc thông minh (Smart Search Service)
 
-Tài liệu này mô tả chi tiết về cách hệ thống tích hợp Elasticsearch để phục vụ tính năng Tìm kiếm và Lọc (Smart Search) các nhà hàng và món ăn.
+Tài liệu này mô tả chi tiết về cách hệ thống tích hợp Elasticsearch (v8) để phục vụ tính năng Tìm kiếm Thông minh (Smart Search) cho các nhà hàng và món ăn, bao gồm Dual-Indexing, Bộ xử lý tiếng Việt, Thuật toán Xếp hạng Đa tiêu chí, và Gợi ý Tìm kiếm thời gian thực.
 
-## 1. Mục tiêu kiến trúc
-- Cung cấp khả năng tìm kiếm Full-text search tốc độ cao, hỗ trợ tiếng Việt.
-- Cho phép truy vấn dựa trên tọa độ không gian (Geo-search) để tìm nhà hàng trong một bán kính cụ thể.
-- Filter linh hoạt nhiều chiều dữ liệu: đánh giá, khuyến mãi freeship, phân loại quán ăn, và tags món ăn.
-- Giảm tải cho database chính (PostgreSQL) khỏi các truy vấn JOIN và `LIKE` phức tạp.
+---
 
-## 2. Thiết kế Dữ liệu
+## 1. Mục Tiêu Kiến Trúc
+- **Dual Indexing**: Lưu trữ và tìm kiếm độc lập cả Nhà hàng (`restaurants`) và Món ăn (`menu_items`) trong Elasticsearch với độ trễ phản hồi $< 30\text{ms}$.
+- **Hỗ trợ Tiếng Việt Toàn diện**: Tích hợp Custom Analyzer (`vi_analyzer`, `autocomplete_analyzer`) với token filter `asciifolding` (tìm không dấu ra có dấu), loại bỏ stopwords ẩm thực ("quán", "tiệm", "cửa hàng"), và `edge_ngram` cho tìm kiếm tiền tố.
+- **Multi-Factor Geo-Relevance Ranking**: Sử dụng `function_score` kết hợp độ liên quan từ khóa (BM25), hàm suy giảm khoảng cách (`gauss` decay), và điểm đánh giá (`rating`).
+- **Real-time Autocomplete Suggestions**: Cung cấp endpoint gợi ý từ khóa, món ăn và quán ăn theo thời gian thực.
+- **Trải nghiệm Frontend Anti-Slop**: Loading spinner 2 tầng (`isDebouncing` + `isFetching`), AbortController chống race condition và quản lý lịch sử tìm kiếm cục bộ (LocalStorage).
 
-### 2.1 Tại PostgreSQL (Nguồn sự thật - Single Source of Truth)
-Cấu trúc các bảng liên quan trong `schema_restaurant` sẽ được tách biệt rõ ràng giữa Master data và Transaction/Promotion:
+---
 
-1. **`m_restaurant`**: Chứa thông tin gốc của nhà hàng. Bổ sung thêm các cột `lat`, `lon` (tọa độ không gian kiểu `numeric`) và `rating`.
-2. **`m_category`**: Phân loại nhà hàng (Ví dụ: Trà sữa, Cơm tấm, Ăn vặt).
-3. **`m_restaurant_category`**: Bảng trung gian n-n nối nhà hàng và category.
-4. **`m_tag`**: Thẻ đánh dấu món ăn để dễ tìm kiếm (Ví dụ: Bestseller, Món nước, Ăn chay).
-5. **`m_menu_item_tag`**: Bảng trung gian n-n nối món ăn và tag.
-6. **`m_config`**: Bảng cấu hình hệ thống (Admin Level) để lưu các tham số dùng chung (ví dụ: `freeship_distance_threshold` = 2km).
-7. **Freeship (Transaction Level)**: Freeship KHÔNG nằm cứng ở bảng `m_restaurant`. Việc áp dụng Freeship được đánh giá linh hoạt dựa trên vị trí hiện tại của user so với nhà hàng (nằm trong phạm vi `freeship_distance_threshold`) hoặc dựa vào Promotion.
+## 2. Thiết Kế Chỉ Mục Elasticsearch (Dual-Index Mapping)
 
-### 2.2 Tại Elasticsearch (Read-Model)
-Tạo index `restaurants` để gom nhóm các dữ liệu phân tán trên thành một Document duy nhất phục vụ truy vấn:
+### 2.1. Cấu hình Analyzer Tiếng Việt
 ```json
 {
-  "id": "uuid",
-  "name": "Cơm tấm sườn bì chả",
-  "location": {
-    "lat": 10.762622,
-    "lon": 106.660172
-  },
-  "rating": 4.5,
-  "categories": ["com-tam", "an-trua"],
-  "tags": ["bestseller", "mon-man"]
+  "settings": {
+    "analysis": {
+      "filter": {
+        "vietnamese_stop": {
+          "type": "stop",
+          "stopwords": ["quán", "tiệm", "cửa hàng", "và", "ở"]
+        },
+        "edge_ngram_filter": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        }
+      },
+      "analyzer": {
+        "vi_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "asciifolding", "vietnamese_stop"]
+        },
+        "autocomplete_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "asciifolding", "edge_ngram_filter"]
+        }
+      }
+    }
+  }
 }
 ```
-*Lưu ý: Logic lọc freeship sẽ được tính toán lúc User gọi API Search, sử dụng tọa độ (lat/lon) của User đối chiếu với `freeship_distance_threshold` lấy từ `m_config`, chứ không lưu tĩnh trên Elasticsearch document.*
 
-## 3. Chiến lược đồng bộ (Data Sync Strategy)
+### 2.2. Index `restaurants`
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `keyword` | UUID định danh nhà hàng |
+| `name` | `text` | Tên nhà hàng (analyzer: `vi_analyzer`, subfield: `autocomplete`) |
+| `location` | `geo_point` | Tọa độ `(lat, lon)` để lọc khoảng cách và tính hàm suy giảm `gauss` |
+| `rating` | `float` | Điểm đánh giá trung bình |
+| `total_reviews` | `integer` | Tổng lượt đánh giá |
+| `is_active` | `boolean` | Trạng thái hoạt động của quán |
+| `categories` | `keyword` | Danh sách danh mục (Phở, Cơm, Trà sữa...) |
+| `tags` | `keyword` | Danh sách thẻ tag |
+| `suggest` | `completion` | Hỗ trợ Completion Suggester |
 
-Sử dụng phương pháp **Application-level Sync** (Event-driven) cho MVP:
-1. **Trigger**: Khi có bất kỳ sự thay đổi nào về `m_restaurant`, `m_category`, `m_tag` hoặc các chiến dịch Promotion liên quan, NestJS sẽ phát ra một sự kiện nội bộ.
-2. **Processor**: Một listener trong `SearchModule` sẽ bắt sự kiện này. Nó truy vấn lại thông tin đầy đủ nhất từ PostgreSQL, tính toán field `has_freeship_promo`, và push Document lên Elasticsearch.
-3. **Reconciliation (Đối soát)**: Có một CronJob chạy ngầm vào ban đêm (lúc thấp điểm) để quét đối chiếu và đồng bộ lại toàn bộ dữ liệu từ PostgreSQL sang Elasticsearch, đảm bảo tính nhất quán (Eventual Consistency) phòng trường hợp hệ thống mất events.
+### 2.3. Index `menu_items`
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `keyword` | UUID định danh món ăn |
+| `restaurant_id` | `keyword` | UUID nhà hàng sở hữu |
+| `restaurant_name` | `text` | Tên nhà hàng (analyzer: `vi_analyzer`) |
+| `name` | `text` | Tên món ăn (analyzer: `vi_analyzer`, subfield: `autocomplete`) |
+| `description` | `text` | Mô tả chi tiết món ăn |
+| `price` | `double` | Giá niêm yết |
+| `is_available` | `boolean` | Còn món / Hết món |
+| `tags` | `keyword` | Tags món ăn (Món Nước, Bò, Bán Chạy...) |
+| `location` | `geo_point` | Tọa độ nhà hàng (đồng bộ từ quán) |
+| `rating` | `float` | Điểm đánh giá nhà hàng |
 
-## 4. API Search (Frontend -> Backend)
-API được thiết kế để Frontend (React Query) có thể gọi dạng GET với các query params:
+---
 
+## 3. Danh Sách API (Search Endpoints)
+
+### 3.1. Gợi ý Tìm kiếm Thời Gian Thực (`GET /search/suggestions`)
+- **Query params**: `q` (bắt buộc, $\ge 2$ ký tự), `lat`, `lon` (tùy chọn).
+- **Phản hồi**:
+```json
+{
+  "keywords": ["Phở Biên Hòa", "Phở Gà", "Phở Bò Chín"],
+  "dishes": [
+    {
+      "id": "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
+      "name": "Phở Gà",
+      "price": 50000,
+      "restaurant_id": "d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "restaurant_name": "Phở Biên Hòa"
+    }
+  ],
+  "restaurants": [
+    {
+      "id": "d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      "name": "Phở Biên Hòa",
+      "rating": 4.5,
+      "distance_km": 1.2
+    }
+  ]
+}
 ```
-GET /api/search/restaurants
-  ?q=com tam            // Full-text search
-  &lat=10.123&lon=106.1 // Geo-point center
-  &radius=5km           // Bán kính tìm kiếm
-  &rating=4.0           // Đánh giá tối thiểu
-  &freeship=true        // Filter có khuyến mãi freeship
-  &categories=uuid1     // Filter theo m_category
-  &tags=uuid2           // Filter theo m_tag
-```
 
-Backend sẽ mapping các params này thành Query DSL của Elasticsearch (`bool` query kết hợp `must`, `filter`, `geo_distance`).
+### 3.2. Tìm kiếm Thực Đơn / Món Ăn (`GET /search/menu`)
+- **Query params**: `q`, `categories`, `tags`, `lat`, `lon`, `radius`, `sort_by`.
+- **Cơ chế**: Truy vấn trực tiếp index `menu_items` trong Elasticsearch. Tự động nhóm các món ăn theo từng nhà hàng và trả về danh sách `MenuSectionResult[]`. Fallback an toàn sang `SearchReadRepository` nếu index món chưa được tải.
+
+### 3.3. Tìm kiếm Nhà Hàng (`GET /search/restaurants`)
+- **Query params**: `q`, `categories`, `tags`, `rating`, `freeship`, `open_only`, `sort_by` (`relevance` | `distance` | `rating`), `lat`, `lon`, `radius`.
+- **Cơ chế**: Query DSL `function_score` kết hợp:
+  - `multi_match` trên `name^3`, `name.autocomplete^2`, `categories^2`, `tags`.
+  - `geo_distance` filter theo bán kính người dùng.
+  - `gauss` decay trên `location` (bán kính 3km, decay 0.5, weight 2.0).
+  - `field_value_factor` trên `rating` (sqrt modifier, weight 1.5).
+
+### 3.4. Kích hoạt Đồng bộ Thủ công (`POST /search/sync`)
+- Đồng bộ toàn bộ nhà hàng và menu items từ `restaurant-service` sang 2 index Elasticsearch.

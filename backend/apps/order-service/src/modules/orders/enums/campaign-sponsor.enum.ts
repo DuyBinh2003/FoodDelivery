@@ -1,0 +1,6 @@
+export enum CampaignSponsor {
+  PLATFORM = 'PLATFORM',
+  MERCHANT = 'MERCHANT',
+  CO_FUNDED = 'CO_FUNDED',
+  PAYMENT_PARTNER = 'PAYMENT_PARTNER',
+}

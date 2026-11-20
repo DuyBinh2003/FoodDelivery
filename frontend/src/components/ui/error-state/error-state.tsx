@@ -63,28 +63,25 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl bg-zinc-900/80 backdrop-blur-md border border-zinc-800 p-8 text-center flex flex-col items-center justify-center my-4 shadow-xl',
+        'relative overflow-hidden rounded-xl bg-card border border-border p-8 text-center flex flex-col items-center justify-center my-4',
         className,
       )}
     >
-      {/* Background ambient red glow */}
-      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
-
       {/* Warning Icon Badge */}
-      <div className="relative mb-4 inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-b from-red-500/20 to-red-600/10 border border-red-500/30 text-red-400 shadow-lg shadow-red-500/10">
-        <AlertCircle className="w-7 h-7" />
+      <div className="relative mb-3.5 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-destructive/15 border border-destructive/25 text-destructive">
+        <AlertCircle className="w-5 h-5" />
       </div>
 
       {/* Content */}
-      <h3 className="text-lg font-semibold text-zinc-100 tracking-tight mb-1.5">
+      <h3 className="text-base font-medium text-foreground tracking-tight mb-1">
         {title}
       </h3>
-      <p className="text-sm text-zinc-400 max-w-md mx-auto mb-6 leading-relaxed">
+      <p className="text-xs text-muted-foreground max-w-md mx-auto mb-5 leading-relaxed">
         {description}
       </p>
 
       {/* Actions */}
-      <div className="flex flex-wrap items-center justify-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-2.5">
         {onRetry && (
           <Button
             type="button"
@@ -92,10 +89,10 @@ export function ErrorState({
             size="sm"
             onClick={handleRetry}
             disabled={isRetrying}
-            className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-medium shadow-md shadow-red-600/20 gap-2 px-4 h-9"
+            className="gap-2 px-3.5"
           >
             <RefreshCw
-              className={cn('w-4 h-4', isRetrying && 'animate-spin')}
+              className={cn('w-3.5 h-3.5', isRetrying && 'animate-spin')}
             />
             <span>{retryText}</span>
           </Button>
