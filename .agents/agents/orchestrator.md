@@ -19,6 +19,8 @@ skills:
   - skills/general-project-policy
   - skills/nestjs-patterns
   - skills/nextjs-patterns
+  - skills/ui-ux-pro-max
+  - skills/design-taste-frontend
   - skills/naming-convention-policy
   - skills/database-schema-policy
 ---

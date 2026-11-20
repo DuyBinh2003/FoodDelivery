@@ -83,18 +83,18 @@ export function HomeHeader({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-xl border-b border-white/[0.08] transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-3">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/70 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 space-y-2.5">
           {/* Top Row: Location Selector & Action Icons */}
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               {/* Brand Logo */}
               <Link href="/" className="flex items-center gap-2 group shrink-0">
-                <div className="p-1.5 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform">
-                  <UtensilsCrossed className="w-4 h-4 text-white" />
+                <div className="p-1.5 rounded-lg bg-primary/15 text-primary border border-primary/25 transition-transform group-hover:scale-105">
+                  <UtensilsCrossed className="w-4 h-4" />
                 </div>
-                <span className="text-base font-extrabold bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent hidden md:inline">
-                  FoodDelivery
+                <span className="text-base font-semibold tracking-tight text-foreground hidden md:inline">
+                  Food<span className="text-primary font-bold">Delivery</span>
                 </span>
               </Link>
 
@@ -102,23 +102,23 @@ export function HomeHeader({
               <button
                 type="button"
                 onClick={() => setIsLocationModalOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition-all cursor-pointer group min-w-0 flex-1 sm:max-w-md"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card hover:bg-white/[0.04] border border-border text-left transition-all cursor-pointer group min-w-0 flex-1 sm:max-w-md"
               >
-                <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <MapPin className="w-4 h-4" />
+                <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <MapPin className="w-3.5 h-3.5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1 text-[11px] font-bold text-amber-400 uppercase tracking-wider">
+                  <div className="flex items-center gap-1 text-[10px] font-semibold text-primary uppercase tracking-wider">
                     <span>Giao đến</span>
                     {currentLocation.label && (
-                      <span className="text-zinc-400 font-normal">({currentLocation.label})</span>
+                      <span className="text-muted-foreground font-normal">({currentLocation.label})</span>
                     )}
                   </div>
-                  <p className="text-xs sm:text-sm font-semibold text-white truncate">
+                  <p className="text-xs font-medium text-foreground truncate">
                     {currentLocation.address}
                   </p>
                 </div>
-                <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-white shrink-0 ml-1" />
+                <ChevronDown className="w-3.5 h-3.5 text-zinc-500 group-hover:text-foreground shrink-0 ml-1" />
               </button>
             </div>
 
@@ -129,11 +129,11 @@ export function HomeHeader({
                 type="button"
                 onClick={onOpenNotifications}
                 aria-label="Thông báo"
-                className="relative p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                className="relative p-2 rounded-xl bg-card hover:bg-white/[0.04] text-zinc-300 hover:text-foreground border border-border transition-colors cursor-pointer"
               >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-4.5 h-4.5" />
                 {hasUnreadNotifications && (
-                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-zinc-950 animate-pulse" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-background animate-pulse" />
                 )}
               </button>
 
@@ -141,11 +141,11 @@ export function HomeHeader({
               <Link
                 href="/checkout"
                 aria-label="Giỏ hàng"
-                className="relative p-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-zinc-950 font-bold transition-all shadow-lg shadow-amber-500/20 active:scale-95"
+                className="relative p-2 rounded-xl bg-primary text-primary-foreground font-medium transition-all shadow-xs shadow-orange-950/30 hover:brightness-105 active:scale-95"
               >
-                <ShoppingBag className="w-5 h-5 text-zinc-950" />
+                <ShoppingBag className="w-4.5 h-4.5" />
                 {totalCartItems > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1.5 rounded-full bg-red-600 text-white text-[11px] font-black flex items-center justify-center ring-2 ring-zinc-950 animate-bounce">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center ring-2 ring-background">
                     {totalCartItems}
                   </span>
                 )}
@@ -155,19 +155,19 @@ export function HomeHeader({
               <Link
                 href={isAuthenticated ? '/profile' : '/login'}
                 aria-label={isAuthenticated ? 'Hồ sơ người dùng' : 'Đăng nhập'}
-                className="relative w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 transition-all flex items-center justify-center shrink-0 overflow-hidden active:scale-95"
+                className="relative w-8.5 h-8.5 rounded-xl bg-card hover:bg-white/[0.04] text-zinc-300 hover:text-foreground border border-border transition-all flex items-center justify-center shrink-0 overflow-hidden active:scale-95"
               >
                 {user?.avatar_url ? (
                   <Image
                     src={user.avatar_url}
                     alt={user.name || 'User Avatar'}
                     fill
-                    sizes="40px"
+                    sizes="34px"
                     unoptimized
                     className="object-cover"
                   />
                 ) : (
-                  <UserIcon className="w-5 h-5 text-zinc-300" />
+                  <UserIcon className="w-4 h-4 text-zinc-400" />
                 )}
               </Link>
             </div>
@@ -176,56 +176,58 @@ export function HomeHeader({
           {/* Sticky Dynamic Search Bar */}
           <div className="relative">
             <form onSubmit={handleSearchSubmit} className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
               <input
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onFocus={() => setIsSearchOpen(true)}
                 placeholder={ROTATING_PLACEHOLDERS[placeholderIndex]}
-                className="w-full pl-11 pr-12 py-3 rounded-2xl bg-zinc-900 border border-white/10 text-white placeholder-zinc-400 text-sm focus:outline-none focus:border-amber-500 shadow-inner transition-all duration-300"
+                className="w-full pl-10 pr-10 py-2 rounded-xl bg-card/80 border border-input text-foreground placeholder:text-muted-foreground text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 transition-colors"
               />
               {searchInput && (
                 <button
                   type="button"
                   onClick={() => setSearchInput('')}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-zinc-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-zinc-400 hover:text-foreground"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </form>
 
             {/* Trending Suggestions Dropdown */}
             {isSearchOpen && (
-              <div className="absolute top-full left-0 right-0 mt-2 p-4 rounded-3xl bg-zinc-900/95 border border-white/10 shadow-2xl backdrop-blur-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400 uppercase tracking-wide">
-                    <TrendingUp className="w-3.5 h-3.5" />
+              <div
+                className="absolute top-full left-0 right-0 mt-2 p-3 bg-card border border-border rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2"
+                onMouseLeave={() => setIsSearchOpen(false)}
+              >
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-border text-[11px] font-medium text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <TrendingUp className="w-3.5 h-3.5 text-primary" />
                     <span>Tìm kiếm thịnh hành</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsSearchOpen(false)}
-                    className="text-xs text-zinc-400 hover:text-white"
+                    className="text-zinc-500 hover:text-foreground text-[10px]"
                   >
                     Đóng
                   </button>
                 </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {TRENDING_KEYWORDS.map((kw) => (
+                <div className="flex flex-wrap gap-1.5">
+                  {TRENDING_KEYWORDS.map((keyword) => (
                     <button
-                      key={kw}
+                      key={keyword}
                       type="button"
                       onClick={() => {
-                        handleKeywordClick(kw);
+                        handleKeywordClick(keyword);
                         setIsSearchOpen(false);
                       }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-amber-500/15 border border-white/5 hover:border-amber-500/30 text-xs font-medium text-zinc-300 hover:text-amber-400 transition-colors cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground text-xs border border-white/[0.04] hover:border-primary/40 hover:text-primary transition-colors"
                     >
-                      <Sparkles className="w-3 h-3 text-amber-400/80" />
-                      <span>{kw}</span>
+                      <Sparkles className="w-3 h-3 text-primary/70" />
+                      <span>{keyword}</span>
                     </button>
                   ))}
                 </div>

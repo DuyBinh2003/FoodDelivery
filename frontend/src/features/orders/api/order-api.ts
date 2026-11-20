@@ -11,6 +11,8 @@ export interface CreateOrderPayload {
   note?: string;
   payment_method?: 'CASH' | 'MOMO' | 'VNPAY';
   points_to_use?: number;
+  voucher_id?: string;
+  voucher_code?: string;
   items: Array<{
     menu_item_id: string;
     name?: string;
@@ -55,4 +57,16 @@ export const cancelOrder = async (orderId: string): Promise<Order> => {
     body: { status: 'CANCELLED' },
   });
 };
+
+export const uploadOrderReviewImage = async (
+  file: File,
+): Promise<{ success: boolean; url: string }> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return apiClient<{ success: boolean; url: string }>('/orders/upload', {
+    method: 'POST',
+    body: formData,
+  });
+};
+
 

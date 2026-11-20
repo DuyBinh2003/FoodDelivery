@@ -20,7 +20,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "vitest": ["../backend/node_modules/vitest"]
     }
   },
   "include": [

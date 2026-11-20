@@ -185,7 +185,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col selection:bg-amber-500 selection:text-zinc-950">
+    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 selection:text-orange-300 transition-colors">
       {/* 1. Header & Điều hướng trung tâm */}
       <HomeHeader
         onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
@@ -193,9 +193,9 @@ export default function HomePage() {
       />
 
       {/* 2. Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-8 pb-28 md:pb-16">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 space-y-7 pb-24 md:pb-14">
         {loading ? (
-          <div className="space-y-8">
+          <div className="space-y-7">
             <BannerSkeleton />
             <CategoryGridSkeleton />
             <RestaurantFeedSkeleton title="Gần bạn nhất" />
@@ -215,18 +215,18 @@ export default function HomePage() {
 
             {/* In-place Category Active Filter Banner */}
             {selectedCategory !== 'ALL' && (
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-transparent border border-amber-500/30">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-primary/30">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs sm:text-sm font-semibold text-white">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  <span className="text-xs font-medium text-foreground">
                     Đang lọc món theo danh mục:{' '}
-                    <strong className="text-amber-400 uppercase">{selectedCategory}</strong>
+                    <strong className="text-primary uppercase">{selectedCategory}</strong>
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('ALL')}
-                  className="text-xs font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
+                  className="text-xs font-medium text-primary hover:underline cursor-pointer"
                 >
                   Xóa bộ lọc
                 </button>

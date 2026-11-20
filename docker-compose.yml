@@ -3,7 +3,7 @@ services:
   # DATABASE
   # ==========================================
   db:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     container_name: food_delivery_db
     ports:
       - "5432:5432"
@@ -87,6 +87,10 @@ services:
       search-service:
         condition: service_started
       payment-service:
+        condition: service_started
+      delivery-service:
+        condition: service_started
+      ai-service:
         condition: service_started
     restart: unless-stopped
 
@@ -218,6 +222,55 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_started
+    restart: unless-stopped
+
+  ai-python:
+    build:
+      context: ./ai-python
+      dockerfile: Dockerfile
+    container_name: fd_ai_python
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT:-food-delivery-chatbox}
+      - POSTGRES_URI=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ORDER_SERVICE_URL=http://order-service:3004
+      - USER_SERVICE_URL=http://user-service:3001
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      elasticsearch:
+        condition: service_started
+    restart: unless-stopped
+
+  ai-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: ai-service
+    container_name: fd_ai_service
+    ports:
+      - "3008:3008"
+    env_file: ./backend/.env
+    environment:
+      - AI_SERVICE_PORT=3008
+      - LANGGRAPH_SERVICE_URL=http://ai-python:8000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      ai-python:
         condition: service_started
     restart: unless-stopped
 

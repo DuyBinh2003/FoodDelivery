@@ -9,6 +9,7 @@ import { GetCategoriesUseCase } from '@/modules/search/usecases/get-categories.u
 import { GetTagsUseCase } from '@/modules/search/usecases/get-tags.usecase.js';
 import { SearchRestaurantsUseCase } from '@/modules/search/usecases/search-restaurants.usecase.js';
 import { SearchMenuUseCase } from '@/modules/search/usecases/search-menu.usecase.js';
+import { SuggestSearchUseCase } from '@/modules/search/usecases/suggest-search.usecase.js';
 import { SyncRestaurantIndexUseCase } from '@/modules/search/usecases/sync-restaurant-index.usecase.js';
 import { AiAssistantService } from '@/modules/search/services/ai-assistant.service.js';
 import { AiAssistantController } from '@/modules/search/ai-assistant.controller.js';
@@ -22,7 +23,7 @@ import { AiAssistantController } from '@/modules/search/ai-assistant.controller.
         node: configService.get<string>('elasticsearch.node')!,
       }),
     }),
-      ],
+  ],
   providers: [
     RestaurantSubscriber,
     ElasticsearchRepository,
@@ -31,6 +32,7 @@ import { AiAssistantController } from '@/modules/search/ai-assistant.controller.
     GetTagsUseCase,
     SearchRestaurantsUseCase,
     SearchMenuUseCase,
+    SuggestSearchUseCase,
     SyncRestaurantIndexUseCase,
     AiAssistantService,
   ],
@@ -42,9 +44,9 @@ import { AiAssistantController } from '@/modules/search/ai-assistant.controller.
     GetTagsUseCase,
     SearchRestaurantsUseCase,
     SearchMenuUseCase,
+    SuggestSearchUseCase,
     SyncRestaurantIndexUseCase,
     AiAssistantService,
   ],
 })
 export class SearchModule {}
-

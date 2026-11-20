@@ -22,7 +22,9 @@ export class DriverGeoRedisRepository implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(DriverGeoRedisRepository.name);
   private readonly GEO_KEY = 'drivers:geo';
   private readonly DRIVER_STATUS_PREFIX = 'driver:status:';
+  private readonly DRIVER_HEARTBEAT_PREFIX = 'driver:heartbeat:';
   private readonly DISPATCH_PREFIX = 'dispatch:order:';
+  private readonly HEARTBEAT_TTL_SECONDS = 30;
 
   constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
     const host = this.configService.get<string>('redis.host') || process.env.REDIS_HOST || 'localhost';
@@ -52,7 +54,7 @@ export class DriverGeoRedisRepository implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Cập nhật vị trí tài xế vào Redis Geospatial và Hash trạng thái
+   * Cập nhật vị trí tài xế vào Redis Geospatial và Hash trạng thái, đồng thời làm mới Heartbeat TTL 30s
    */
   async updateDriverLocation(driverId: string, lat: number, lng: number): Promise<void> {
     if (!this.client?.isOpen) return;
@@ -72,13 +74,17 @@ export class DriverGeoRedisRepository implements OnModuleInit, OnModuleDestroy {
         updated_at: new Date().toISOString(),
       });
       await this.client.expire(statusKey, 86400); // 24h
+
+      // Heartbeat TTL 30 giây để chống tài xế ma (Ghost Driver)
+      const heartbeatKey = `${this.DRIVER_HEARTBEAT_PREFIX}${driverId}`;
+      await this.client.set(heartbeatKey, '1', { EX: this.HEARTBEAT_TTL_SECONDS });
     } catch (error: unknown) {
       this.logger.error(`Error updating location for driver [${driverId}]:`, error);
     }
   }
 
   /**
-   * Xóa tài xế khỏi Redis Geospatial khi chuyển sang OFFLINE
+   * Xóa tài xế khỏi Redis Geospatial và xóa Heartbeat khi chuyển sang OFFLINE
    */
   async removeDriverFromGeo(driverId: string): Promise<void> {
     if (!this.client?.isOpen) return;
@@ -90,18 +96,58 @@ export class DriverGeoRedisRepository implements OnModuleInit, OnModuleDestroy {
         status: 'OFFLINE',
         updated_at: new Date().toISOString(),
       });
+      const heartbeatKey = `${this.DRIVER_HEARTBEAT_PREFIX}${driverId}`;
+      await this.client.del(heartbeatKey);
     } catch (error: unknown) {
       this.logger.error(`Error removing driver [${driverId}] from geo:`, error);
     }
   }
 
   /**
+   * Kiểm tra xem tài xế có đang hoạt động gửi ping trong 30 giây qua không (Heartbeat check)
+   */
+  async isDriverHeartbeatActive(driverId: string): Promise<boolean> {
+    if (!this.client?.isOpen) return false;
+    try {
+      const heartbeatKey = `${this.DRIVER_HEARTBEAT_PREFIX}${driverId}`;
+      const exists = await this.client.exists(heartbeatKey);
+      return exists === 1;
+    } catch (error: unknown) {
+      this.logger.warn(`Error checking heartbeat for driver [${driverId}]: ${error}`);
+      return false;
+    }
+  }
+
+  /**
+   * Trục xuất danh sách tài xế ma (Ghost Drivers) khỏi Redis Geospatial
+   */
+  async evictGhostDrivers(driverIds: string[]): Promise<string[]> {
+    if (!this.client?.isOpen || driverIds.length === 0) return [];
+    const evicted: string[] = [];
+
+    for (const driverId of driverIds) {
+      const isActive = await this.isDriverHeartbeatActive(driverId);
+      if (!isActive) {
+        await this.removeDriverFromGeo(driverId);
+        evicted.push(driverId);
+      }
+    }
+
+    if (evicted.length > 0) {
+      this.logger.log(`[GhostDriverEviction] Evicted ${evicted.length} inactive drivers: ${evicted.join(', ')}`);
+    }
+    return evicted;
+  }
+
+  /**
    * Quét tìm các tài xế trong bán kính radiusKm (mặc định 5km) quanh điểm lat, lng
+   * Hỗ trợ lọc bỏ tài xế ma (Ghost Drivers) không có heartbeat trong 30s
    */
   async findNearbyDrivers(
     lat: number,
     lng: number,
     radiusKm: number = 5,
+    filterGhosts: boolean = false,
   ): Promise<NearbyDriverCandidate[]> {
     if (!this.client?.isOpen) return [];
 
@@ -129,6 +175,14 @@ export class DriverGeoRedisRepository implements OnModuleInit, OnModuleDestroy {
         if (Array.isArray(item) && item.length >= 2) {
           const driverId = String(item[0]);
           const distKm = parseFloat(String(item[1]));
+
+          if (filterGhosts) {
+            const isActive = await this.isDriverHeartbeatActive(driverId);
+            if (!isActive) {
+              continue;
+            }
+          }
+
           candidates.push({
             driverId,
             distanceKm: isNaN(distKm) ? 0 : Math.round(distKm * 10) / 10,

@@ -45,6 +45,15 @@ export class Order {
   @Column({ type: 'integer', default: 0 })
   points_earned: number;
 
+  @Column({ type: 'uuid', nullable: true })
+  voucher_id: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  voucher_code: string | null;
+
+  @Column({ type: 'numeric', precision: 15, scale: 2, default: 0 })
+  voucher_discount: number;
+
   @Column({ type: 'varchar', length: 50, default: OrderStatus.PENDING })
   status: OrderStatus;
 

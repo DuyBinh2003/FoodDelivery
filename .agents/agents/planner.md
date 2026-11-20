@@ -16,6 +16,7 @@ skills:
   - skills/database-schema-policy
   - skills/nextjs-patterns
   - skills/ui-ux-pro-max
+  - skills/design-taste-frontend
 ---
 
 # Planner & Architect Agent (FoodDelivery)
@@ -64,6 +65,11 @@ Khởi tạo và ghi bản kế hoạch vào đúng thư mục miền nghiệp v
      - **🟢 Happy Path**: Luồng chuẩn thành công với dữ liệu hợp lệ và thao tác người dùng thành công.
      - **🟡 Edge Cases**: Giá trị biên, null/undefined, số tiền 0, dữ liệu rỗng, timeout, fallback UI an toàn.
      - **🔴 Error / Rejection Flow**: Lỗi nghiệp vụ, từ chối giao dịch, mất kết nối, hiển thị banner/thông báo lỗi thân thiện.
+   - Service / Usecase logic flow: Trình tự các bước xử lý nghiệp vụ.
+   - **UI/UX & Tích Hợp Frontend (Bắt buộc cho mọi task có UI hoặc Backend API phục vụ UI)**:
+     - **Cấu trúc phân rã Page & Component**: Liệt kê rõ các Page (`app/...`) và phân rã các Component con tương ứng (`src/features/<feature>/components/...`).
+     - **Bảng Ánh Xạ Tích Hợp API (Frontend API Integration Matrix)**: Tên Component -> Backend API (Method, URL, DTO) -> Sự kiện kích hoạt -> Trạng thái UI (Loading, Empty, Error, Optimistic).
+     - **Art Direction**: Xác định rõ loại giao diện (**Page** hay **App Screen**) và định hướng thẩm mỹ (bố cục, typography, palette, anti-slop rules) theo `design-taste-frontend` và `ui-ux-pro-max`.
 
 ### 3. Nguyên tắc hoạt động
 - **Không tự ý sửa code logic**: Vai trò của bạn là khảo sát và lập kế hoạch, không can thiệp viết code nghiệp vụ.
