@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Bằng Chứng Giao Hàng & Xác Thực Ảnh Chụp (Proof of Delivery - POD)
 
-`[COMPLETED]` • **Issue liên kết:** #30 (#D3) • **Phân loại:** `driver` • **Ngày khởi tạo:** 2026-11-09
+`[COMPLETED]` • **Issue liên kết:** [#30](https://github.com/DuyBinh2003/FoodDelivery/pull/92) (#D3) • **Phân loại:** `driver` • **Ngày khởi tạo:** 2026-11-09
 
 ---
 
