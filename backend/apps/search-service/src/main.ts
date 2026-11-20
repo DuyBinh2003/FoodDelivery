@@ -14,6 +14,6 @@ async function bootstrap() {
     }),
   );
   await app.listen(3006);
-  console.log('search-service is running on: http://localhost:3006');
+  console.log('search-service (with AI Assistant) is running on: http://localhost:3006');
 }
 bootstrap();

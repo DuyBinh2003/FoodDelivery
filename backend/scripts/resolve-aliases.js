@@ -8,6 +8,7 @@ const services = [
   'delivery-service',
   'search-service',
   'payment-service',
+  'ai-service',
 ];
 
 console.log('Resolving aliases for shared libs...');

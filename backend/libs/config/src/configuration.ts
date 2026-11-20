@@ -41,4 +41,11 @@ export default () => ({
     deliveryUrl: process.env.DELIVERY_SERVICE_URL,
     userUrl: process.env.USER_SERVICE_URL,
   },
+  ai: {
+    port: parseInt(process.env.AI_SERVICE_PORT || '3008', 10),
+    langgraphUrl: process.env.LANGGRAPH_SERVICE_URL,
+    rateLimitPerMinute: parseInt(process.env.CHAT_RATE_LIMIT_PER_MINUTE || '20', 10),
+    sessionTtlDays: parseInt(process.env.CHAT_SESSION_TTL_DAYS || '30', 10),
+    maxHistoryMessages: parseInt(process.env.CHAT_MAX_HISTORY_MESSAGES || '20', 10),
+  },
 });

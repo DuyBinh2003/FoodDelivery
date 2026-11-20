@@ -45,7 +45,6 @@ function calculateHaversineKm(lat1: number, lon1: number, lat2: number, lon2: nu
 }
 
 import { translateManeuver } from '@/features/orders/utils/geo-map.utils';
-export { translateManeuver };
 
 /**
  * Sinh dữ liệu dự phòng khi OSRM timeout hoặc gặp lỗi mạng

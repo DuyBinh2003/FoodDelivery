@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 function requireEnv(key: string): string {
   const val = process.env[key];
@@ -11,6 +12,10 @@ function requireEnv(key: string): string {
 }
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: path.resolve(__dirname),
+  experimental: {
+    cpus: 1,
+  },
   images: {
     dangerouslyAllowLocalIP: true,
     dangerouslyAllowSVG: true,
@@ -56,6 +61,10 @@ const nextConfig: NextConfig = {
         destination: `${requireEnv('NEXT_PUBLIC_ORDER_SERVICE_URL')}/orders/:path*`,
       },
       {
+        source: '/api/vouchers/:path*',
+        destination: `${requireEnv('NEXT_PUBLIC_ORDER_SERVICE_URL')}/vouchers/:path*`,
+      },
+      {
         source: '/api/users/:path*',
         destination: `${requireEnv('NEXT_PUBLIC_USER_SERVICE_URL')}/users/:path*`,
       },
@@ -70,6 +79,10 @@ const nextConfig: NextConfig = {
       {
         source: '/api/delivery/:path*',
         destination: `${requireEnv('NEXT_PUBLIC_DELIVERY_SERVICE_URL')}/delivery/:path*`,
+      },
+      {
+        source: '/api/ai/:path*',
+        destination: `${requireEnv('NEXT_PUBLIC_AI_SERVICE_URL')}/ai/:path*`,
       },
     ];
   },

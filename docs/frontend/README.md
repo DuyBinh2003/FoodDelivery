@@ -22,7 +22,11 @@ Thư mục này tổng hợp toàn bộ các quy chuẩn kiến trúc, mẫu thi
    - Mã nguồn trong `frontend/src/` được chia theo các tính năng độc lập (ví dụ: `auth/`, `restaurant/`, `cart/`, `driver/`) giúp module hóa cao và dễ bảo trì.
 3. **Data Client Chuẩn Hóa (`@/lib/api-client`)**:
    - Không dùng `fetch` trần (raw fetch). Mọi yêu cầu gọi backend đều qua `apiClient` để tự động xử lý Base URL, Timeout (10s), Authorization Bearer Header và phân giải lỗi `ApiError`.
-4. **Trải Nghiệm Người Dùng Đỉnh Cao (Premium UI/UX)**:
+4. **Trải Nghiệm Người Dùng Đỉnh Cao (Premium UI/UX & Taste Skill)**:
+   - **Chống khuôn mẫu AI sáo rỗng (Anti-Slop Art Direction)**: Áp dụng `.agents/skills/design-taste-frontend` và `.agents/skills/ui-ux-pro-max` để tạo giao diện có bản sắc, loại bỏ các chi tiết thừa thãi vô hồn (headline 3 dòng căn giữa lặp lại, ô icon màu mè vô nghĩa, viền xám mỏng nhạt nhẽo).
+   - **Phân định rõ Page vs App Screen**:
+     - *Page* (Landing, Menu, Marketing): Bố cục mạnh mẽ, typography cỡ lớn tương phản cao, bảng màu tuyển chọn theo chủ đề.
+     - *App Screen* (Admin, Driver, Merchant dashboard): Panel tinh gọn, quiet borders, số liệu thật hiển thị rõ ràng, không lạm dụng hiệu ứng trang trí thừa.
    - Áp dụng micro-animations (nhấp nháy trạng thái trực tuyến, hiệu ứng hover thẻ món ăn, skeleton loader mượt mà).
    - Tối ưu cho thiết bị di động (Mobile-friendly, responsive từ màn hình nhỏ nhất).
 

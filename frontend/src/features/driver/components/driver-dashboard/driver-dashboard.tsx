@@ -307,39 +307,36 @@ export function DriverDashboard() {
   // currentStatus is already defined above
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20">
+    <div className="min-h-screen bg-background text-foreground pb-20">
       {/* Toast Notification */}
       {toastMessage && (
         <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl border text-sm font-medium animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl border text-xs sm:text-sm font-medium animate-in fade-in slide-in-from-bottom-4 duration-300 ${
             toastMessage.type === 'success'
               ? 'bg-emerald-950/90 text-emerald-300 border-emerald-500/30'
-              : 'bg-red-950/90 text-red-300 border-red-500/30'
+              : 'bg-destructive/90 text-destructive-foreground border-destructive/30'
           }`}
         >
           {toastMessage.type === 'success' ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-destructive-foreground shrink-0" />
           )}
           <span>{toastMessage.text}</span>
         </div>
       )}
 
-      {/* Hero Banner with Glow */}
-      <div className="relative overflow-hidden border-b border-white/5 bg-gradient-to-b from-zinc-900 to-black pt-8 pb-10 px-4 sm:px-6 lg:px-8">
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto relative z-10">
+      {/* Header Banner */}
+      <div className="border-b border-border bg-card/40 pt-7 pb-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold mb-3">
-                <ShieldCheck className="w-3.5 h-3.5" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border text-foreground text-xs font-semibold mb-3">
+                <ShieldCheck className="w-3.5 h-3.5 text-primary" />
                 <span>Đối tác Tài Xế Chính Thức</span>
                 {isOnline && (
                   <span
-                    className={`inline-flex items-center gap-1.5 ml-2 pl-2 border-l border-amber-500/30 text-xs ${
+                    className={`inline-flex items-center gap-1.5 ml-2 pl-2 border-l border-border text-xs ${
                       isWsConnected ? 'text-emerald-400' : 'text-amber-400'
                     }`}
                   >
@@ -352,11 +349,11 @@ export function DriverDashboard() {
                   </span>
                 )}
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
                 Bảng Điều Khiển Tài Xế
               </h1>
-              <p className="text-zinc-400 text-sm mt-1">
-                Chào mừng, <strong className="text-white">{user?.name || user?.email}</strong>! Quản lý cuốc xe, theo dõi thu nhập và đánh giá chất lượng phục vụ.
+              <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+                Chào mừng, <strong className="text-foreground">{user?.name || user?.email}</strong>! Quản lý cuốc xe, theo dõi thu nhập và đánh giá chất lượng phục vụ.
               </p>
             </div>
 
@@ -374,20 +371,20 @@ export function DriverDashboard() {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-7 space-y-7">
         {/* Metrics Grid */}
         <DriverMetricsGrid summary={summary} loading={loading} />
 
         {/* Tab Navigation & Content */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="flex items-center justify-between border-b border-border pb-3.5">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setActiveTab('available')}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer ${
                   activeTab === 'available'
-                    ? 'bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
                 <Bike className="w-4 h-4" />
@@ -399,10 +396,10 @@ export function DriverDashboard() {
 
               <button
                 onClick={() => setActiveTab('trips')}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer ${
                   activeTab === 'trips'
-                    ? 'bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
                 <History className="w-4 h-4" />
@@ -411,10 +408,10 @@ export function DriverDashboard() {
 
               <button
                 onClick={() => setActiveTab('reviews')}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer ${
                   activeTab === 'reviews'
-                    ? 'bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
                 <Star className="w-4 h-4" />
@@ -425,7 +422,7 @@ export function DriverDashboard() {
             <button
               onClick={loadData}
               disabled={loading}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               title="Làm mới dữ liệu"
             >
               <RotateCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />

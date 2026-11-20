@@ -38,13 +38,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
+    <div className="flex h-screen bg-background text-foreground overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col">
+      <aside className="w-64 bg-card border-r border-border flex flex-col">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-orange-500 tracking-tight">Food Admin</h2>
+          <h2 className="text-lg font-bold text-primary tracking-tight">Food Admin</h2>
         </div>
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
           {ADMIN_NAV.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
@@ -52,43 +52,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors text-xs sm:text-sm ${
                   isActive 
-                    ? 'bg-orange-500/10 text-orange-500 font-medium' 
-                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+                    ? 'bg-primary/10 text-primary font-semibold' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-orange-500' : 'text-zinc-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
-        <div className="p-4 border-t border-zinc-800">
+        <div className="p-3 border-t border-border">
           <button
             onClick={() => {
               logout();
               router.push('/login');
             }}
-            className="flex items-center gap-3 w-full px-4 py-3 text-zinc-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+            className="flex items-center gap-3 w-full px-3.5 py-2.5 text-xs sm:text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors cursor-pointer"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4" />
             Đăng xuất
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-zinc-950/50">
-        <header className="h-16 flex items-center justify-end px-8 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md">
+      <main className="flex-1 flex flex-col overflow-hidden bg-background">
+        <header className="h-14 flex items-center justify-end px-8 border-b border-border bg-card/60 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-orange-500/20">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground shadow-sm">
               {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
             </div>
-            <span className="text-sm font-medium text-zinc-300">{user?.name || user?.email}</span>
+            <span className="text-xs sm:text-sm font-medium text-foreground">{user?.name || user?.email}</span>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8">
           <div className="max-w-6xl mx-auto">
             <AdminSocketProvider>
               {children}

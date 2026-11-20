@@ -104,7 +104,17 @@ graph TD
 | `/orders/driver/reviews` | `GET` | `JwtAuthGuard` | Xem danh sách đánh giá tài xế nhận được | Không | `200`, `401` |
 | `/orders/driver/trips/:id/status` | `PATCH` | `JwtAuthGuard` | Tài xế cập nhật trạng thái cuốc (Ghi DB khi `COMPLETED`) | `{ "status": "COMPLETED" }` | `200`, `400`, `401` |
 | `/orders/:id/reviews` | `POST` | `JwtAuthGuard` | Gửi đánh giá cho đơn hàng đã hoàn tất | `CreateOrderReviewDto` | `201`, `400`, `404` |
+| `/vouchers` | `POST` | `JwtAuthGuard` | Tạo mới Voucher (Admin tạo Platform, Partner tạo Merchant) | `CreateVoucherDto` | `201`, `400`, `409` |
+| `/vouchers/validate` | `POST` | Public / User | Kiểm tra và tính toán số tiền giảm giá voucher trước khi đặt đơn | `ValidateVoucherDto` | `200`, `400`, `404` |
+| `/vouchers/available` | `GET` | Public / User | Lấy danh sách voucher hợp lệ cho giỏ hàng của quán | Query `?restaurant_id=...&subtotal=...` | `200` |
+| `/orders/upload` | `POST` | `JwtAuthGuard` | Tải ảnh chụp món ăn đánh giá lên LocalStack S3 (Bucket: `food-delivery-assets`, Folder: `reviews/`) | Multipart File (`file`), giới hạn 5MB (JPEG, PNG, WEBP) | `201`, `400`, `401` |
+| `/orders/:id/review` | `POST` | `JwtAuthGuard` | Gửi đánh giá cho đơn hàng đã hoàn tất (Đồng bộ tức thời sang `restaurant-service` & `search-service`) | `CreateOrderReviewDto` | `201`, `400`, `404` |
+| `/orders/restaurants/:restaurantId/reviews` | `GET` | Public | Lấy danh sách đánh giá của nhà hàng kèm phân bổ số sao (1-5 sao) | Query `page`, `limit` | `200`, `400` |
 | `/orders` | `GET` | `JwtAuthGuard` | Quản trị viên tra cứu danh sách đơn với bộ lọc & phân trang | `QueryOrdersDto` (`page`, `limit`, `status`,...) | `200`, `401` |
+| `/orders/webhooks/subscriptions` | `POST` | Internal / Admin | Đăng ký Webhook subscription mới (n8n endpoint) | `CreateWebhookSubscriptionDto` | `201`, `400` |
+| `/orders/webhooks/subscriptions` | `GET` | Internal / Admin | Lấy danh sách Webhook subscriptions đang kích hoạt | `?activeOnly=true` | `200` |
+| `/orders/webhooks/subscriptions/:id` | `GET` | Internal / Admin | Lấy chi tiết một Webhook subscription theo ID | Param `id: UUID` | `200`, `404` |
+| `/orders/webhooks/test-dispatch` | `POST` | Internal / Admin | Thử nghiệm phát sự kiện Webhook tới n8n (Ping check) | `DispatchWebhookDto` | `200`, `400` |
 
 ### B. Internal APIs (Giao tiếp nội bộ Docker, NGINX Gateway chặn 403)
 
@@ -279,3 +289,43 @@ docker compose up -d order-service
 # Xem log thực thi container
 docker compose logs -f order-service
 ```
+
+---
+
+## 10. Luồng Tự Động Hóa Thông Báo Qua Webhooks & n8n (Automated Notification Workflows)
+
+Dịch vụ cung cấp khả năng phát sự kiện ra hệ thống ngoại vi (Outbound Webhooks) nhằm kết nối NestJS Backend với công cụ tự động hóa quy trình n8n, hỗ trợ bắn thông báo đa kênh (Telegram Bot cho Chủ quán, Slack Alert cho đội Vận hành/CS, Zalo ZNS cho Khách hàng).
+
+### A. Mô Hình Dữ Liệu (`schema_order`)
+- **`m_webhook_subscription`**:
+  - `id`: UUID (Khóa chính)
+  - `target_name`: Tên đích đến (Ví dụ: "n8n Merchant Telegram Alert")
+  - `target_url`: URL Webhook endpoint của n8n
+  - `subscribed_events`: Danh sách sự kiện đăng ký (`order.created`, `order.cancelled`, `order.delayed`, `merchant.alert` hoặc `*`)
+  - `secret_key`: Khóa bí mật dùng để sinh chữ ký số HMAC-SHA256
+  - `is_active`: Trạng thái kích hoạt (Boolean)
+- **`t_webhook_delivery_log`**:
+  - `id`: UUID (Khóa chính)
+  - `subscription_id`: UUID tham chiếu subscription
+  - `event_type`: Loại sự kiện
+  - `event_id`: ID định danh sự kiện (phục vụ Idempotency)
+  - `payload`: Dữ liệu JSON của sự kiện
+  - `status`: `SUCCESS`, `FAILED`, `RETRYING`
+  - `http_status_code`: Mã phản hồi HTTP (200, 500,...)
+  - `attempt_count`: Số lần thử lại (1 - 3)
+  - `last_attempt_at`: Thời điểm gửi gần nhất
+
+### B. Cơ Chế Chữ Ký Số Bảo Mật HMAC-SHA256
+Mọi request gửi sang n8n đều kèm header:
+- `X-Webhook-Event`: Loại sự kiện
+- `X-Webhook-Delivery-Id`: UUID sự kiện
+- `X-Webhook-Timestamp`: Thời điểm gửi ISO8601
+- `X-Webhook-Signature`: `sha256=` + `crypto.createHmac('sha256', secretKey).update(JSON.stringify(payload)).digest('hex')`
+
+### C. Cơ Chế Retry Với Exponential Backoff
+- Khi webhook endpoint gặp lỗi kết nối hoặc phản hồi mã lỗi 5xx, `WebhookDispatcherService` tự động thử lại tối đa 3 lần với khoảng thời gian dãn cách: $100\text{ms} \rightarrow 200\text{ms} \rightarrow 400\text{ms}$.
+- Nếu sau 3 lần vẫn thất bại, log được đánh dấu trạng thái `FAILED` kèm thông điệp lỗi để đội ngũ quản trị tra cứu đối soát.
+
+### D. File Mẫu Cấu Hình n8n
+Mẫu cấu hình JSON sẵn sàng import vào n8n nằm tại: [`docs/workflows/n8n-order-notification-flow.json`](file:///d:/code/FoodDelivery/docs/workflows/n8n-order-notification-flow.json).
+
