@@ -56,6 +56,7 @@ Bảng này được tự động cập nhật bởi các Sub-Agent (`@planner` 
 | `customer-support-dispute-and-order-intervention` | `admin` | #A2 | `[DRAFT]` | Cổng CS & Xử lý khiếu nại: Tiếp nhận ticket kèm ảnh sự cố từ khách, tra cứu đối chiếu ảnh POD tài xế, can thiệp hủy đơn cưỡng chế và tự động hoàn tiền/phạt tiền trên Sổ cái. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/admin/customer-support-dispute-and-order-intervention.md) |
 | `restaurant-operating-hours-and-auto-closing` | `partner` | #R2 | `[DRAFT]` | Quản lý khung giờ mở cửa 7 ngày trong tuần, tự động đóng/mở quán, chặn tạo đơn ngoài giờ tại Order Service và đồng bộ trạng thái "Tạm đóng cửa" trên giao diện khách hàng. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/partner/restaurant-operating-hours-and-auto-closing.md) |
 | `websocket-scaling-redis-adapter-and-apm` | `platform` | #89 | `[DRAFT]` | Mở rộng cụm WebSocket đa pods bằng `@socket.io/redis-adapter` (Redis Pub/Sub), cấu hình NGINX Sticky Sessions, tích hợp OpenTelemetry Distributed Tracing và APM Prometheus/Grafana. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/platform/websocket-scaling-redis-adapter-and-apm.md) |
+| `ai-chatbox-rag-gemini` | `platform` | #90 | `[AUTO_HEALING]` | AI Chatbox thông minh tích hợp RAG (pgvector + Elasticsearch) + Gemini LLM (LangGraph Python Core + NestJS Orchestrator): tư vấn món ăn, truy vấn trạng thái đơn realtime, hỏi đáp chính sách, SSE streaming, session 30 ngày. | [Xem Plan](file:///d:/code/FoodDelivery/docs/plans/platform/ai-chatbox-rag-gemini.md) |
 
 
 ---

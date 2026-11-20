@@ -55,6 +55,9 @@ function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } 
     case 'ledger':
       baseUrl = getRequiredEnv('NEXT_PUBLIC_PAYMENT_SERVICE_URL');
       break;
+    case 'ai':
+      baseUrl = getRequiredEnv('NEXT_PUBLIC_AI_SERVICE_URL');
+      break;
     default:
       if (typeof window !== 'undefined') {
         baseUrl = window.location.origin;
@@ -165,6 +168,23 @@ function handleUnauthorizedSession() {
 }
 
 /**
+ * Helper to retrieve client-side access token from cookie or localStorage
+ */
+export function getClientAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const token = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('access_token='))
+    ?.split('=')[1];
+  if (token) return token;
+  try {
+    return localStorage.getItem('token') || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Lightweight wrapper around native `fetch()`.
  * Works on both Server Components (RSC) and Client Components.
  * Automatically routes to the appropriate microservice in development and production.
@@ -193,11 +213,7 @@ async function apiClient<T>(
   };
 
   if (typeof window !== 'undefined') {
-    const token = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('access_token='))
-      ?.split('=')[1];
-
+    const token = getClientAuthToken();
     if (token && !headers['Authorization']) {
       headers['Authorization'] = `Bearer ${token}`;
     }

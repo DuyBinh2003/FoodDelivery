@@ -1,21 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { UserSocketProvider } from "@/components/providers/user-socket-provider";
 import { Toaster } from "react-hot-toast";
 import { RoleRouteGuard } from "@/components/guards/role-route-guard";
+import { ChatWidget } from "@/features/ai-chat/components/ChatWidget";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geistSans = { variable: "--font-geist-sans" };
+const geistMono = { variable: "--font-geist-mono" };
 
 export const metadata: Metadata = {
   title: "FoodDelivery - Đặt món ngon giao tận nơi",
@@ -49,6 +42,7 @@ export default function RootLayout({
               {children}
             </RoleRouteGuard>
           </UserSocketProvider>
+          <ChatWidget />
           <Toaster
             position="top-right"
             toastOptions={{

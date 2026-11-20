@@ -32,6 +32,9 @@ function monorepoPathResolverPlugin(): Plugin {
       if (source.startsWith('@/')) {
         const sub = source.replace('@/', '');
         if (importer) {
+          if (importer.includes('frontend')) {
+            return resolveWithExtension(path.resolve(import.meta.dirname, '../frontend/src', sub));
+          }
           const match = importer.match(/[\\/]apps[\\/]([^\\/]+)/);
           if (match) {
             const appName = match[1];
@@ -49,7 +52,7 @@ export default defineConfig({
   test: {
     globals: true,
     root: './',
-    include: ['**/*.spec.ts'],
+    include: ['**/*.spec.ts', '../frontend/src/features/ai-chat/tests/**/*.spec.ts'],
     passWithNoTests: true,
   },
 });

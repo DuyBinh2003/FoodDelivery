@@ -17,6 +17,7 @@ const PUBLIC_ENV_MAP: Record<string, string | undefined> = {
   NEXT_PUBLIC_DELIVERY_SERVICE_URL: process.env.NEXT_PUBLIC_DELIVERY_SERVICE_URL,
   NEXT_PUBLIC_SEARCH_SERVICE_URL: process.env.NEXT_PUBLIC_SEARCH_SERVICE_URL,
   NEXT_PUBLIC_PAYMENT_SERVICE_URL: process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL,
+  NEXT_PUBLIC_AI_SERVICE_URL: process.env.NEXT_PUBLIC_AI_SERVICE_URL,
   NEXT_PUBLIC_API_TIMEOUT: process.env.NEXT_PUBLIC_API_TIMEOUT,
   NEXT_PUBLIC_ADMIN_WS_URL: process.env.NEXT_PUBLIC_ADMIN_WS_URL,
   NEXT_PUBLIC_USER_WS_URL: process.env.NEXT_PUBLIC_USER_WS_URL,
@@ -24,7 +25,7 @@ const PUBLIC_ENV_MAP: Record<string, string | undefined> = {
 };
 
 export function getRequiredEnv(key: string): string {
-  const value = key in PUBLIC_ENV_MAP ? PUBLIC_ENV_MAP[key] : process.env[key];
+  const value = (key in PUBLIC_ENV_MAP && PUBLIC_ENV_MAP[key]) ? PUBLIC_ENV_MAP[key] : process.env[key];
   if (!value || value.trim() === '') {
     throw new Error(
       `[ConfigError] Thiếu biến môi trường bắt buộc: "${key}". Vui lòng kiểm tra file cấu hình .env.local hoặc biến môi trường server.`
