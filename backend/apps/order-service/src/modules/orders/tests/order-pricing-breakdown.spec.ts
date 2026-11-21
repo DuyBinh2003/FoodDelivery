@@ -47,6 +47,7 @@ describe('Order Pricing Breakdown & Settlement', () => {
         publishEvent: vi.fn().mockResolvedValue(undefined),
       };
       mockConfigService = {
+        get: vi.fn().mockReturnValue(undefined),
         getOrThrow: vi.fn(),
       };
 

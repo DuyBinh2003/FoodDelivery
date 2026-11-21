@@ -24,7 +24,10 @@ export class CreateOrderUseCase {
 
   async execute(command: CreateOrderCommand): Promise<Order> {
     // 1. Kiểm tra trạng thái hoạt động & khung giờ mở cửa của nhà hàng
-    const restaurantUrl = this.configService.get<string>('services.restaurantUrl') || process.env.RESTAURANT_SERVICE_URL;
+    const restaurantUrl =
+      typeof this.configService?.get === 'function'
+        ? this.configService.get<string>('services.restaurantUrl') || process.env.RESTAURANT_SERVICE_URL
+        : process.env.RESTAURANT_SERVICE_URL;
     if (restaurantUrl) {
       try {
         const statusRes = await fetch(`${restaurantUrl}/internal/restaurants/${command.restaurant_id}/operating-status`);

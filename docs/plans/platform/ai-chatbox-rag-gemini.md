@@ -855,4 +855,4 @@ Sau khi plan duyệt và triển khai xong:
 - [ ] `docs/features/customer/ai-chatbox.md` — Tạo mới (Feature flow spec)
 - [ ] `docs/architecture/README.md` — Thêm link tài liệu AI/RAG architecture
 - [ ] `README.md` (root) — Thêm vào sơ đồ ASCII, tech stack (LangGraph, Gemini), lịch sử triển khai
-- [ ] `docs/plans/README.md` — Cập nhật trạng thái `[DRAFT]` → `[APPROVED]`
+- [x] `docs/plans/README.md` — Cập nhật trạng thái `[COMPLETED]`

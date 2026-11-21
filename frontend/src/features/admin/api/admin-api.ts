@@ -85,10 +85,49 @@ export const adminApi = {
     return apiClient<SystemConfigItem[]>('/admin/configs');
   },
 
+  getSystemConfigs(): Promise<SystemConfigItem[]> {
+    return apiClient<SystemConfigItem[]>('/admin/configs');
+  },
+
   updateBulkConfigs(configs: Array<{ key: string; value: string }>): Promise<SystemConfigItem[]> {
     return apiClient<SystemConfigItem[]>('/admin/configs/bulk', {
       method: 'PUT',
       body: { configs },
+    });
+  },
+
+  updateSystemConfig(key: string, value: string): Promise<SystemConfigItem> {
+    return apiClient<SystemConfigItem>(`/admin/configs/${key}`, {
+      method: 'PUT',
+      body: { value },
+    });
+  },
+
+  getPayouts(params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+  } = {}): Promise<AdminPaginatedResponse<AdminPayoutItem>> {
+    const query = new URLSearchParams();
+    if (params.page) query.set('page', params.page.toString());
+    if (params.limit) query.set('limit', params.limit.toString());
+    if (params.status && params.status !== 'ALL') query.set('status', params.status);
+    if (params.search) query.set('search', params.search);
+    return apiClient<AdminPaginatedResponse<AdminPayoutItem>>(`/admin/payouts?${query.toString()}`);
+  },
+
+  approvePayout(id: string, bankTransactionRef: string): Promise<{ success: boolean; message: string }> {
+    return apiClient<{ success: boolean; message: string }>(`/admin/payouts/${id}/approve`, {
+      method: 'PATCH',
+      body: { bankTransactionRef },
+    });
+  },
+
+  rejectPayout(id: string, rejectionReason: string): Promise<{ success: boolean; message: string }> {
+    return apiClient<{ success: boolean; message: string }>(`/admin/payouts/${id}/reject`, {
+      method: 'PATCH',
+      body: { rejectionReason },
     });
   },
 
