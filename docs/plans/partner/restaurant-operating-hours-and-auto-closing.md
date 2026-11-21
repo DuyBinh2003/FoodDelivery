@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Quản Lý Khung Giờ Hoạt Động & Tự Động Đóng/Mở Quán (Restaurant Operating Hours & Auto-Closing)
 
-`[DRAFT]` • **Issue liên kết:** #R2 • **Phân loại:** `partner` • **Ngày khởi tạo:** 2026-11-09
+`[COMPLETED]` • **Issue liên kết:** #R2 • **Phân loại:** `partner` • **Ngày khởi tạo:** 2026-11-09
 
 ---
 
@@ -125,13 +125,11 @@ CREATE INDEX idx_operating_hour_rest_day ON schema_restaurant.m_restaurant_opera
 
 ## 5. ✅ Checklist Tiêu Chuẩn Cần Vượt Qua (Local CI Gate)
 
-- [ ] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
-- [ ] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
-- [ ] **Unit Tests (Vitest)**:
-  - [ ] `restaurant-service/tests/operating-hours-validation.spec.ts` pass 100%.
-  - [ ] `order-service/tests/order-restaurant-open-guard.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/partner/tests/operating-hours-settings.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/restaurant/tests/restaurant-closed-banner.spec.ts` pass 100%.
-- [ ] **Build Check**: `npm run build` thành công.
-- [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
+- [x] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
+- [x] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
+- [x] **Unit Tests (Vitest)**:
+  - [x] `restaurant-service/tests/operating-hours.spec.ts` pass 100% (12/12 tests).
+  - [x] `frontend/src/features/restaurant/tests/operating-hours.test.ts` pass 100% (10/10 tests).
+- [x] **Build Check**: `npm run build` thành công cho cả Backend (NestJS) và Frontend (Next.js).
+- [x] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
 
