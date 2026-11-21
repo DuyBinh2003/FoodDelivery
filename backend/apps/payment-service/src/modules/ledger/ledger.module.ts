@@ -18,6 +18,7 @@ import { CreateWalletUseCase } from '@/modules/ledger/usecases/create-wallet.use
 import { RecordLedgerTransactionUseCase } from '@/modules/ledger/usecases/record-ledger-transaction.usecase.js';
 import { GetWalletBalanceUseCase } from '@/modules/ledger/usecases/get-wallet-balance.usecase.js';
 import { TopupWalletUseCase } from '@/modules/ledger/usecases/topup-wallet.usecase.js';
+import { DisputeRefundUseCase } from '@/modules/ledger/usecases/dispute-refund.usecase.js';
 
 import { SettleTripCommissionUseCase } from '@/modules/ledger/usecases/settle-trip-commission.usecase.js';
 import { GetPlatformTreasuryUseCase } from '@/modules/ledger/usecases/get-platform-treasury.usecase.js';
@@ -61,6 +62,7 @@ import { LedgerInternalController } from '@/modules/ledger/ledger.internal.contr
     RecordLedgerTransactionUseCase,
     GetWalletBalanceUseCase,
     TopupWalletUseCase,
+    DisputeRefundUseCase,
     ProcessPaymentUseCase,
     ProcessGatewayWebhookUseCase,
     PaymentGatewayService,
@@ -79,6 +81,7 @@ import { LedgerInternalController } from '@/modules/ledger/ledger.internal.contr
     RecordLedgerTransactionUseCase,
     GetWalletBalanceUseCase,
     TopupWalletUseCase,
+    DisputeRefundUseCase,
     ProcessPaymentUseCase,
     SettleTripCommissionUseCase,
     GetPlatformTreasuryUseCase,

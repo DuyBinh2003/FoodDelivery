@@ -1,9 +1,14 @@
 import { Injectable, Logger, Inject, forwardRef, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { DriverGeoRedisRepository } from '@/modules/dispatch/repositories/driver-geo.redis.repository.js';
 import { UpdateDriverGeoDto } from '@/modules/dispatch/dto/update-driver-geo.dto.js';
 import { UpdateDriverStatusDto, DriverOnlineStatus } from '@/modules/dispatch/dto/update-driver-status.dto.js';
 import { TrackingGateway } from '@/modules/tracking/tracking.gateway.js';
+import { DeliveryProofEntity } from '@/modules/dispatch/entities/delivery-proof.entity.js';
+import { CreateDeliveryProofDto } from '@/modules/dispatch/dto/create-delivery-proof.dto.js';
+import { S3StorageService } from '@/common/storage/index.js';
 
 export interface TripOfferPayload {
   orderId: string;
@@ -37,6 +42,13 @@ export interface DispatchOrderInput {
   itemsCount?: number;
 }
 
+export interface UploadedProofFile {
+  buffer: Buffer;
+  originalname: string;
+  mimetype: string;
+  size?: number;
+}
+
 @Injectable()
 export class DispatchService {
   private readonly logger = new Logger(DispatchService.name);
@@ -50,6 +62,10 @@ export class DispatchService {
     private readonly trackingGateway: TrackingGateway,
     @Inject(ConfigService)
     private readonly configService: ConfigService,
+    @InjectRepository(DeliveryProofEntity)
+    private readonly proofRepo: Repository<DeliveryProofEntity>,
+    @Inject(S3StorageService)
+    private readonly storageService: S3StorageService,
   ) {}
 
   /**
@@ -246,5 +262,71 @@ export class DispatchService {
     this.orderCache.delete(orderId);
 
     return { success: true, orderId, driverId };
+  }
+
+  /**
+   * Tải ảnh bằng chứng giao hàng (POD) lên S3
+   */
+  async uploadProofPhoto(orderId: string, file: UploadedProofFile): Promise<{ url: string }> {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('File ảnh bằng chứng không hợp lệ hoặc rỗng');
+    }
+
+    try {
+      const publicUrl = await this.storageService.uploadFile({
+        buffer: file.buffer,
+        originalFilename: file.originalname,
+        mimeType: file.mimetype,
+        folder: `delivery-proofs/${orderId}`,
+        maxSizeBytes: 5 * 1024 * 1024,
+      });
+
+      this.logger.log(`[DispatchService] Uploaded delivery proof for order ${orderId}: ${publicUrl}`);
+      return { url: publicUrl };
+    } catch (error: unknown) {
+      this.logger.error(`[DispatchService] Lỗi khi upload proof photo cho order ${orderId}`, error);
+      throw new BadRequestException('Không thể tải ảnh bằng chứng lên kho lưu trữ', { cause: error });
+    }
+  }
+
+  /**
+   * Ghi nhận bằng chứng giao hàng (PICKED_UP hoặc DELIVERED)
+   */
+  async createDeliveryProof(
+    orderId: string,
+    dto: CreateDeliveryProofDto,
+  ): Promise<DeliveryProofEntity> {
+    const proof = this.proofRepo.create({
+      orderId,
+      driverId: dto.driver_id,
+      proofType: dto.proof_type,
+      imageUrl: dto.image_url,
+      capturedLat: dto.captured_lat,
+      capturedLng: dto.captured_lng,
+      notes: dto.notes ?? null,
+    });
+
+    const saved = await this.proofRepo.save(proof);
+    this.logger.log(`[DispatchService] Đã lưu bằng chứng [${dto.proof_type}] cho đơn [${orderId}] bởi tài xế [${dto.driver_id}]`);
+
+    // Thông báo realtime qua WebSocket cho TrackingGateway
+    this.trackingGateway.server?.to(`order_${orderId}`).emit('delivery_proof_uploaded', {
+      orderId,
+      proofType: dto.proof_type,
+      imageUrl: dto.image_url,
+      createdAt: saved.createdAt,
+    });
+
+    return saved;
+  }
+
+  /**
+   * Lấy danh sách bằng chứng giao hàng theo orderId
+   */
+  async getDeliveryProofs(orderId: string): Promise<DeliveryProofEntity[]> {
+    return this.proofRepo.find({
+      where: { orderId },
+      order: { createdAt: 'DESC' },
+    });
   }
 }

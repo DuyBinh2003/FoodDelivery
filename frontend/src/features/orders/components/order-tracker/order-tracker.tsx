@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useOrderTracking } from '@/features/orders/hooks/useOrderTracking';
 import { OrderReviewModal } from '@/features/orders/components/OrderReviewModal';
+import { ReportIssueDialog } from '@/features/orders/components/ReportIssueDialog';
 import { OrderLiveHeader } from './components/order-live-header';
 import { OrderStatusBanner } from './components/order-status-banner';
 import { OrderLiveStepper } from './components/order-live-stepper';
@@ -11,10 +12,12 @@ import { OrderVisualRoute } from './components/order-visual-route';
 import { OrderStoreCard } from './components/order-store-card';
 import { OrderBillCard } from './components/order-bill-card';
 import { OrderActionBar } from './components/order-action-bar';
+import { OrderDeliveryProofCard } from './components/OrderDeliveryProofCard';
 import type { OrderTrackerProps } from './types';
 
 export default function OrderTracker({ order: initialOrder, paymentDetails }: OrderTrackerProps) {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
 
   // Hook kết nối Server-Sent Events (SSE) thời gian thực & hỗ trợ cancel
   const {
@@ -69,6 +72,12 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
         <OrderDriverCard driver={activeOrder.driver} />
       )}
 
+      {/* 4.1 Proof of Delivery Card (If Completed) */}
+      <OrderDeliveryProofCard
+        orderId={activeOrder.id}
+        isCompleted={activeOrder.status === 'COMPLETED'}
+      />
+
       {/* 5. Visual Route Animation Map (From Restaurant to Customer) */}
       {activeOrder.status !== 'CANCELLED' && (
         <OrderVisualRoute
@@ -102,7 +111,7 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
         />
       </div>
 
-      {/* 7. Action Bar (Cancel, Review, Re-order) */}
+      {/* 7. Action Bar (Cancel, Review, Re-order, Dispute) */}
       <OrderActionBar
         status={activeOrder.status}
         orderId={activeOrder.id}
@@ -110,6 +119,7 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
         isCancelling={isCancelling}
         onOpenReview={() => setIsReviewModalOpen(true)}
         hasReview={Boolean(activeOrder.review)}
+        onOpenDispute={() => setIsDisputeModalOpen(true)}
       />
 
       {/* 8. Order Review Modal */}
@@ -117,6 +127,17 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
         orderId={activeOrder.id}
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
+      />
+
+      {/* 9. Report Issue / Dispute Modal */}
+      <ReportIssueDialog
+        isOpen={isDisputeModalOpen}
+        onClose={() => setIsDisputeModalOpen(false)}
+        orderId={activeOrder.id}
+        customerId={activeOrder.customer_id}
+        onSuccess={() => {
+          refetch();
+        }}
       />
     </div>
   );

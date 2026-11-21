@@ -15,6 +15,9 @@ import FoodCard from '@/features/menu/components/food-card/food-card';
 import { AddToCartDialog } from '@/features/restaurant/components/add-to-cart-dialog/add-to-cart-dialog';
 import { RestaurantHeader } from '@/features/restaurant/components/restaurant-header/restaurant-header';
 import { FloatingBottomCart } from '@/features/restaurant/components/floating-bottom-cart/floating-bottom-cart';
+import { RestaurantClosedBanner } from '@/features/restaurant/components/RestaurantClosedBanner';
+import { getOperatingStatus } from '@/features/restaurant/api';
+import type { RestaurantOperatingStatus } from '@/features/restaurant/types/operating-hours.types';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,6 +37,21 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [operatingStatus, setOperatingStatus] = useState<RestaurantOperatingStatus | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+    getOperatingStatus(restaurant.id)
+      .then((res) => {
+        if (!ignore) setOperatingStatus(res);
+      })
+      .catch(() => {
+        // Fallback: Quán mở cửa nếu không kiểm tra được
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [restaurant.id]);
 
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const isManualScrollingRef = useRef(false);
@@ -226,6 +244,9 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         {/* 2. Restaurant Identity & Dynamic Delivery Header */}
         <RestaurantHeader restaurant={restaurant} />
+
+        {/* Operating Hours Alert Banner */}
+        <RestaurantClosedBanner status={operatingStatus} />
 
         {/* 3. Search and Count Bar */}
         <div className="mb-6 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">

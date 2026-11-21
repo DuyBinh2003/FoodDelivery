@@ -10,6 +10,11 @@ import {
   SystemConfigItem,
   AdminPayoutItem,
 } from '@/features/admin/types';
+import type {
+  OrderDispute,
+  DisputeDetailsResponse,
+  DisputeListResponse,
+} from '@/features/orders/types/dispute.types';
 
 export const adminApi = {
   getAnalytics(range: '7d' | '30d' | 'all' = '7d'): Promise<AdminAnalyticsResponse> {
@@ -87,31 +92,45 @@ export const adminApi = {
     });
   },
 
-  getPayouts(params: {
+  getDisputes(params: {
     page?: number;
     limit?: number;
     status?: string;
-    requesterId?: string;
-  } = {}): Promise<AdminPaginatedResponse<AdminPayoutItem>> {
+    orderId?: string;
+    customerId?: string;
+  } = {}): Promise<DisputeListResponse> {
     const query = new URLSearchParams();
     if (params.page) query.set('page', params.page.toString());
     if (params.limit) query.set('limit', params.limit.toString());
     if (params.status && params.status !== 'ALL') query.set('status', params.status);
-    if (params.requesterId) query.set('requesterId', params.requesterId);
-    return apiClient<AdminPaginatedResponse<AdminPayoutItem>>(`/admin/payouts?${query.toString()}`);
+    if (params.orderId) query.set('orderId', params.orderId);
+    if (params.customerId) query.set('customerId', params.customerId);
+    return apiClient<DisputeListResponse>(`/admin/disputes?${query.toString()}`);
   },
 
-  approvePayout(id: string, bank_transaction_ref: string): Promise<AdminPayoutItem> {
-    return apiClient<AdminPayoutItem>(`/admin/payouts/${id}/approve`, {
+  getDisputeDetails(id: string): Promise<DisputeDetailsResponse> {
+    return apiClient<DisputeDetailsResponse>(`/admin/disputes/${id}/details`);
+  },
+
+  resolveDispute(
+    id: string,
+    payload: {
+      resolution_action: string;
+      refund_amount?: number;
+      penalty_party?: string;
+      resolution_notes?: string;
+    },
+  ): Promise<OrderDispute> {
+    return apiClient<OrderDispute>(`/admin/disputes/${id}/resolve`, {
       method: 'PATCH',
-      body: { bank_transaction_ref },
+      body: payload,
     });
   },
 
-  rejectPayout(id: string, rejection_reason: string): Promise<AdminPayoutItem> {
-    return apiClient<AdminPayoutItem>(`/admin/payouts/${id}/reject`, {
+  rejectDispute(id: string, notes: string): Promise<OrderDispute> {
+    return apiClient<OrderDispute>(`/admin/disputes/${id}/reject`, {
       method: 'PATCH',
-      body: { rejection_reason },
+      body: { notes },
     });
   },
 };

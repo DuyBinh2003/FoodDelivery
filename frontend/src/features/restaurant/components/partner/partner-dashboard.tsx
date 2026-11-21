@@ -19,7 +19,9 @@ import {
   ArrowRight,
   ChefHat,
   Banknote,
+  Clock,
 } from 'lucide-react';
+import { OperatingHoursDialog } from './operating-hours-dialog';
 import {
   getMyRestaurant,
   updateRestaurantStatus,
@@ -64,6 +66,7 @@ export function PartnerDashboard() {
   const [viewingMenuItem, setViewingMenuItem] = useState<PartnerMenuItem | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isOperatingHoursModalOpen, setIsOperatingHoursModalOpen] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'menu' | 'orders'>('orders');
 
@@ -446,6 +449,13 @@ export function PartnerDashboard() {
               <Edit2 className="w-4 h-4" />
               <span>Sửa thông tin quán</span>
             </button>
+            <button
+              onClick={() => setIsOperatingHoursModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-sm font-medium text-amber-400 hover:text-amber-300 border border-amber-500/20 transition-colors"
+            >
+              <Clock className="w-4 h-4" />
+              <span>Giờ mở cửa</span>
+            </button>
           </div>
         </div>
 
@@ -794,6 +804,13 @@ export function PartnerDashboard() {
           showToast('success', 'Yêu cầu rút doanh thu đã được tạo thành công!');
         }}
       />
+      {isOperatingHoursModalOpen && (
+        <OperatingHoursDialog
+          isOpen={isOperatingHoursModalOpen}
+          onClose={() => setIsOperatingHoursModalOpen(false)}
+          onSuccess={() => showToast('success', 'Đã cập nhật lịch hoạt động thành công')}
+        />
+      )}
     </div>
   );
 }

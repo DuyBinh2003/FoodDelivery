@@ -1,7 +1,16 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SystemConfig } from '@/modules/admin/entities/system-config.entity.js';
+import {
+  OrderDispute,
+  DisputeStatus,
+  DisputePriority,
+  ResolutionAction,
+  PenaltyParty,
+} from '@/modules/admin/entities/order-dispute.entity.js';
+import { CreateDisputeDto } from '@/modules/admin/dto/create-dispute.dto.js';
+import { ResolveDisputeDto } from '@/modules/admin/dto/resolve-dispute.dto.js';
 import { ReviewApprovalDto, ApprovalStatus } from '@/modules/admin/dto/review-approval.dto.js';
 
 export const DEFAULT_SYSTEM_CONFIGS: Array<{
@@ -30,10 +39,13 @@ export class AdminService {
   private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
   private readonly orderUrl = process.env.ORDER_SERVICE_URL!;
   private readonly paymentUrl = process.env.PAYMENT_SERVICE_URL!;
+  private readonly deliveryUrl = process.env.DELIVERY_SERVICE_URL || 'http://localhost:3005';
   
   constructor(
     @InjectRepository(SystemConfig)
     private readonly configRepo: Repository<SystemConfig>,
+    @InjectRepository(OrderDispute)
+    private readonly disputeRepo: Repository<OrderDispute>,
   ) {}
 
   async getDashboardMetrics() {
@@ -356,60 +368,228 @@ export class AdminService {
     return results;
   }
 
-  async getPayouts(params: {
-    page?: number;
-    limit?: number;
-    status?: string;
-    requesterId?: string;
-  } = {}) {
-    const query = new URLSearchParams();
-    if (params.page) query.set('page', params.page.toString());
-    if (params.limit) query.set('limit', params.limit.toString());
-    if (params.status && params.status !== 'ALL') query.set('status', params.status);
-    if (params.requesterId) query.set('requesterId', params.requesterId);
+  // --- Customer Support & Dispute Resolution Engine ---
 
-    const res = await fetch(`${this.paymentUrl}/wallets/withdrawals?${query.toString()}`).catch((err) => {
-      this.logger.warn('Failed to fetch payouts from payment-service:', err);
+  async createDispute(dto: CreateDisputeDto): Promise<OrderDispute> {
+    // 1. Kiểm tra đơn hàng tồn tại từ Order Service
+    const orderRes = await fetch(`${this.orderUrl}/internal/orders/${dto.order_id}`).catch((err) => {
+      this.logger.warn(`Failed to fetch order ${dto.order_id} from order-service:`, err);
       return null;
     });
 
-    if (!res || !res.ok) {
-      return { items: [], total: 0, page: params.page || 1, limit: params.limit || 20, totalPages: 1 };
+    if (!orderRes || !orderRes.ok) {
+      throw new NotFoundException('Không tìm thấy đơn hàng tương ứng với mã khiếu nại');
     }
-    return res.json().catch(() => ({ items: [], total: 0, page: 1, limit: 20, totalPages: 1 }));
-  }
 
-  async approvePayout(id: string, body: { bank_transaction_ref: string; processed_by?: string }) {
-    const res = await fetch(`${this.paymentUrl}/wallets/withdrawals/${id}/approve`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }).catch((err) => {
-      this.logger.error(`Failed to approve payout ${id}:`, err);
-      throw new BadRequestException('Không thể kết nối đến payment-service để duyệt rút tiền');
+    const orderData = await orderRes.json().catch(() => null);
+    if (!orderData) {
+      throw new NotFoundException('Không tìm thấy dữ liệu đơn hàng');
+    }
+
+    // 2. Kiểm tra thời hạn 24 giờ kể từ khi hoàn tất
+    if (orderData.status === 'COMPLETED') {
+      const orderCompletedTime = orderData.updated_at
+        ? new Date(orderData.updated_at).getTime()
+        : new Date(orderData.created_at).getTime();
+      const now = Date.now();
+      const diffHours = (now - orderCompletedTime) / (1000 * 60 * 60);
+
+      if (diffHours > 24) {
+        throw new BadRequestException(
+          'Thời hạn tiếp nhận khiếu nại cho đơn hàng này đã kết thúc (tối đa 24h sau giao hàng)',
+        );
+      }
+    }
+
+    // 3. Phân loại độ ưu tiên
+    let priority = DisputePriority.NORMAL;
+    if (dto.reason_code === 'DAMAGED_FOOD' || dto.reason_code === 'NEVER_ARRIVED') {
+      priority = DisputePriority.HIGH;
+    }
+    if (Number(orderData.total_amount) >= 500000) {
+      priority = DisputePriority.URGENT;
+    }
+
+    // 4. Tạo ticket khiếu nại
+    const dispute = this.disputeRepo.create({
+      order_id: dto.order_id,
+      customer_id: dto.customer_id,
+      reason_code: dto.reason_code,
+      description: dto.description,
+      evidence_images: dto.evidence_images || [],
+      status: DisputeStatus.OPEN,
+      priority,
+      refund_amount: '0',
     });
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({ message: 'Duyệt rút tiền thất bại' }));
-      throw new BadRequestException(errData.message || 'Duyệt rút tiền thất bại');
-    }
-    return res.json();
+    const savedDispute = await this.disputeRepo.save(dispute);
+    this.logger.log(`[CreateDispute] Created dispute ${savedDispute.id} for order ${dto.order_id}`);
+    return savedDispute;
   }
 
-  async rejectPayout(id: string, body: { rejection_reason: string; processed_by?: string }) {
-    const res = await fetch(`${this.paymentUrl}/wallets/withdrawals/${id}/reject`, {
-      method: 'PATCH',
+  async getDisputes(params: {
+    status?: string;
+    orderId?: string;
+    customerId?: string;
+    page?: number;
+    limit?: number;
+  } = {}) {
+    const page = Math.max(1, Number(params.page) || 1);
+    const limit = Math.max(1, Math.min(100, Number(params.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    const queryBuilder = this.disputeRepo
+      .createQueryBuilder('d')
+      .where('d.is_deleted = :isDeleted', { isDeleted: false });
+
+    if (params.status && params.status !== 'ALL') {
+      queryBuilder.andWhere('d.status = :status', { status: params.status });
+    }
+    if (params.orderId) {
+      queryBuilder.andWhere('d.order_id = :orderId', { orderId: params.orderId });
+    }
+    if (params.customerId) {
+      queryBuilder.andWhere('d.customer_id = :customerId', { customerId: params.customerId });
+    }
+
+    queryBuilder
+      .orderBy("CASE d.priority WHEN 'URGENT' THEN 1 WHEN 'HIGH' THEN 2 ELSE 3 END", 'ASC')
+      .addOrderBy('d.created_at', 'DESC')
+      .skip(skip)
+      .take(limit);
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 1,
+    };
+  }
+
+  async getDisputeById(id: string): Promise<OrderDispute> {
+    const dispute = await this.disputeRepo.findOne({
+      where: { id, is_deleted: false },
+    });
+    if (!dispute) {
+      throw new NotFoundException(`Không tìm thấy ticket khiếu nại: ${id}`);
+    }
+    return dispute;
+  }
+
+  async getDisputeDetails(id: string) {
+    const dispute = await this.getDisputeById(id);
+
+    // Fetch song song chi tiết đơn hàng và ảnh POD
+    const [orderRes, proofsRes] = await Promise.all([
+      fetch(`${this.orderUrl}/internal/orders/${dispute.order_id}`).catch(() => null),
+      fetch(`${this.deliveryUrl}/dispatch/proofs/${dispute.order_id}`).catch(() => null),
+    ]);
+
+    const order = (orderRes && orderRes.ok) ? await orderRes.json().catch(() => null) : null;
+    const driverProofs = (proofsRes && proofsRes.ok) ? await proofsRes.json().catch(() => []) : [];
+
+    return {
+      dispute,
+      order,
+      driverProofs,
+    };
+  }
+
+  async resolveDispute(id: string, dto: ResolveDisputeDto): Promise<OrderDispute> {
+    const dispute = await this.getDisputeById(id);
+
+    if (dispute.status !== DisputeStatus.OPEN && dispute.status !== DisputeStatus.INVESTIGATING) {
+      throw new ConflictException('Ticket này đã được giải quyết hoặc bác bỏ trước đó');
+    }
+
+    if (dto.resolution_action === ResolutionAction.REJECT) {
+      dispute.status = DisputeStatus.REJECTED;
+      dispute.resolution_action = ResolutionAction.REJECT;
+      dispute.resolution_notes = dto.resolution_notes || null;
+      if (dto.assigned_cs_id) dispute.assigned_cs_id = dto.assigned_cs_id;
+      dispute.resolved_at = new Date();
+      return this.disputeRepo.save(dispute);
+    }
+
+    // Xử lý bồi hoàn tiền (FULL_REFUND hoặc PARTIAL_REFUND)
+    const orderRes = await fetch(`${this.orderUrl}/internal/orders/${dispute.order_id}`).catch(() => null);
+    const orderData = (orderRes && orderRes.ok) ? await orderRes.json().catch(() => null) : null;
+
+    let refundAmount = 0;
+    if (dto.resolution_action === ResolutionAction.FULL_REFUND) {
+      refundAmount = Number(orderData?.total_amount) || 0;
+    } else {
+      refundAmount = Number(dto.refund_amount) || 0;
+    }
+
+    if (refundAmount <= 0) {
+      throw new BadRequestException('Số tiền bồi hoàn phải lớn hơn 0');
+    }
+
+    const penaltyParty = dto.penalty_party || PenaltyParty.RESTAURANT;
+    let penaltyPartyId: string | undefined;
+    if (penaltyParty === PenaltyParty.RESTAURANT) {
+      penaltyPartyId = orderData?.restaurant_id;
+    } else if (penaltyParty === PenaltyParty.DRIVER) {
+      penaltyPartyId = orderData?.driver_id;
+    }
+
+    // 1. Gọi Sổ cái kép bồi hoàn sang Payment Service
+    const paymentRes = await fetch(`${this.paymentUrl}/internal/ledger/dispute-refund`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        disputeId: dispute.id,
+        orderId: dispute.order_id,
+        customerId: dispute.customer_id,
+        refundAmount,
+        penaltyParty,
+        penaltyPartyId,
+        description: dto.resolution_notes,
+      }),
     }).catch((err) => {
-      this.logger.error(`Failed to reject payout ${id}:`, err);
-      throw new BadRequestException('Không thể kết nối đến payment-service để từ chối rút tiền');
+      this.logger.error(`Failed to execute dispute refund on payment-service:`, err);
+      throw new BadRequestException('Không thể thực hiện hoàn tiền sổ cái qua payment-service');
     });
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({ message: 'Từ chối rút tiền thất bại' }));
-      throw new BadRequestException(errData.message || 'Từ chối rút tiền thất bại');
+    if (!paymentRes.ok) {
+      const err = await paymentRes.json().catch(() => ({ message: 'Lỗi hoàn tiền sổ cái' }));
+      throw new BadRequestException(err.message || 'Lỗi hoàn tiền sổ cái');
     }
-    return res.json();
+
+    // 2. Nếu đơn hàng chưa COMPLETED: Hủy cưỡng chế
+    if (orderData && orderData.status !== 'COMPLETED' && orderData.status !== 'CANCELLED') {
+      await fetch(`${this.orderUrl}/internal/orders/${dispute.order_id}/force-cancel`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: dto.resolution_notes || 'Khách khiếu nại được CS hoàn tiền' }),
+      }).catch((err) => {
+        this.logger.warn(`Failed to force-cancel order ${dispute.order_id}:`, err);
+      });
+    }
+
+    // 3. Cập nhật trạng thái ticket sang RESOLVED
+    dispute.status = DisputeStatus.RESOLVED;
+    dispute.resolution_action = dto.resolution_action;
+    dispute.refund_amount = refundAmount.toString();
+    dispute.penalty_party = penaltyParty;
+    dispute.resolution_notes = dto.resolution_notes || null;
+    if (dto.assigned_cs_id) dispute.assigned_cs_id = dto.assigned_cs_id;
+    dispute.resolved_at = new Date();
+
+    const saved = await this.disputeRepo.save(dispute);
+    this.logger.log(`[ResolveDispute] Resolved dispute ${dispute.id} with refund ${refundAmount} VND`);
+    return saved;
+  }
+
+  async rejectDispute(id: string, notes: string, assignedCsId?: string): Promise<OrderDispute> {
+    return this.resolveDispute(id, {
+      resolution_action: ResolutionAction.REJECT,
+      resolution_notes: notes,
+      assigned_cs_id: assignedCsId,
+    });
   }
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Patch,
   Param,
@@ -27,6 +28,7 @@ import { CreatePartnerMenuItemDto } from '@/modules/restaurants/dto/create-partn
 import { UpdatePartnerMenuItemDto } from '@/modules/restaurants/dto/update-partner-menu-item.dto.js';
 import { UpdateRestaurantStatusDto } from '@/modules/restaurants/dto/update-restaurant-status.dto.js';
 import { UpdateRestaurantProfileDto } from '@/modules/restaurants/dto/update-restaurant-profile.dto.js';
+import { UpdateOperatingHoursDto } from '@/modules/restaurants/dto/update-operating-hours.dto.js';
 
 import { CreateRestaurantUseCase } from '@/modules/restaurants/usecases/create-restaurant.usecase.js';
 import { GetRestaurantsUseCase } from '@/modules/restaurants/usecases/get-restaurants.usecase.js';
@@ -47,6 +49,9 @@ import { DeletePartnerMenuItemUseCase } from '@/modules/restaurants/usecases/del
 import { GetCategoriesUseCase } from '@/modules/restaurants/usecases/get-categories.usecase.js';
 import { GetTagsUseCase } from '@/modules/restaurants/usecases/get-tags.usecase.js';
 import { CreateTagUseCase } from '@/modules/restaurants/usecases/create-tag.usecase.js';
+import { GetOperatingHoursUseCase } from '@/modules/restaurants/usecases/get-operating-hours.usecase.js';
+import { UpdateOperatingHoursUseCase } from '@/modules/restaurants/usecases/update-operating-hours.usecase.js';
+import { CheckOperatingStatusUseCase } from '@/modules/restaurants/usecases/check-operating-status.usecase.js';
 import { CreateTagDto } from '@/modules/restaurants/dto/create-tag.dto.js';
 
 @Controller('restaurants')
@@ -70,6 +75,9 @@ export class RestaurantsController {
     @Inject(GetCategoriesUseCase) private readonly getCategoriesUseCase: GetCategoriesUseCase,
     @Inject(GetTagsUseCase) private readonly getTagsUseCase: GetTagsUseCase,
     @Inject(CreateTagUseCase) private readonly createTagUseCase: CreateTagUseCase,
+    @Inject(GetOperatingHoursUseCase) private readonly getOperatingHoursUseCase: GetOperatingHoursUseCase,
+    @Inject(UpdateOperatingHoursUseCase) private readonly updateOperatingHoursUseCase: UpdateOperatingHoursUseCase,
+    @Inject(CheckOperatingStatusUseCase) private readonly checkOperatingStatusUseCase: CheckOperatingStatusUseCase,
     @Inject(S3StorageService) private readonly s3StorageService: S3StorageService,
   ) {}
 
@@ -254,6 +262,45 @@ export class RestaurantsController {
       folder: targetFolder,
     });
     return { success: true, url };
+  }
+
+  // --- Operating Hours & Status Endpoints ---
+
+  @Get(':id/operating-hours')
+  getOperatingHours(@Param('id', ParseUUIDPipe) id: string) {
+    return this.getOperatingHoursUseCase.execute(id);
+  }
+
+  @Get(':id/operating-status')
+  getOperatingStatus(@Param('id', ParseUUIDPipe) id: string) {
+    return this.checkOperatingStatusUseCase.execute(id);
+  }
+
+  @Put(':id/operating-hours')
+  @UseGuards(JwtAuthGuard)
+  updateOperatingHours(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateOperatingHoursDto,
+  ) {
+    return this.updateOperatingHoursUseCase.execute(id, dto);
+  }
+
+  @Get('partner/my-restaurant/operating-hours')
+  @UseGuards(JwtAuthGuard)
+  async getMyOperatingHours(@CurrentUser() user: JwtPayload) {
+    const res = await this.getPartnerRestaurantUseCase.execute({ ownerId: user.id });
+    return this.getOperatingHoursUseCase.execute(res.restaurant.id);
+  }
+
+  @Put('partner/my-restaurant/operating-hours')
+  @UseGuards(JwtAuthGuard)
+  async updateMyOperatingHours(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: UpdateOperatingHoursDto,
+  ) {
+    const res = await this.getPartnerRestaurantUseCase.execute({ ownerId: user.id });
+    await this.updateOperatingHoursUseCase.execute(res.restaurant.id, dto);
+    return { success: true, message: 'Cập nhật giờ mở cửa thành công' };
   }
 }
 

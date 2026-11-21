@@ -74,4 +74,5 @@ export interface OrderActionBarProps {
   isCancelling: boolean;
   onOpenReview: () => void;
   hasReview: boolean;
+  onOpenDispute?: () => void;
 }

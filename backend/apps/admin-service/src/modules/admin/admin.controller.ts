@@ -6,6 +6,7 @@ import { Roles } from '@/common/decorators/roles.decorator.js';
 import { UserRole } from '@/common/enums/user-role.enum.js';
 import { ReviewApprovalDto } from '@/modules/admin/dto/review-approval.dto.js';
 import { UpdateBulkConfigsDto } from '@/modules/admin/dto/update-system-config.dto.js';
+import { ResolveDisputeDto } from '@/modules/admin/dto/resolve-dispute.dto.js';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -153,34 +154,43 @@ export class AdminController {
     return this.adminService.updateConfig(dto.key, dto.value);
   }
 
-  @Get('payouts')
-  getPayouts(
+  // --- CS Disputes Endpoints ---
+
+  @Get('disputes')
+  getDisputes(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('status') status?: string,
-    @Query('requesterId') requesterId?: string,
+    @Query('orderId') orderId?: string,
+    @Query('customerId') customerId?: string,
   ) {
-    return this.adminService.getPayouts({
+    return this.adminService.getDisputes({
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 20,
       status,
-      requesterId,
+      orderId,
+      customerId,
     });
   }
 
-  @Patch('payouts/:id/approve')
-  approvePayout(
-    @Param('id') id: string,
-    @Body() body: { bank_transaction_ref: string; processed_by?: string },
-  ) {
-    return this.adminService.approvePayout(id, body);
+  @Get('disputes/:id/details')
+  getDisputeDetails(@Param('id') id: string) {
+    return this.adminService.getDisputeDetails(id);
   }
 
-  @Patch('payouts/:id/reject')
-  rejectPayout(
+  @Patch('disputes/:id/resolve')
+  resolveDispute(
     @Param('id') id: string,
-    @Body() body: { rejection_reason: string; processed_by?: string },
+    @Body() dto: ResolveDisputeDto,
   ) {
-    return this.adminService.rejectPayout(id, body);
+    return this.adminService.resolveDispute(id, dto);
+  }
+
+  @Patch('disputes/:id/reject')
+  rejectDispute(
+    @Param('id') id: string,
+    @Body() body: { notes: string; assigned_cs_id?: string },
+  ) {
+    return this.adminService.rejectDispute(id, body.notes, body.assigned_cs_id);
   }
 }
