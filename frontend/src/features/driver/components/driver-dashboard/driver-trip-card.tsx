@@ -11,10 +11,12 @@ import {
   Star,
   ChevronDown,
   ChevronUp,
-  PackageCheck,
   Loader2,
+  Camera,
 } from 'lucide-react';
 import type { DriverTrip } from '@/features/driver/types/driver.types';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { ProofOfDeliveryModal } from './proof-of-delivery-modal';
 
 interface DriverTripCardProps {
   trip: DriverTrip;
@@ -56,8 +58,11 @@ const formatFullDate = (dateInput: string | Date) => {
 };
 
 export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
+  const { user } = useAuthStore();
+  const driverId = user?.driverProfile?.id || user?.id || '';
   const [showItems, setShowItems] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [isPodOpen, setIsPodOpen] = useState(false);
 
   const getStatusBadge = () => {
     switch (trip.status) {
@@ -260,7 +265,7 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
 
           {trip.status === 'DELIVERING' && onCompleteTrip && (
             <button
-              onClick={handleComplete}
+              onClick={() => setIsPodOpen(true)}
               disabled={completing}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
             >
@@ -271,8 +276,8 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
                 </>
               ) : (
                 <>
-                  <PackageCheck className="w-4 h-4" />
-                  <span>Hoàn Thành Cuốc</span>
+                  <Camera className="w-4 h-4" />
+                  <span>Chụp Ảnh Bàn Giao</span>
                 </>
               )}
             </button>
@@ -327,6 +332,16 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
           )}
         </div>
       )}
+
+      {/* Proof of Delivery Camera & Upload Modal */}
+      <ProofOfDeliveryModal
+        isOpen={isPodOpen}
+        onClose={() => setIsPodOpen(false)}
+        orderId={trip.order_id}
+        driverId={driverId}
+        dropoffAddress={trip.dropoff_address}
+        onSuccess={handleComplete}
+      />
     </div>
   );
 }
