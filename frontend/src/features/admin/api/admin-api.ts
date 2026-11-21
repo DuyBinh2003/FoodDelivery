@@ -8,6 +8,7 @@ import {
   AdminRestaurant,
   AdminPaginatedResponse,
   SystemConfigItem,
+  AdminPayoutItem,
 } from '@/features/admin/types';
 import type {
   OrderDispute,

@@ -39,3 +39,12 @@ export enum WalletStatus {
   FROZEN = 'FROZEN',
   CLOSED = 'CLOSED',
 }
+
+export enum WithdrawalStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+}
+
