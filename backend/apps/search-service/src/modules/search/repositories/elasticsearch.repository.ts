@@ -364,6 +364,42 @@ export class ElasticsearchRepository implements OnModuleInit {
     }
   }
 
+  async updateMenuItemProjection(id: string, data: Partial<MenuItemDocument>): Promise<void> {
+    try {
+      await this.elasticsearchService.update({
+        index: 'menu_items',
+        id,
+        doc: data,
+      });
+      this.logger.log(`[CQRS Projection] Updated menu_item doc ${id}`, data);
+    } catch (error: unknown) {
+      const err = error as { meta?: { statusCode?: number }; statusCode?: number; message?: string };
+      if (err?.meta?.statusCode === 404 || err?.statusCode === 404) {
+        this.logger.debug(`MenuItem ${id} not found in Elasticsearch index to update projection`);
+      } else {
+        this.logger.warn(`Failed to update menu item projection in Elasticsearch for ${id}:`, error);
+      }
+    }
+  }
+
+  async updateRestaurantProjection(id: string, data: Partial<RestaurantDocument>): Promise<void> {
+    try {
+      await this.elasticsearchService.update({
+        index: 'restaurants',
+        id,
+        doc: data,
+      });
+      this.logger.log(`[CQRS Projection] Updated restaurant doc ${id}`, data);
+    } catch (error: unknown) {
+      const err = error as { meta?: { statusCode?: number }; statusCode?: number; message?: string };
+      if (err?.meta?.statusCode === 404 || err?.statusCode === 404) {
+        this.logger.debug(`Restaurant ${id} not found in Elasticsearch index to update projection`);
+      } else {
+        this.logger.warn(`Failed to update restaurant projection in Elasticsearch for ${id}:`, error);
+      }
+    }
+  }
+
   async removeRestaurant(id: string): Promise<void> {
     try {
       await this.elasticsearchService.delete({

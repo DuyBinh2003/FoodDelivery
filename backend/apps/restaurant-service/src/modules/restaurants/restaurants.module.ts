@@ -9,6 +9,7 @@ import { MenuItem } from '@/modules/restaurants/entities/menu-item.entity.js';
 import { Category } from '@/modules/restaurants/entities/category.entity.js';
 import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
 import { Config } from '@/modules/restaurants/entities/config.entity.js';
+import { RestaurantOperatingHour } from '@/modules/restaurants/entities/restaurant-operating-hour.entity.js';
 
 import { RestaurantReadRepository } from '@/modules/restaurants/repositories/restaurant.read.repository.js';
 import { RestaurantWriteRepository } from '@/modules/restaurants/repositories/restaurant.write.repository.js';
@@ -32,12 +33,15 @@ import { DeletePartnerMenuItemUseCase } from '@/modules/restaurants/usecases/del
 import { GetCategoriesUseCase } from '@/modules/restaurants/usecases/get-categories.usecase.js';
 import { GetTagsUseCase } from '@/modules/restaurants/usecases/get-tags.usecase.js';
 import { CreateTagUseCase } from '@/modules/restaurants/usecases/create-tag.usecase.js';
+import { GetOperatingHoursUseCase } from '@/modules/restaurants/usecases/get-operating-hours.usecase.js';
+import { UpdateOperatingHoursUseCase } from '@/modules/restaurants/usecases/update-operating-hours.usecase.js';
+import { CheckOperatingStatusUseCase } from '@/modules/restaurants/usecases/check-operating-status.usecase.js';
 import { StorageModule } from '@/common/storage/index.js';
 
 @Module({
   imports: [
     StorageModule,
-    TypeOrmModule.forFeature([Restaurant, MenuItem, Category, Tag, Config]),
+    TypeOrmModule.forFeature([Restaurant, MenuItem, Category, Tag, Config, RestaurantOperatingHour]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [RestaurantsController, RestaurantsInternalController],
@@ -63,6 +67,9 @@ import { StorageModule } from '@/common/storage/index.js';
     GetCategoriesUseCase,
     GetTagsUseCase,
     CreateTagUseCase,
+    GetOperatingHoursUseCase,
+    UpdateOperatingHoursUseCase,
+    CheckOperatingStatusUseCase,
   ],
   exports: [
     RestaurantReadRepository,
@@ -85,6 +92,9 @@ import { StorageModule } from '@/common/storage/index.js';
     GetCategoriesUseCase,
     GetTagsUseCase,
     CreateTagUseCase,
+    GetOperatingHoursUseCase,
+    UpdateOperatingHoursUseCase,
+    CheckOperatingStatusUseCase,
   ],
 })
 export class RestaurantsModule {}

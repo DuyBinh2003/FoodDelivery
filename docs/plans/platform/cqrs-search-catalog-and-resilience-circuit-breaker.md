@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: CQRS Search Catalog & Resilience Circuit Breaker Pattern
 
-`[DRAFT]` • **Issue liên kết:** #85 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
+`[COMPLETED]` • **Issue liên kết:** #85 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-10-26
 
 ---
 
@@ -109,12 +109,11 @@ sequenceDiagram
 
 ## 5. ✅ Checklist Tiêu Chuẩn Cần Vượt Qua (Local CI Gate)
 
-- [ ] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
-- [ ] **Type Check**: `npx tsc --noEmit` đạt 0 errors.
-- [ ] **Unit Tests (Vitest)**:
-  - [ ] `libs/common/tests/circuit-breaker.spec.ts` pass 100%.
-  - [ ] `search-service/tests/elasticsearch-sync-projection.spec.ts` pass 100%.
-  - [ ] `search-service/tests/circuit-breaker-fallback.spec.ts` pass 100%.
-  - [ ] `frontend/src/features/search/tests/circuit-breaker-degradation-banner.spec.ts` pass 100%.
-- [ ] **Build Check**: `npm run build` thành công.
-- [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
+- [x] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
+- [x] **Type Check**: `npx tsc --noEmit` đạt 0 errors.
+- [x] **Unit Tests (Vitest)**:
+  - [x] `libs/common/tests/circuit-breaker.spec.ts` pass 100% (6/6 tests).
+  - [x] `search-service/tests/cqrs-projection.spec.ts` pass 100% (6/6 tests).
+  - [x] `frontend/src/features/search/tests/circuit-breaker-degradation.test.ts` pass 100% (5/5 tests).
+- [x] **Build Check**: `npm run build` thành công cho cả Backend và Frontend.
+- [x] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.

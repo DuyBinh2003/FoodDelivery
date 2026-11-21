@@ -13,9 +13,14 @@ export interface ErrorResponseBody {
   statusCode: number;
   errorCode: string;
   message: string;
+  traceId?: string;
   errors?: unknown[];
   timestamp: string;
   path: string;
+}
+
+interface RequestWithTrace extends Request {
+  traceId?: string;
 }
 
 @Catch()
@@ -25,12 +30,24 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    const request = ctx.getRequest<RequestWithTrace>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let errorCode = 'INTERNAL_SERVER_ERROR';
     let message = 'Đã có lỗi hệ thống xảy ra. Vui lòng thử lại sau.';
     let errors: unknown[] | undefined = undefined;
+
+    // Resolve Trace ID from request property, headers, or response header
+    const rawTraceId =
+      request?.traceId ||
+      (request?.headers?.['x-trace-id'] as string | undefined) ||
+      (typeof response?.getHeader === 'function' ? (response.getHeader('x-trace-id') as string | undefined) : undefined);
+
+    const traceId = rawTraceId && rawTraceId.trim() !== '' ? rawTraceId.trim() : undefined;
+
+    if (traceId && response && typeof response.setHeader === 'function' && !response.headersSent) {
+      response.setHeader('x-trace-id', traceId);
+    }
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -60,15 +77,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message = exception.message;
       }
     } else if (exception instanceof Error) {
+      const tracePrefix = traceId ? `[${traceId}] ` : '';
       this.logger.error(
-        `Unhandled Exception on ${request?.method ?? 'UNKNOWN'} ${request?.url ?? ''}: ${exception.message}`,
+        `${tracePrefix}Unhandled Exception on ${request?.method ?? 'UNKNOWN'} ${request?.url ?? ''}: ${exception.message}`,
         exception.stack,
       );
       message = 'Hệ thống đang bận hoặc gặp sự cố xử lý. Vui lòng thử lại.';
       errorCode = 'UNHANDLED_EXCEPTION';
     } else {
+      const tracePrefix = traceId ? `[${traceId}] ` : '';
       this.logger.error(
-        `Unknown non-error exception on ${request?.method ?? 'UNKNOWN'} ${request?.url ?? ''}: ${String(exception)}`,
+        `${tracePrefix}Unknown non-error exception on ${request?.method ?? 'UNKNOWN'} ${request?.url ?? ''}: ${String(exception)}`,
       );
     }
 
@@ -77,6 +96,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode: status,
       errorCode,
       message,
+      ...(traceId ? { traceId } : {}),
       ...(errors && errors.length > 0 ? { errors } : {}),
       timestamp: new Date().toISOString(),
       path: request?.url ?? '',

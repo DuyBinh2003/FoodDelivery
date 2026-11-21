@@ -1,6 +1,6 @@
 # 📋 Kế Hoạch Triển Khai: Mở Rộng Cụm WebSocket Đa Máy Chủ & Giám Sát Phân Tán (WebSocket Redis Adapter & Distributed APM)
 
-`[DRAFT]` • **Issue liên kết:** #89 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-11-09
+`[COMPLETED]` • **Issue liên kết:** #89 • **Phân loại:** `platform` • **Ngày khởi tạo:** 2026-11-09
 
 ---
 
@@ -122,13 +122,14 @@ export class RedisIoAdapter extends IoAdapter {
 
 ## 5. ✅ Checklist Tiêu Chuẩn Cần Vượt Qua (Local CI Gate)
 
-- [ ] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
-- [ ] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
-- [ ] **Unit Tests (Vitest)**:
-  - [ ] `libs/common/tests/redis-io-adapter.spec.ts` pass 100%.
-  - [ ] `libs/common/tests/tracing-interceptor.spec.ts` pass 100%.
-  - [ ] `frontend/src/shared/tests/socket-smart-reconnection.spec.ts` pass 100%.
-  - [ ] `frontend/src/shared/tests/trace-id-feedback.spec.ts` pass 100%.
-- [ ] **Build Check**: `npm run build` thành công.
-- [ ] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
+- [x] **Linter**: `npm run lint` đạt 0 warnings, 0 errors.
+- [x] **Type Check**: `npx tsc --noEmit` đạt 0 errors (nghiêm cấm `any`).
+- [x] **Unit Tests (Vitest & Node Test)**:
+  - [x] `libs/common/src/adapters/tests/redis-io.adapter.spec.ts` pass 100%.
+  - [x] `libs/common/src/interceptors/tests/tracing.interceptor.spec.ts` pass 100%.
+  - [x] `libs/common/src/metrics/tests/metrics.service.spec.ts` pass 100%.
+  - [x] `frontend/src/features/orders/tests/socket-smart-reconnection.test.ts` pass 100%.
+  - [x] `frontend/src/lib/tests/api-client-trace-id.test.ts` pass 100%.
+- [x] **Build Check**: `npm run build` thành công cả backend và frontend.
+- [x] **Traceability Header**: Đầy đủ `[Requirement/Issue]`, `[Branch: Happy|Edge|Error]`, `[Expected Output]`.
 

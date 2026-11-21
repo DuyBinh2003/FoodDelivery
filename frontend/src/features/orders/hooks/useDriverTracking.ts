@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { getRequiredEnv } from '@/lib/env';
 import type { DriverLocationUpdate } from '@/features/orders/types';
+import type { SocketConnectionStatus } from '@/components/ui/connection-status-pill';
 
 interface UseDriverTrackingProps {
   orderId: string;
@@ -18,6 +19,10 @@ export function useDriverTracking({
 }: UseDriverTrackingProps) {
   const [driverLocation, setDriverLocation] = useState<DriverLocationUpdate | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<SocketConnectionStatus>(() =>
+    orderId && enabled ? 'reconnecting' : 'disconnected',
+  );
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -26,6 +31,8 @@ export function useDriverTracking({
         socketRef.current.disconnect();
         socketRef.current = null;
         setIsConnected(false);
+        setConnectionStatus('disconnected');
+        setReconnectAttempt(0);
       }
       return;
     }
@@ -40,19 +47,43 @@ export function useDriverTracking({
 
     const socket = io(wsUrl, {
       transports: ['websocket', 'polling'],
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 10,
       reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      randomizationFactor: 0.5,
     });
 
     socketRef.current = socket;
 
     socket.on('connect', () => {
       setIsConnected(true);
+      setConnectionStatus('connected');
+      setReconnectAttempt(0);
       socket.emit('order:track', { orderId });
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (reason) => {
       setIsConnected(false);
+      if (reason === 'io client disconnect') {
+        setConnectionStatus('disconnected');
+      } else {
+        setConnectionStatus('reconnecting');
+      }
+    });
+
+    socket.io.on('reconnect_attempt', (attempt: number) => {
+      setConnectionStatus('reconnecting');
+      setReconnectAttempt(attempt);
+    });
+
+    socket.io.on('reconnect', () => {
+      setIsConnected(true);
+      setConnectionStatus('connected');
+      setReconnectAttempt(0);
+    });
+
+    socket.io.on('reconnect_failed', () => {
+      setConnectionStatus('disconnected');
     });
 
     socket.on('driver:location_current', (location: DriverLocationUpdate) => {
@@ -71,6 +102,8 @@ export function useDriverTracking({
       socket.disconnect();
       socketRef.current = null;
       setIsConnected(false);
+      setConnectionStatus('disconnected');
+      setReconnectAttempt(0);
     };
   }, [orderId, enabled]);
 
@@ -98,6 +131,8 @@ export function useDriverTracking({
   return {
     driverLocation,
     isConnected,
+    connectionStatus,
+    reconnectAttempt,
     sendLocationUpdate,
   };
 }

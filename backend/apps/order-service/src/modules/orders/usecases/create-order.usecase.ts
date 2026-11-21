@@ -23,6 +23,23 @@ export class CreateOrderUseCase {
   ) {}
 
   async execute(command: CreateOrderCommand): Promise<Order> {
+    // 1. Kiểm tra trạng thái hoạt động & khung giờ mở cửa của nhà hàng
+    const restaurantUrl = this.configService.get<string>('services.restaurantUrl') || process.env.RESTAURANT_SERVICE_URL;
+    if (restaurantUrl) {
+      try {
+        const statusRes = await fetch(`${restaurantUrl}/internal/restaurants/${command.restaurant_id}/operating-status`);
+        if (statusRes.ok) {
+          const status = (await statusRes.json()) as { isOpen?: boolean; message?: string };
+          if (status.isOpen === false) {
+            throw new BadRequestException(status.message || 'Quán hiện đang đóng cửa, không thể tiếp nhận đơn hàng lúc này');
+          }
+        }
+      } catch (error: unknown) {
+        if (error instanceof BadRequestException) throw error;
+        this.logger.warn(`Không thể kiểm tra giờ mở cửa nhà hàng ${command.restaurant_id}`, { cause: error });
+      }
+    }
+
     const orderId = randomUUID();
     const subtotal = command.items.reduce(
       (sum, item) => sum + item.quantity * item.unit_price,

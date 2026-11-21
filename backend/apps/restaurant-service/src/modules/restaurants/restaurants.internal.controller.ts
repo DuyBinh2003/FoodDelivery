@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Query, Body, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Query, Body, NotFoundException, Inject, ParseUUIDPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Restaurant } from '@/modules/restaurants/entities/restaurant.entity.js';
@@ -6,6 +6,7 @@ import { MenuItem } from '@/modules/restaurants/entities/menu-item.entity.js';
 import { Category } from '@/modules/restaurants/entities/category.entity.js';
 import { Tag } from '@/modules/restaurants/entities/tag.entity.js';
 import { Config } from '@/modules/restaurants/entities/config.entity.js';
+import { CheckOperatingStatusUseCase } from '@/modules/restaurants/usecases/check-operating-status.usecase.js';
 
 @Controller('internal')
 export class RestaurantsInternalController {
@@ -15,7 +16,13 @@ export class RestaurantsInternalController {
     @InjectRepository(Category) private readonly categoryRepo: Repository<Category>,
     @InjectRepository(Tag) private readonly tagRepo: Repository<Tag>,
     @InjectRepository(Config) private readonly configRepo: Repository<Config>,
+    @Inject(CheckOperatingStatusUseCase) private readonly checkOperatingStatusUseCase: CheckOperatingStatusUseCase,
   ) {}
+
+  @Get('restaurants/:id/operating-status')
+  async getOperatingStatus(@Param('id', ParseUUIDPipe) id: string) {
+    return this.checkOperatingStatusUseCase.execute(id);
+  }
 
   @Get('restaurants/metrics')
   async getMetrics(): Promise<{ totalRestaurants: number }> {

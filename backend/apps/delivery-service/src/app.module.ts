@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getDatabaseConfig } from '@/config/database.config.js';
 import configuration from '@/config/configuration.js';
+import { MetricsModule } from '@/common/metrics/index.js';
 import { DriversModule } from '@/modules/drivers/drivers.module.js';
 import { TrackingModule } from '@/modules/tracking/tracking.module.js';
 import { DispatchModule } from '@/modules/dispatch/dispatch.module.js';
@@ -18,10 +19,10 @@ import { DispatchModule } from '@/modules/dispatch/dispatch.module.js';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => getDatabaseConfig(configService, 'schema_delivery'),
     }),
+    MetricsModule,
     DriversModule,
     TrackingModule,
     DispatchModule,
   ],
 })
 export class AppModule {}
-
