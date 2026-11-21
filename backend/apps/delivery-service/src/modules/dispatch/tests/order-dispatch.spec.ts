@@ -44,7 +44,13 @@ describe('Order Routing & Auto-Dispatch Suite (Issue #29)', () => {
       get: vi.fn().mockReturnValue('http://localhost:3004'),
     } as unknown as ConfigService;
 
-    dispatchService = new DispatchService(driverGeoRepo, trackingGateway, configService);
+    dispatchService = new DispatchService(
+      driverGeoRepo,
+      trackingGateway,
+      configService,
+      { create: vi.fn(), save: vi.fn(), find: vi.fn() } as any,
+      { uploadFile: vi.fn() } as any,
+    );
   });
 
   afterEach(() => {
