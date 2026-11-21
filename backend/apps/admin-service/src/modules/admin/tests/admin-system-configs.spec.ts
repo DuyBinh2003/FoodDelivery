@@ -38,6 +38,7 @@ describe('AdminService - System Configurations & Bulk Update', () => {
 
     adminService = new AdminService(
       mockConfigRepo as unknown as ConstructorParameters<typeof AdminService>[0],
+      {} as unknown as ConstructorParameters<typeof AdminService>[1],
     );
   });
 

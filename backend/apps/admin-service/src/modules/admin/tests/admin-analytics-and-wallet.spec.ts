@@ -35,7 +35,10 @@ describe('AdminService - Dashboard Analytics & Platform Wallet BFF', () => {
     process.env.ORDER_SERVICE_URL = 'http://localhost:3004';
     process.env.PAYMENT_SERVICE_URL = 'http://localhost:3007';
 
-    adminService = new AdminService(mockConfigRepo as unknown as ConstructorParameters<typeof AdminService>[0]);
+    adminService = new AdminService(
+      mockConfigRepo as unknown as ConstructorParameters<typeof AdminService>[0],
+      {} as unknown as ConstructorParameters<typeof AdminService>[1],
+    );
   });
 
   describe('getDashboardAnalytics', () => {
