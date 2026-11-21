@@ -1,19 +1,34 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from '@/app.module.js';
 import { GlobalExceptionFilter } from '@/common/filters/index.js';
+import { RedisIoAdapter } from '@/common/adapters/index.js';
+import { TracingInterceptor } from '@/common/interceptors/index.js';
 
 async function bootstrap() {
+  const logger = new Logger('DeliveryServiceBootstrap');
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalInterceptors(new TracingInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
     }),
   );
+
+  const redisIoAdapter = new RedisIoAdapter(app);
+  try {
+    await redisIoAdapter.connectToRedis();
+    app.useWebSocketAdapter(redisIoAdapter);
+    logger.log('Socket.IO clustered with Redis Adapter successfully.');
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(`Redis adapter unavailable (${msg}), continuing with default in-memory adapter.`);
+  }
+
   await app.listen(3005);
-  console.log('delivery-service is running on: http://localhost:3005');
+  logger.log('delivery-service is running on: http://localhost:3005');
 }
 bootstrap();

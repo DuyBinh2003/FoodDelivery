@@ -11,6 +11,7 @@ import { OrderVisualRoute } from './components/order-visual-route';
 import { OrderStoreCard } from './components/order-store-card';
 import { OrderBillCard } from './components/order-bill-card';
 import { OrderActionBar } from './components/order-action-bar';
+import { OrderDeliveryProofCard } from './components/OrderDeliveryProofCard';
 import type { OrderTrackerProps } from './types';
 
 export default function OrderTracker({ order: initialOrder, paymentDetails }: OrderTrackerProps) {
@@ -68,6 +69,12 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
       {hasDriver && activeOrder.driver && (
         <OrderDriverCard driver={activeOrder.driver} />
       )}
+
+      {/* 4.1 Proof of Delivery Card (If Completed) */}
+      <OrderDeliveryProofCard
+        orderId={activeOrder.id}
+        isCompleted={activeOrder.status === 'COMPLETED'}
+      />
 
       {/* 5. Visual Route Animation Map (From Restaurant to Customer) */}
       {activeOrder.status !== 'CANCELLED' && (
