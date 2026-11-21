@@ -52,7 +52,7 @@ export default defineConfig({
   test: {
     globals: true,
     root: './',
-    include: ['**/*.spec.ts', '../frontend/src/features/ai-chat/tests/**/*.spec.ts'],
+    include: ['**/*.spec.ts', '**/*.test.ts', '../frontend/src/features/ai-chat/tests/**/*.spec.ts'],
     passWithNoTests: true,
   },
 });

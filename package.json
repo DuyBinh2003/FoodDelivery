@@ -4,7 +4,9 @@
   "description": "Dự án cá nhân xây dựng hệ thống đặt đồ ăn (Food Delivery) theo kiến trúc **Microservices**. Dự án bám sát các tiêu chuẩn thực tế trên môi trường Cloud.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "test:backend": "npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend test",
     "prepare": "husky"
   },
   "repository": {
