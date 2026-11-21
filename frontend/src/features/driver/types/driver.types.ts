@@ -76,3 +76,15 @@ export interface DriverReviewsResponse {
   };
   reviews: DriverReviewItem[];
 }
+
+export interface DeliveryProofItem {
+  id: string;
+  orderId: string;
+  driverId: string;
+  proofType: 'PICKED_UP' | 'DELIVERED';
+  imageUrl: string;
+  capturedLat: number;
+  capturedLng: number;
+  notes: string | null;
+  createdAt: string | Date;
+}
