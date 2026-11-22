@@ -51,13 +51,11 @@ Payment Service là dịch vụ cốt lõi quản lý dòng tiền, số dư ví
   - `referenceId`: Mã giao dịch nạp tiền
   - `idempotencyKey`: UUIDv4 chống nạp trùng lặp
 
-### 4. Ghi nhận Giao dịch Sổ cái Kép (`POST /ledger/transactions`)
-- **Mô tả**: Ghi nhận một giao dịch tài chính nhiều bên (VD: cấn trừ đơn hàng, chia tiền ship, thu phí nền tảng).
-- **Body**:
-  - `transactionCode`: Mã giao dịch duy nhất
-  - `referenceType`: `ORDER_SETTLEMENT` | `COD_DEDUCTION` | `WITHDRAWAL` | `REFUND`
-  - `referenceId`: ID của đơn hàng hoặc lệnh rút
-  - `description`: Diễn giải giao dịch
+### 5. Cổng Thanh toán & Webhook An toàn (`/payment/webhooks/*`)
+- **Tích hợp cổng**: VNPay (HMAC-SHA512) và MoMo (HMAC-SHA256).
+- **Cơ chế xác thực chữ ký (Constant-Time)**: Sử dụng `crypto.timingSafeEqual` để triệt tiêu hoàn toàn lỗ hổng Side-Channel Timing Attack.
+- **Môi trường Production**: Endpoint `/payment/webhooks/simulate` bị vô hiệu hóa hoàn toàn trên môi trường production và bị Nginx API Gateway chặn 403.
+- **Fail-Fast Secrets**: Bắt buộc cung cấp `VNPAY_HASH_SECRET` và `MOMO_SECRET_KEY`, nghiêm cấm fallback về khóa sandbox trong production.
   - `idempotencyKey`: Khóa lũy đẳng
   - `entries`: Mảng các bút toán (`walletAccountId`, `entryType`, `amount`)
 - **Validation**: Tự động chặn nếu `sum(DEBIT) != sum(CREDIT)` hoặc amount <= 0.

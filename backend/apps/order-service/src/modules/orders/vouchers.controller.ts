@@ -33,6 +33,9 @@ import { VoucherRepository } from '@/modules/orders/repositories/voucher.reposit
 import { CreateVoucherDto } from '@/modules/orders/dto/create-voucher.dto.js';
 import { ValidateVoucherDto } from '@/modules/orders/dto/validate-voucher.dto.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '@/common/guards/roles.guard.js';
+import { Roles } from '@/common/decorators/roles.decorator.js';
+import { UserRole } from '@/common/enums/user-role.enum.js';
 import { UserVoucherStatus } from '@/modules/orders/enums/user-voucher-status.enum.js';
 import { CampaignSponsor } from '@/modules/orders/enums/campaign-sponsor.enum.js';
 
@@ -180,7 +183,8 @@ export class VouchersController {
 
   // --- 3. CAMPAIGN, ADMIN & PARTNER ENDPOINTS ---
   @Post('campaigns')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async createCampaign(
     @Body()
     body: {
@@ -219,7 +223,8 @@ export class VouchersController {
   }
 
   @Post('campaigns/:id/emergency-kill')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   async emergencyKillCampaign(@Param('id') campaignId: string) {
     return this.emergencyKillCampaignUseCase.execute(campaignId);

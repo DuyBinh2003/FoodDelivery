@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderWriteRepository } from '@/modules/orders/repositories/order.write.repository.js';
@@ -8,11 +8,13 @@ import { UpdateOrderStatusDto } from '@/modules/orders/dto/update-order-status.d
 import { SqsService } from '@/common/messaging/sqs.service.js';
 import { SnsService } from '@/common/messaging/sns.service.js';
 import { OrderEventTypes } from '@/events/index.js';
+import type { JwtPayload } from '@/common/guards/jwt.strategy.js';
 
 export interface UpdateOrderStatusCommand {
   orderId: string;
   dto: UpdateOrderStatusDto;
   changedBy?: string;
+  user?: JwtPayload;
 }
 
 @Injectable()
@@ -69,9 +71,27 @@ export class UpdateOrderStatusUseCase {
 
   async execute(command: UpdateOrderStatusCommand): Promise<Order> {
     const newStatus = command.dto.status;
+    const user = command.user;
 
     // 1. Kiểm tra đơn hàng trong Redis In-flight Cache trước
     const inflight = await this.orderRedisRepo.getInflightOrder(command.orderId);
+
+    // Kiểm tra phân quyền cập nhật trạng thái đơn (State Machine & Ownership Authorization)
+    if (user && user.role !== 'ADMIN') {
+      if (user.role === 'CUSTOMER') {
+        if (newStatus !== OrderStatus.CANCELLED) {
+          throw new ForbiddenException('Khách hàng chỉ có quyền hủy đơn hàng, không thể tự cập nhật trạng thái khác');
+        }
+        const currentStatus = inflight?.status || (await this.orderReadRepo.findById(command.orderId))?.status;
+        if (currentStatus && currentStatus !== OrderStatus.PENDING) {
+          throw new BadRequestException('Chỉ có thể hủy đơn hàng khi đơn đang ở trạng thái chờ xử lý (PENDING)');
+        }
+        const orderCustomerId = inflight?.customer_id || (await this.orderReadRepo.findById(command.orderId))?.customer_id;
+        if (orderCustomerId && orderCustomerId !== user.id) {
+          throw new ForbiddenException('Bạn không có quyền thao tác trên đơn hàng này');
+        }
+      }
+    }
 
     if (inflight) {
       const previousStatus = inflight.status;

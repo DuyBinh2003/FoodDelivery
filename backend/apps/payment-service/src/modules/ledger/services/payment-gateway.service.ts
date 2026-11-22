@@ -28,14 +28,19 @@ export class PaymentGatewayService {
   private readonly momoEndpoint: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.vnpTmnCode = this.configService.get<string>('VNPAY_TMN_CODE', 'FOODDELIVNP');
-    this.vnpHashSecret = this.configService.get<string>('VNPAY_HASH_SECRET', 'SECRETKEY_VNPAY_SANDBOX_HASH512_DEMO_2026');
-    this.vnpUrl = this.configService.get<string>('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');
+    const isProduction = process.env.NODE_ENV === 'production';
+    this.vnpTmnCode = this.configService.get<string>('VNPAY_TMN_CODE') || (!isProduction ? 'FOODDELIVNP' : '');
+    this.vnpHashSecret = this.configService.get<string>('VNPAY_HASH_SECRET') || (!isProduction ? 'SECRETKEY_VNPAY_SANDBOX_HASH512_DEMO_2026' : '');
+    this.vnpUrl = this.configService.get<string>('VNPAY_URL') || 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
 
-    this.momoPartnerCode = this.configService.get<string>('MOMO_PARTNER_CODE', 'MOMO_FOOD_DELIVERY');
-    this.momoAccessKey = this.configService.get<string>('MOMO_ACCESS_KEY', 'ACCESS_KEY_MOMO_2026');
-    this.momoSecretKey = this.configService.get<string>('MOMO_SECRET_KEY', 'SECRET_KEY_MOMO_DEMO_SHA256_2026');
-    this.momoEndpoint = this.configService.get<string>('MOMO_ENDPOINT', 'https://test-payment.momo.vn/v2/gateway/pay');
+    this.momoPartnerCode = this.configService.get<string>('MOMO_PARTNER_CODE') || (!isProduction ? 'MOMO_FOOD_DELIVERY' : '');
+    this.momoAccessKey = this.configService.get<string>('MOMO_ACCESS_KEY') || (!isProduction ? 'ACCESS_KEY_MOMO_2026' : '');
+    this.momoSecretKey = this.configService.get<string>('MOMO_SECRET_KEY') || (!isProduction ? 'SECRET_KEY_MOMO_DEMO_SHA256_2026' : '');
+    this.momoEndpoint = this.configService.get<string>('MOMO_ENDPOINT') || 'https://test-payment.momo.vn/v2/gateway/pay';
+
+    if (isProduction && (!this.vnpHashSecret || !this.momoSecretKey)) {
+      throw new Error('[PaymentGatewayService] Thiếu biến môi trường bí mật thanh toán (VNPAY_HASH_SECRET hoặc MOMO_SECRET_KEY) trong môi trường production!');
+    }
   }
 
   createPaymentUrl(dto: CreateGatewayPaymentUrlDto): PaymentUrlResult {
@@ -139,7 +144,14 @@ export class PaymentGatewayService {
     const hmac = crypto.createHmac('sha512', this.vnpHashSecret);
     const expectedHash = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
 
-    return secureHash.toLowerCase() === expectedHash.toLowerCase();
+    const bufSecureHash = Buffer.from(secureHash.toLowerCase(), 'utf-8');
+    const bufExpectedHash = Buffer.from(expectedHash.toLowerCase(), 'utf-8');
+
+    if (bufSecureHash.length !== bufExpectedHash.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(bufSecureHash, bufExpectedHash);
   }
 
   verifyMoMoSignature(payload: MoMoWebhookDto): boolean {
@@ -171,7 +183,14 @@ export class PaymentGatewayService {
       .update(rawSignature)
       .digest('hex');
 
-    return signature === expectedSignature;
+    const bufSignature = Buffer.from(signature, 'utf-8');
+    const bufExpectedSignature = Buffer.from(expectedSignature, 'utf-8');
+
+    if (bufSignature.length !== bufExpectedSignature.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(bufSignature, bufExpectedSignature);
   }
 
   private formatDateToYMDHMS(date: Date): string {

@@ -1,12 +1,14 @@
-import { Injectable, NotFoundException, Inject, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { calculateHaversineDistanceKm } from '@/common/utils/geo.utils.js';
 import { OrderReadRepository } from '@/modules/orders/repositories/order.read.repository.js';
 import { OrderRedisRepository } from '@/modules/orders/repositories/order.redis.repository.js';
 import { Order } from '@/modules/orders/entities/order.entity.js';
+import type { JwtPayload } from '@/common/guards/jwt.strategy.js';
 
 export interface GetOrderQuery {
   orderId: string;
+  user?: JwtPayload;
 }
 
 @Injectable()
@@ -22,6 +24,14 @@ export class GetOrderUseCase {
   async execute(query: GetOrderQuery): Promise<Order> {
     // 1. Kiểm tra trong Redis In-flight Cache trước (Đơn hàng đang trong quá trình luân chuyển)
     const inflight = await this.orderRedisRepo.getInflightOrder(query.orderId);
+
+    if (inflight && query.user && query.user.role !== 'ADMIN') {
+      const isOwner = inflight.customer_id === query.user.id;
+      const isDriver = inflight.driver_id === query.user.id;
+      if (!isOwner && !isDriver) {
+        throw new ForbiddenException('Bạn không có quyền xem thông tin đơn hàng này');
+      }
+    }
 
     const targetRestaurantId = inflight ? inflight.restaurant_id : null;
     let restaurantInfo: { name: string; address?: string; lat?: number; lon?: number } | null = null;
@@ -129,6 +139,14 @@ export class GetOrderUseCase {
     const order = await this.orderReadRepo.findById(query.orderId);
     if (!order) {
       throw new NotFoundException(`Order with ID ${query.orderId} not found`);
+    }
+
+    if (query.user && query.user.role !== 'ADMIN') {
+      const isOwner = order.customer_id === query.user.id;
+      const isDriver = order.driver_id === query.user.id;
+      if (!isOwner && !isDriver) {
+        throw new ForbiddenException('Bạn không có quyền xem thông tin đơn hàng này');
+      }
     }
 
     if (order.restaurant_id && !restaurantInfo) {

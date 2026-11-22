@@ -17,6 +17,9 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '@/common/guards/roles.guard.js';
+import { Roles } from '@/common/decorators/roles.decorator.js';
+import { UserRole } from '@/common/enums/user-role.enum.js';
 import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
 import type { JwtPayload } from '@/common/guards/jwt.strategy.js';
 import { S3StorageService } from '@/common/storage/index.js';
@@ -185,6 +188,8 @@ export class RestaurantsController {
   // --- General Restaurant Endpoints ---
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   create(@Body() createRestaurantDto: CreateRestaurantDto) {
     return this.createRestaurantUseCase.execute(createRestaurantDto);
   }
@@ -200,6 +205,8 @@ export class RestaurantsController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   update(
     @Param('id', ParseUUIDPipe) id: string, 
     @Body() updateRestaurantDto: UpdateRestaurantDto
@@ -208,6 +215,8 @@ export class RestaurantsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.deleteRestaurantUseCase.execute({ restaurantId: id });
   }
@@ -215,6 +224,8 @@ export class RestaurantsController {
   // --- Menu Item Endpoints ---
 
   @Post(':id/menu-items')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   addMenuItem(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createMenuItemDto: CreateMenuItemDto
@@ -228,6 +239,8 @@ export class RestaurantsController {
   }
 
   @Patch(':id/menu-items/:itemId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   updateMenuItem(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('itemId', ParseUUIDPipe) itemId: string,
@@ -237,6 +250,8 @@ export class RestaurantsController {
   }
 
   @Delete(':id/menu-items/:itemId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   removeMenuItem(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('itemId', ParseUUIDPipe) itemId: string

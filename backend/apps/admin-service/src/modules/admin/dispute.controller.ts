@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Query, UseGuards, ParseUUIDPipe, ForbiddenException } from '@nestjs/common';
 import { AdminService } from '@/modules/admin/admin.service.js';
 import { CreateDisputeDto } from '@/modules/admin/dto/create-dispute.dto.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
@@ -22,7 +22,7 @@ export class DisputeController {
   ) {
     return this.adminService.createDispute({
       ...dto,
-      customer_id: dto.customer_id || user.id,
+      customer_id: user.role === 'ADMIN' && dto.customer_id ? dto.customer_id : user.id,
     });
   }
 
@@ -42,7 +42,14 @@ export class DisputeController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async getDisputeById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.adminService.getDisputeById(id);
+  async getDisputeById(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: RequestUser,
+  ) {
+    const dispute = await this.adminService.getDisputeById(id);
+    if (user.role !== 'ADMIN' && dispute.customer_id !== user.id) {
+      throw new ForbiddenException('Bạn không có quyền truy cập khiếu nại này');
+    }
+    return dispute;
   }
 }

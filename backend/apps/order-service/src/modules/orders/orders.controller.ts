@@ -35,6 +35,9 @@ import { GetRestaurantReviewsUseCase } from '@/modules/orders/usecases/get-resta
 import { RestaurantReviewsQueryDto } from '@/modules/orders/dto/restaurant-reviews-query.dto.js';
 import { GetOrdersAdminUseCase } from '@/modules/orders/usecases/get-orders-admin.usecase.js';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
+import { RolesGuard } from '@/common/guards/roles.guard.js';
+import { Roles } from '@/common/decorators/roles.decorator.js';
+import { UserRole } from '@/common/enums/user-role.enum.js';
 import { CurrentUser } from '@/common/decorators/current-user.decorator.js';
 import type { JwtPayload } from '@/common/guards/jwt.strategy.js';
 import { GetDriverTripsUseCase } from '@/modules/orders/usecases/get-driver-trips.usecase.js';
@@ -200,7 +203,8 @@ export class OrdersController {
   // --- General Order Endpoints ---
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   getOrders(@Query() query: QueryOrdersDto) {
     return this.getOrdersAdminUseCase.execute(query);
   }
@@ -212,13 +216,13 @@ export class OrdersController {
     @Body() updateDto: UpdateOrderStatusDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.updateOrderStatusUseCase.execute({ orderId: id, dto: updateDto, changedBy: user.id });
+    return this.updateOrderStatusUseCase.execute({ orderId: id, dto: updateDto, user, changedBy: user.id });
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.getOrderUseCase.execute({ orderId: id });
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    return this.getOrderUseCase.execute({ orderId: id, user });
   }
 
   @Sse(':id/events')

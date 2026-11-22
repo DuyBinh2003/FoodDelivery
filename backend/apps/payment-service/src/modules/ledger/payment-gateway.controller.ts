@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, Logger } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, Logger, NotFoundException } from '@nestjs/common';
 import * as crypto from 'node:crypto';
 import { PaymentGatewayService } from '@/modules/ledger/services/payment-gateway.service.js';
 import { ProcessGatewayWebhookUseCase } from '@/modules/ledger/usecases/process-gateway-webhook.usecase.js';
@@ -70,6 +70,9 @@ export class PaymentGatewayController {
       isSuccess?: boolean;
     },
   ) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException('Endpoint simulate webhook không khả dụng trên môi trường production');
+    }
     this.logger.log(`[SimulateWebhook] Triggering simulated webhook for ${body.gateway} ref ${body.transactionRef}`);
     const isSuccess = body.isSuccess !== false;
 
