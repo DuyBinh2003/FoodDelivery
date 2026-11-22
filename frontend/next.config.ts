@@ -13,6 +13,8 @@ function requireEnv(key: string): string {
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname),
+  // Standalone output để deploy lên Docker/ECS
+  output: 'standalone',
   experimental: {
     cpus: 1,
   },

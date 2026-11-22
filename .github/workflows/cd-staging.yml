@@ -1,0 +1,363 @@
+name: "🚀 CD — Deploy to Staging (ECS)"
+
+on:
+  push:
+    branches: ["develop"]
+
+# Chỉ 1 deploy tại một thời điểm để tránh race condition
+concurrency:
+  group: cd-staging
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: ap-southeast-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-1.amazonaws.com
+  ECS_CLUSTER: food-delivery-staging-cluster
+
+jobs:
+  # ==========================================
+  # 1. CI Gate — Phải xanh trước khi deploy
+  # ==========================================
+  ci-backend:
+    name: "✅ Backend CI Gate"
+    uses: ./.github/workflows/ci-backend.yml
+
+  ci-frontend:
+    name: "✅ Frontend CI Gate"
+    uses: ./.github/workflows/ci-frontend.yml
+
+  # ==========================================
+  # 2. Build & Push Docker Images lên ECR
+  # ==========================================
+  build-and-push:
+    name: "🐳 Build & Push Images"
+    needs: [ci-backend, ci-frontend]
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tag }}
+
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔑 Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔐 Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🏷️ Set Image Tag
+        id: meta
+        run: echo "tag=staging-$(echo $GITHUB_SHA | head -c7)" >> $GITHUB_OUTPUT
+
+      # Build tất cả NestJS services SONG SONG
+      - name: 🏗️ Build & Push user-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          build-args: APP_NAME=user-service
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-user-service:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-user-service:staging-latest
+          cache-from: type=gha,scope=user-service
+          cache-to: type=gha,mode=max,scope=user-service
+
+      - name: 🏗️ Build & Push admin-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          build-args: APP_NAME=admin-service
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-admin-service:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-admin-service:staging-latest
+          cache-from: type=gha,scope=admin-service
+          cache-to: type=gha,mode=max,scope=admin-service
+
+      - name: 🏗️ Build & Push restaurant-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          build-args: APP_NAME=restaurant-service
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-restaurant-service:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-restaurant-service:staging-latest
+          cache-from: type=gha,scope=restaurant-service
+          cache-to: type=gha,mode=max,scope=restaurant-service
+
+      - name: 🏗️ Build & Push order-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          build-args: APP_NAME=order-service
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-order-service:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-order-service:staging-latest
+          cache-from: type=gha,scope=order-service
+          cache-to: type=gha,mode=max,scope=order-service
+
+      - name: 🏗️ Build & Push delivery-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          build-args: APP_NAME=delivery-service
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-delivery-service:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-delivery-service:staging-latest
+          cache-from: type=gha,scope=delivery-service
+          cache-to: type=gha,mode=max,scope=delivery-service
+
+      - name: 🏗️ Build & Push search-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          build-args: APP_NAME=search-service
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-search-service:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-search-service:staging-latest
+          cache-from: type=gha,scope=search-service
+          cache-to: type=gha,mode=max,scope=search-service
+
+      - name: 🏗️ Build & Push payment-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          build-args: APP_NAME=payment-service
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-payment-service:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-payment-service:staging-latest
+          cache-from: type=gha,scope=payment-service
+          cache-to: type=gha,mode=max,scope=payment-service
+
+      - name: 🏗️ Build & Push ai-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          build-args: APP_NAME=ai-service
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-ai-service:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-ai-service:staging-latest
+          cache-from: type=gha,scope=ai-service
+          cache-to: type=gha,mode=max,scope=ai-service
+
+      - name: 🏗️ Build & Push ai-python
+        uses: docker/build-push-action@v6
+        with:
+          context: ./ai-python
+          file: ./ai-python/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-ai-python:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-ai-python:staging-latest
+          cache-from: type=gha,scope=ai-python
+          cache-to: type=gha,mode=max,scope=ai-python
+
+      - name: 🏗️ Build & Push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.STAGING_NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_BACKEND_URL=${{ secrets.STAGING_NEXT_PUBLIC_BACKEND_URL }}
+            NEXT_PUBLIC_USER_SERVICE_URL=${{ secrets.STAGING_USER_SERVICE_URL }}
+            NEXT_PUBLIC_ADMIN_SERVICE_URL=${{ secrets.STAGING_ADMIN_SERVICE_URL }}
+            NEXT_PUBLIC_RESTAURANT_SERVICE_URL=${{ secrets.STAGING_RESTAURANT_SERVICE_URL }}
+            NEXT_PUBLIC_ORDER_SERVICE_URL=${{ secrets.STAGING_ORDER_SERVICE_URL }}
+            NEXT_PUBLIC_DELIVERY_SERVICE_URL=${{ secrets.STAGING_DELIVERY_SERVICE_URL }}
+            NEXT_PUBLIC_SEARCH_SERVICE_URL=${{ secrets.STAGING_SEARCH_SERVICE_URL }}
+            NEXT_PUBLIC_PAYMENT_SERVICE_URL=${{ secrets.STAGING_PAYMENT_SERVICE_URL }}
+            NEXT_PUBLIC_AI_SERVICE_URL=${{ secrets.STAGING_AI_SERVICE_URL }}
+            NEXT_PUBLIC_ADMIN_WS_URL=${{ secrets.STAGING_ADMIN_WS_URL }}
+            NEXT_PUBLIC_USER_WS_URL=${{ secrets.STAGING_USER_WS_URL }}
+          tags: |
+            ${{ env.ECR_REGISTRY }}/fd-frontend:${{ steps.meta.outputs.tag }}
+            ${{ env.ECR_REGISTRY }}/fd-frontend:staging-latest
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  # ==========================================
+  # 3. Run DB Migrations trước khi deploy
+  # ==========================================
+  migrate:
+    name: "🗃️ Run DB Migrations"
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔑 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: ⚙️ Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "./backend/package-lock.json"
+
+      - name: 📥 Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: 🗃️ Run All Migrations
+        working-directory: ./backend
+        run: npm run migrate:all
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          POSTGRES_USER: ${{ secrets.STAGING_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.STAGING_POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.STAGING_POSTGRES_DB }}
+
+  # ==========================================
+  # 4. Deploy tất cả services lên ECS Staging
+  # ==========================================
+  deploy:
+    name: "🚀 Deploy to ECS Staging"
+    needs: [build-and-push, migrate]
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: ${{ secrets.STAGING_APP_URL }}
+
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔑 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔄 Deploy user-service → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/user-service-task-def.json
+          service: fd-staging-user-service
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"user-service","imageUri":"${{ env.ECR_REGISTRY }}/fd-user-service:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: 🔄 Deploy admin-service → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/admin-service-task-def.json
+          service: fd-staging-admin-service
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"admin-service","imageUri":"${{ env.ECR_REGISTRY }}/fd-admin-service:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: 🔄 Deploy restaurant-service → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/restaurant-service-task-def.json
+          service: fd-staging-restaurant-service
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"restaurant-service","imageUri":"${{ env.ECR_REGISTRY }}/fd-restaurant-service:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: 🔄 Deploy order-service → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/order-service-task-def.json
+          service: fd-staging-order-service
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"order-service","imageUri":"${{ env.ECR_REGISTRY }}/fd-order-service:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: 🔄 Deploy delivery-service → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/delivery-service-task-def.json
+          service: fd-staging-delivery-service
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"delivery-service","imageUri":"${{ env.ECR_REGISTRY }}/fd-delivery-service:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: 🔄 Deploy search-service → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/search-service-task-def.json
+          service: fd-staging-search-service
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"search-service","imageUri":"${{ env.ECR_REGISTRY }}/fd-search-service:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: 🔄 Deploy payment-service → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/payment-service-task-def.json
+          service: fd-staging-payment-service
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"payment-service","imageUri":"${{ env.ECR_REGISTRY }}/fd-payment-service:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: 🔄 Deploy ai-python → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/ai-python-task-def.json
+          service: fd-staging-ai-python
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"ai-python","imageUri":"${{ env.ECR_REGISTRY }}/fd-ai-python:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: 🔄 Deploy ai-service → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/ai-service-task-def.json
+          service: fd-staging-ai-service
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"ai-service","imageUri":"${{ env.ECR_REGISTRY }}/fd-ai-service:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: 🔄 Deploy frontend → ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: .aws/ecs/staging/frontend-task-def.json
+          service: fd-staging-frontend
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          image-container-definitions: |
+            [{"name":"frontend","imageUri":"${{ env.ECR_REGISTRY }}/fd-frontend:${{ needs.build-and-push.outputs.image-tag }}"}]
+
+      - name: ✅ Staging Deploy Thành Công
+        run: |
+          echo "🎉 Deploy staging thành công!"
+          echo "📦 Image tag: ${{ needs.build-and-push.outputs.image-tag }}"
+          echo "🌐 URL: ${{ secrets.STAGING_APP_URL }}"

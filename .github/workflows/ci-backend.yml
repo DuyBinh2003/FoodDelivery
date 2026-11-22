@@ -1,0 +1,61 @@
+name: "🔍 CI — Backend Quality Gate"
+
+on:
+  push:
+    branches: ["main", "develop"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
+  pull_request:
+    branches: ["main", "develop"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
+
+jobs:
+  # ==========================================
+  # JOB: Lint + TypeCheck + Test + Build
+  # ==========================================
+  quality-gate:
+    name: Backend Quality Gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: "./backend/package-lock.json"
+
+      - name: 📥 Install Dependencies
+        run: npm ci
+
+      - name: 🔧 Fix Oxlint Permissions (Windows → Linux)
+        run: chmod +x node_modules/.bin/oxlint || true
+
+      - name: 🧹 Lint (Oxlint — 0 warnings/errors)
+        run: npm run lint
+
+      - name: 🔎 Type Check (tsc --noEmit — 0 errors)
+        run: npx tsc --noEmit
+
+      - name: 🧪 Unit Tests (Vitest — 100% pass)
+        run: npm run test
+
+      - name: 🏗️ Build Check (nest build)
+        run: npm run build
+
+      - name: 📊 Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/coverage/
+          retention-days: 7
