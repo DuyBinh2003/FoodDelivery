@@ -185,9 +185,37 @@
         },
         {
             "label": "DB: Reset",
-            "detail": "Xoá sạch dữ liệu và tạo lại Database từ đầu",
+            "detail": "Xoá sạch cả 7 schema, migrate, nạp full dữ liệu seed (Master + Transaction) và đồng bộ ES/Redis/S3",
             "type": "shell",
             "command": "npm run migrate:reset",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "DB: Reset (Large)",
+            "detail": "Xoá sạch DB và nạp dữ liệu quy mô cực lớn (500+ quán, 5.000+ món, 3.000+ đơn hàng)",
+            "type": "shell",
+            "command": "npm run migrate:reset:large",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "DB: Seed All",
+            "detail": "Nạp bổ sung full dữ liệu Master + Transaction (idempotent) và đồng bộ ES/Redis/S3",
+            "type": "shell",
+            "command": "npm run seed:all",
             "options": {
                 "cwd": "${workspaceFolder}/backend"
             },

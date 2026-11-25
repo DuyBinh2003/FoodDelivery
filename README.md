@@ -320,14 +320,20 @@ docker compose up -d db redis elasticsearch localstack
 cd backend
 npm install
 
-# Chạy toàn bộ migrations tạo 8 schema database
+# Chạy toàn bộ migrations tạo schemas & dữ liệu mẫu lõi
 npm run migrate:all
 
-# Khởi tạo tài nguyên mock AWS S3 / SQS trên LocalStack
-npm run sync:s3
+# Nạp toàn bộ dữ liệu seed chuẩn (Master + Transaction + Ledger + ES/Redis/S3)
+npm run seed:all
 
-# (Tùy chọn) Nạp bộ dữ liệu thử nghiệm lớn (>2.000 món ăn, 100+ nhà hàng)
-npm run seed:large
+# Hoặc Reset sạch 7 schemas + Migrate + Seed trong 1 lệnh (tương ứng VS Code task "DB: Reset")
+npm run migrate:reset
+
+# Hoặc nạp quy mô cực lớn (500+ quán, 5.500+ món, 3.000+ đơn hàng)
+npm run migrate:reset:large   # hoặc npm run seed:large
+
+# Chạy benchmark hiệu năng tìm kiếm Tiếng Việt & Geo-Relevance (tách riêng khỏi Reset)
+npm run benchmark:search
 ```
 
 #### Bước 3: Khởi chạy các Microservices (Chạy đồng thời hoặc từng service)
