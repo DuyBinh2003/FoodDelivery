@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Clock, ChefHat, Radio, Truck, Package, XCircle } from 'lucide-react';
 import type { OrderStatus } from '@/features/orders/types';
@@ -14,40 +15,15 @@ interface StepDef {
 }
 
 const STEPS: StepDef[] = [
-  {
-    status: 'PENDING',
-    label: 'Chờ nhận',
-    sublabel: 'Tiếp nhận đơn',
-    icon: Clock,
-  },
-  {
-    status: 'COOKING',
-    label: 'Bếp nấu',
-    sublabel: 'Chế biến món',
-    icon: ChefHat,
-  },
-  {
-    status: 'READY_FOR_PICKUP',
-    label: 'Tìm xế',
-    sublabel: 'Phát sóng tìm',
-    icon: Radio,
-  },
-  {
-    status: 'DELIVERING',
-    label: 'Đang giao',
-    sublabel: 'Tài xế giao hàng',
-    icon: Truck,
-  },
-  {
-    status: 'COMPLETED',
-    label: 'Đã giao',
-    sublabel: 'Giao tận tay',
-    icon: Package,
-  },
+  { status: 'PENDING', label: 'Chờ nhận', sublabel: 'Tiếp nhận đơn', icon: Clock },
+  { status: 'COOKING', label: 'Bếp nấu', sublabel: 'Chế biến món', icon: ChefHat },
+  { status: 'READY_FOR_PICKUP', label: 'Tìm xế', sublabel: 'Phát sóng tìm', icon: Radio },
+  { status: 'DELIVERING', label: 'Đang giao', sublabel: 'Tài xế giao hàng', icon: Truck },
+  { status: 'COMPLETED', label: 'Đã giao', sublabel: 'Giao tận tay', icon: Package },
 ];
 
 function getStatusIndex(status: OrderStatus): number {
-  if (status === 'ACCEPTED') return 1; // Map ACCEPTED into COOKING step
+  if (status === 'ACCEPTED') return 1;
   const idx = STEPS.findIndex((s) => s.status === status);
   return idx >= 0 ? idx : 0;
 }
@@ -65,11 +41,11 @@ function formatStepTime(timeStr?: string | null): string | null {
 export function OrderLiveStepper({ currentStatus, milestones }: OrderLiveStepperProps) {
   if (currentStatus === 'CANCELLED') {
     return (
-      <div className="py-4 px-2">
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300">
-          <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+      <div className="py-3 px-2">
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-destructive/10 border border-destructive/25 text-destructive">
+          <XCircle className="w-5 h-5 shrink-0" />
           <div className="text-xs sm:text-sm">
-            <span className="font-semibold text-rose-200">Tiến trình đã dừng:</span> Đơn hàng đã được đánh dấu hủy và không còn tiếp tục luân chuyển.
+            <span className="font-bold">Tiến trình đã dừng:</span> Đơn hàng đã được đánh dấu hủy và không còn tiếp tục luân chuyển.
           </div>
         </div>
       </div>
@@ -92,12 +68,14 @@ export function OrderLiveStepper({ currentStatus, milestones }: OrderLiveStepper
     <div className="w-full py-4 sm:py-6">
       <div className="relative">
         {/* Track Line Background */}
-        <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-white/[0.08] rounded-full" />
+        <div className="absolute top-5 left-[10%] right-[10%] h-1.5 bg-muted rounded-full" />
 
         {/* Track Line Active Fill */}
-        <div
-          className="absolute top-5 left-[10%] h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-emerald-500 rounded-full transition-all duration-700 ease-out shadow-sm shadow-orange-500/30"
-          style={{ width: `${(currentIndex / (STEPS.length - 1)) * 80}%` }}
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${(currentIndex / (STEPS.length - 1)) * 80}%` }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute top-5 left-[10%] h-1.5 bg-primary rounded-full shadow-xs"
         />
 
         {/* Steps */}
@@ -115,47 +93,36 @@ export function OrderLiveStepper({ currentStatus, milestones }: OrderLiveStepper
                 className="flex flex-col items-center text-center"
                 style={{ width: `${100 / STEPS.length}%` }}
               >
-                {/* Node Circle */}
-                <div
+                <motion.div
+                  animate={isCurrent ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+                  transition={isCurrent ? { repeat: Infinity, duration: 2.2 } : undefined}
                   className={cn(
-                    'w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 backdrop-blur-md',
-                    isCompleted &&
-                      'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 scale-100',
+                    'w-10 h-10 rounded-2xl flex items-center justify-center transition-colors duration-300',
+                    isCompleted && 'bg-primary text-primary-foreground shadow-sm',
                     isCurrent &&
-                      'bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 text-white shadow-xl shadow-orange-500/40 ring-4 ring-orange-500/25 scale-110 animate-pulse',
-                    isPending &&
-                      'bg-zinc-900/90 border border-white/10 text-zinc-500 opacity-60'
+                      'bg-primary text-primary-foreground shadow-md shadow-primary/30 ring-4 ring-primary/20',
+                    isPending && 'bg-secondary border border-border text-muted-foreground',
                   )}
                 >
                   <Icon className="w-4 h-4" />
-                </div>
+                </motion.div>
 
-                {/* Step Label */}
                 <span
                   className={cn(
                     'mt-2.5 text-xs font-bold tracking-tight transition-colors duration-300',
-                    isCurrent && 'text-orange-400 font-extrabold',
-                    isCompleted && 'text-emerald-400',
-                    isPending && 'text-zinc-500'
+                    (isCurrent || isCompleted) && 'text-primary',
+                    isPending && 'text-muted-foreground',
                   )}
                 >
                   {step.label}
                 </span>
 
-                {/* Sublabel or Milestone Timestamp */}
                 {stepTime && (isCompleted || isCurrent) ? (
-                  <span className="mt-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-white/5 text-zinc-300 border border-white/10 shadow-sm">
+                  <span className="mt-1 text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-secondary text-foreground border border-border">
                     {stepTime}
                   </span>
                 ) : (
-                  <span
-                    className={cn(
-                      'text-[10px] mt-0.5 hidden sm:inline-block leading-tight transition-colors duration-300',
-                      isCurrent && 'text-zinc-300',
-                      isCompleted && 'text-zinc-400',
-                      isPending && 'text-zinc-600'
-                    )}
-                  >
+                  <span className="text-[10px] mt-0.5 hidden sm:inline-block leading-tight text-muted-foreground">
                     {step.sublabel}
                   </span>
                 )}

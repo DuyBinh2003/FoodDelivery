@@ -1,21 +1,28 @@
 import { OrderHistoryList } from '@/features/orders/components/OrderHistoryList';
+import { CustomerLayout } from '@/components/layout/customer-layout/customer-layout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Order History - Food Delivery',
-  description: 'View your previous orders and reorder your favorites.',
+  title: 'Lịch sử đơn hàng - FoodDelivery',
+  description: 'Xem lại các đơn hàng đã đặt, theo dõi tiến trình và đặt lại món yêu thích nhanh chóng.',
 };
 
 export default function HistoryPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto px-4 py-8 sm:py-12 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-1.5">Lịch sử đơn hàng</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">Xem lại các đơn hàng đã đặt, gửi đánh giá phản hồi và đặt lại món yêu thích nhanh chóng.</p>
+    <CustomerLayout>
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          <div className="mb-8">
+            <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground mb-1.5">
+              Lịch sử đơn hàng
+            </h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
+              Xem lại các đơn hàng đã đặt, gửi đánh giá phản hồi và đặt lại món yêu thích nhanh chóng.
+            </p>
+          </div>
+          <OrderHistoryList />
         </div>
-        <OrderHistoryList />
       </div>
-    </div>
+    </CustomerLayout>
   );
 }

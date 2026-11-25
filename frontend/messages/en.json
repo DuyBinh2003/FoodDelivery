@@ -1,0 +1,84 @@
+{
+  "common": {
+    "brand": "FoodDelivery",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "close": "Close",
+    "viewAll": "View all",
+    "backHome": "Back to home",
+    "search": "Search",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
+    "language": "Language"
+  },
+  "nav": {
+    "home": "Home",
+    "restaurants": "Restaurants",
+    "menu": "Menu",
+    "promotions": "Promotions",
+    "vouchers": "Vouchers",
+    "orders": "Orders",
+    "rewards": "Rewards",
+    "addresses": "Addresses",
+    "profile": "Profile",
+    "login": "Sign in",
+    "registerPartner": "Partner with us",
+    "logout": "Sign out",
+    "deliverTo": "Deliver to",
+    "cart": "Cart",
+    "notifications": "Notifications"
+  },
+  "hero": {
+    "badge": "20-min Express Delivery • Free First Order",
+    "titleStart": "Fresh & hot meals,",
+    "titleHighlight": "delivered to your door",
+    "subtitle": "Discover hundreds of curated local kitchens, track your courier live on the map, and unlock daily member perks.",
+    "searchPlaceholder": "What are you craving today? (Pho, Broken Rice, Milk Tea...)",
+    "searchButton": "Find food",
+    "popularLabel": "Popular:",
+    "statRestaurants": "500+ Partner Kitchens",
+    "statDelivery": "20 min avg delivery",
+    "statRating": "4.9/5 Customer rating"
+  },
+  "home": {
+    "categoriesTitle": "Explore Cuisines",
+    "orderAgainTitle": "Order Again",
+    "orderAgainSubtitle": "Your favorite local spots and recent orders",
+    "nearYouTitle": "Near You",
+    "nearYouSubtitle": "Within 3.5km • Fast delivery under 20 minutes",
+    "promoTitle": "Hot Promotions",
+    "promoSubtitle": "Freeship from 0 VND and exclusive daily deals",
+    "topRatedTitle": "Top Rated",
+    "topRatedSubtitle": "Highest rated 4.5+ star restaurants in your area",
+    "allRestaurantsTitle": "Explore All Restaurants",
+    "emptyTitle": "No matching restaurants found",
+    "emptySubtitle": "Try clearing your category filter or choosing another delivery address"
+  },
+  "footer": {
+    "tagline": "Fresh food delivery & smart real-time logistics platform built for speed and reliability.",
+    "aboutTitle": "About FoodDelivery",
+    "aboutLinks": {
+      "about": "About platform",
+      "restaurants": "Browse restaurants",
+      "vouchers": "Deals & Flash Sales",
+      "rewards": "Rewards Club"
+    },
+    "partnerTitle": "Partner With Us",
+    "partnerLinks": {
+      "becomePartner": "Partner hub",
+      "merchant": "Open a restaurant",
+      "driver": "Become a courier",
+      "partnerPortal": "Merchant portal"
+    },
+    "supportTitle": "Customer Support",
+    "supportLinks": {
+      "orders": "Order history",
+      "addresses": "Address book",
+      "terms": "Terms of service",
+      "privacy": "Privacy policy"
+    },
+    "appTitle": "Get the Mobile App",
+    "appSubtitle": "Order faster and get instant live delivery alerts.",
+    "copyright": "© 2026 FoodDelivery Platform. All rights reserved."
+  }
+}

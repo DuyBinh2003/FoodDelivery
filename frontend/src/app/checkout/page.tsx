@@ -268,29 +268,56 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-28 text-foreground">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/85 backdrop-blur-md border-b border-border px-4 py-3.5 flex items-center">
-        <button
-          onClick={() => router.back()}
-          className="p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors cursor-pointer"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <h1 className="text-base sm:text-lg font-bold text-foreground ml-2">Thanh toán đơn hàng</h1>
+    <div className="min-h-screen bg-background pb-28 lg:pb-16 text-foreground">
+      {/* Sub-header & Progress Stepper */}
+      <div className="bg-card/80 border-b border-border px-4 sm:px-6 py-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors cursor-pointer"
+              aria-label="Quay lại"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h1 className="font-heading text-lg sm:text-xl font-extrabold text-foreground">
+              Thanh toán đơn hàng
+            </h1>
+          </div>
+
+          {/* 4-Step Progress Stepper */}
+          <div className="flex items-center gap-2 text-xs font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/12 text-primary">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Giỏ hàng
+            </span>
+            <span className="w-4 h-px bg-border" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary text-primary-foreground shadow-xs">
+              2. Giao nhận & Thanh toán
+            </span>
+            <span className="w-4 h-px bg-border hidden sm:inline-block" />
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary text-muted-foreground">
+              3. Xác nhận
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="max-w-xl mx-auto p-4 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center mb-4 text-muted-foreground">
+          <div className="max-w-md mx-auto flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center mb-4 text-primary">
               <CreditCard className="w-8 h-8" />
             </div>
-            <h2 className="text-lg font-bold text-foreground mb-1.5">Giỏ hàng trống</h2>
-            <p className="text-muted-foreground text-sm mb-6">Bạn chưa có sản phẩm nào trong giỏ hàng.</p>
+            <h2 className="font-heading text-xl font-bold text-foreground mb-1.5">Giỏ hàng trống</h2>
+            <p className="text-muted-foreground text-sm mb-6">
+              Bạn chưa có sản phẩm nào trong giỏ hàng. Hãy khám phá thêm các món ăn tươi ngon nhé!
+            </p>
             <button
+              type="button"
               onClick={() => router.push('/menu')}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2.5 px-6 rounded-xl transition-colors shadow-sm cursor-pointer"
+              className="bg-primary hover:bg-primary-dark text-primary-foreground font-bold py-2.5 px-6 rounded-xl transition-colors shadow-sm cursor-pointer"
             >
               Tiếp tục mua sắm
             </button>
@@ -301,410 +328,453 @@ export default function CheckoutPage() {
             <p className="text-muted-foreground text-sm">Đang kiểm tra đơn hàng...</p>
           </div>
         ) : (
-          <>
-            {errorMsg && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3.5 flex gap-3 items-start animate-fade-in">
-                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-destructive">{errorMsg}</p>
-              </div>
-            )}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+            {/* LEFT COLUMN (7 cols): Delivery Info, Items, Note, Payment */}
+            <div className="lg:col-span-7 space-y-5">
+              {errorMsg && (
+                <div className="bg-destructive/10 border border-destructive/25 rounded-2xl p-4 flex gap-3 items-start animate-in">
+                  <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                  <p className="text-sm text-destructive font-medium">{errorMsg}</p>
+                </div>
+              )}
 
-            {/* Delivery Info */}
-            <section className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h2 className="text-foreground font-semibold text-sm sm:text-base flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  Địa chỉ giao hàng
-                </h2>
-                <button
-                  type="button"
+              {/* Delivery Info */}
+              <section className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-heading text-foreground font-bold text-base flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    Địa chỉ giao hàng
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddressModalOpen(true)}
+                    className="text-xs text-primary hover:underline font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors cursor-pointer"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    {selectedAddress ? 'Đổi địa chỉ' : 'Chọn địa chỉ'}
+                  </button>
+                </div>
+
+                <div
                   onClick={() => setIsAddressModalOpen(true)}
-                  className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors cursor-pointer"
+                  className="bg-secondary/50 border border-border hover:border-primary/40 rounded-xl p-3.5 cursor-pointer transition-colors group"
                 >
-                  <Edit2 className="w-3.5 h-3.5" />
-                  {selectedAddress ? 'Đổi địa chỉ' : 'Chọn địa chỉ'}
-                </button>
-              </div>
-
-              <div
-                onClick={() => setIsAddressModalOpen(true)}
-                className="bg-secondary/30 border border-border/60 hover:border-border rounded-xl p-3.5 cursor-pointer transition-colors group"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-foreground font-semibold flex items-center gap-2 text-sm">
-                    {finalRecipientName}
-                    {finalRecipientPhone ? ` • ${finalRecipientPhone}` : ''}
-                  </span>
-                  {selectedAddress && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-secondary text-secondary-foreground border border-border">
-                      {selectedAddress.label === 'HOME' ? (
-                        <>
-                          <Home className="w-3 h-3 text-sky-400" /> Nhà riêng
-                        </>
-                      ) : selectedAddress.label === 'WORK' ? (
-                        <>
-                          <Briefcase className="w-3 h-3 text-purple-400" /> Cơ quan
-                        </>
-                      ) : (
-                        <>
-                          <MapPin className="w-3 h-3 text-amber-400" /> Khác
-                        </>
-                      )}
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="text-foreground font-bold flex items-center gap-2 text-sm">
+                      {finalRecipientName}
+                      {finalRecipientPhone ? ` • ${finalRecipientPhone}` : ''}
                     </span>
-                  )}
-                  {selectedAddress?.is_default && (
-                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                      Mặc định
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-muted-foreground text-xs leading-relaxed group-hover:text-foreground transition-colors">
-                  {finalDeliveryAddress}
-                </p>
-
-                {selectedAddress?.delivery_notes && (
-                  <p className="text-[11px] text-muted-foreground/80 italic mt-1.5 pt-1.5 border-t border-border/40">
-                    <span className="not-italic text-muted-foreground font-medium">Ghi chú: </span>
-                    {selectedAddress.delivery_notes}
-                  </p>
-                )}
-              </div>
-            </section>
-
-            {/* Payment Method Selection */}
-            <section className="bg-card border border-border rounded-2xl p-5 space-y-3.5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h2 className="text-foreground font-semibold text-sm sm:text-base flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-primary" />
-                  Phương thức thanh toán
-                </h2>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  An toàn & Nhanh chóng
-                </span>
-              </div>
-
-              {/* Option 1: FoodPay In-App Wallet */}
-              <div
-                onClick={() => setPaymentMethod('WALLET')}
-                className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
-                  paymentMethod === 'WALLET'
-                    ? 'border-primary bg-primary/10 shadow-sm'
-                    : 'border-border/60 bg-secondary/30 hover:border-border'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center mt-0.5">
-                      <Wallet className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-foreground font-bold text-sm">Ví điện tử FoodPay</span>
-                        <span className="text-[10px] bg-primary/15 text-primary font-bold px-2 py-0.5 rounded-full border border-primary/25">
-                          Khuyên dùng
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Thanh toán bảo mật tức thì, không cần tiền mặt
-                      </p>
-
-                      {/* Wallet Balance Display */}
-                      <div className="mt-2 flex items-center gap-2.5">
-                        <span className="text-xs text-muted-foreground">
-                          Số dư khả dụng:{' '}
-                          <strong className="text-foreground font-semibold font-mono">
-                            {isLoadingWallet ? 'Đang tải...' : formatVND(availableBalance)}
-                          </strong>
-                        </span>
-
-                        {walletData && (
-                          isBalanceSufficient ? (
-                            <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                              <CheckCircle2 className="w-3 h-3" /> Đủ số dư
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsTopupModalOpen(true);
-                              }}
-                              className="text-[11px] bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors cursor-pointer"
-                            >
-                              <PlusCircle className="w-3 h-3" /> Nạp thêm
-                            </button>
-                          )
+                    {selectedAddress && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-card text-foreground border border-border">
+                        {selectedAddress.label === 'HOME' ? (
+                          <>
+                            <Home className="w-3 h-3 text-sky-500" /> Nhà riêng
+                          </>
+                        ) : selectedAddress.label === 'WORK' ? (
+                          <>
+                            <Briefcase className="w-3 h-3 text-purple-500" /> Cơ quan
+                          </>
+                        ) : (
+                          <>
+                            <MapPin className="w-3 h-3 text-amber-500" /> Khác
+                          </>
                         )}
+                      </span>
+                    )}
+                    {selectedAddress?.is_default && (
+                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/12 text-primary border border-primary/25">
+                        Mặc định
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-muted-foreground text-xs leading-relaxed group-hover:text-foreground transition-colors">
+                    {finalDeliveryAddress}
+                  </p>
+
+                  {selectedAddress?.delivery_notes && (
+                    <p className="text-[11px] text-muted-foreground italic mt-1.5 pt-1.5 border-t border-border/60">
+                      <span className="not-italic text-foreground/80 font-medium">Ghi chú: </span>
+                      {selectedAddress.delivery_notes}
+                    </p>
+                  )}
+                </div>
+              </section>
+
+              {/* Order Items Preview */}
+              <section className="bg-card border border-border rounded-2xl p-5 space-y-3.5 shadow-xs">
+                <h2 className="font-heading text-foreground font-bold text-base">
+                  Món đã chọn ({getTotalItems()})
+                </h2>
+                <div className="divide-y divide-border/70">
+                  {items.map((item) => (
+                    <div key={item.id} className="py-3 flex justify-between items-start first:pt-0 last:pb-0">
+                      <div className="flex gap-3">
+                        <div className="w-7 h-7 bg-primary/12 text-primary rounded-lg flex items-center justify-center text-xs font-bold mt-0.5 shrink-0">
+                          {item.quantity}x
+                        </div>
+                        <div>
+                          <h4 className="text-foreground text-sm font-semibold">{item.name}</h4>
+                          {item.options && item.options.length > 0 && (
+                            <p className="text-muted-foreground text-xs mt-0.5">{item.options.join(', ')}</p>
+                          )}
+                        </div>
                       </div>
+                      <span className="text-foreground text-sm font-bold font-mono tabular-nums">
+                        {formatVND(item.price * item.quantity)}
+                      </span>
                     </div>
-                  </div>
-
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 transition-all mt-1 ${
-                      paymentMethod === 'WALLET'
-                        ? 'border-primary bg-primary'
-                        : 'border-muted-foreground/40 bg-transparent'
-                    }`}
-                  />
+                  ))}
                 </div>
-              </div>
+              </section>
 
-              {/* Option 2: VNPAY QR */}
-              <div
-                onClick={() => setPaymentMethod('VNPAY')}
-                className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
-                  paymentMethod === 'VNPAY'
-                    ? 'border-primary bg-primary/10 shadow-sm'
-                    : 'border-border/60 bg-secondary/30 hover:border-border'
-                }`}
-              >
+              {/* Customer Note */}
+              <section className="bg-card border border-border rounded-2xl p-5 space-y-2.5 shadow-xs">
+                <h2 className="font-heading text-foreground font-bold text-base flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  Ghi chú cho nhà hàng & tài xế
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Thêm yêu cầu chế biến hoặc lưu ý giao hàng cho tài xế
+                </p>
+                <textarea
+                  value={orderNote}
+                  onChange={(e) => setOrderNote(e.target.value)}
+                  placeholder="Ví dụ: Ít hành lá, nước lèo để riêng, gọi khi tới cổng..."
+                  rows={2}
+                  maxLength={300}
+                  className="w-full bg-background border border-input rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-colors resize-none"
+                />
+              </section>
+
+              {/* Payment Method Selection */}
+              <section className="bg-card border border-border rounded-2xl p-5 space-y-3.5 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center font-bold text-xs">
-                      VNPAY
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-foreground font-bold text-sm">Cổng thanh toán VNPAY QR</span>
-                        <span className="text-[10px] bg-secondary text-secondary-foreground font-medium px-2 py-0.5 rounded-full border border-border">
-                          Thẻ / QR Ngân hàng
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Quét mã QR qua 40+ ứng dụng ngân hàng & Thẻ quốc tế
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 transition-all ${
-                      paymentMethod === 'VNPAY'
-                        ? 'border-primary bg-primary'
-                        : 'border-muted-foreground/40 bg-transparent'
-                    }`}
-                  />
+                  <h2 className="font-heading text-foreground font-bold text-base flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-primary" />
+                    Phương thức thanh toán
+                  </h2>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    An toàn & Nhanh chóng
+                  </span>
                 </div>
-              </div>
 
-              {/* Option 3: MoMo Wallet */}
-              <div
-                onClick={() => setPaymentMethod('MOMO')}
-                className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
-                  paymentMethod === 'MOMO'
-                    ? 'border-primary bg-primary/10 shadow-sm'
-                    : 'border-border/60 bg-secondary/30 hover:border-border'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-pink-500/15 text-pink-400 flex items-center justify-center font-bold text-xs">
-                      MOMO
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-foreground font-bold text-sm">Ví điện tử MoMo</span>
-                        <span className="text-[10px] bg-secondary text-secondary-foreground font-medium px-2 py-0.5 rounded-full border border-border">
-                          Ví điện tử
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Thanh toán bảo mật tức thì qua ứng dụng Ví MoMo
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 transition-all ${
-                      paymentMethod === 'MOMO'
-                        ? 'border-primary bg-primary'
-                        : 'border-muted-foreground/40 bg-transparent'
-                    }`}
-                  />
-                </div>
-              </div>
-
-              {/* Option 4: Cash On Delivery (COD) */}
-              <div
-                onClick={() => setPaymentMethod('COD')}
-                className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
-                  paymentMethod === 'COD'
-                    ? 'border-primary bg-primary/10 shadow-sm'
-                    : 'border-border/60 bg-secondary/30 hover:border-border'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-secondary text-muted-foreground flex items-center justify-center">
-                      <Banknote className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="text-foreground font-bold text-sm">Tiền mặt khi nhận hàng (COD)</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Thanh toán trực tiếp cho tài xế khi giao đồ ăn
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 transition-all ${
-                      paymentMethod === 'COD'
-                        ? 'border-primary bg-primary'
-                        : 'border-muted-foreground/40 bg-transparent'
-                    }`}
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* Order Items Preview */}
-            <section className="bg-card border border-border rounded-2xl p-5 space-y-3.5 shadow-sm">
-              <h2 className="text-foreground font-semibold text-sm sm:text-base">Món đã chọn ({getTotalItems()})</h2>
-              <div className="divide-y divide-border/60">
-                {items.map((item) => (
-                  <div key={item.id} className="py-3 flex justify-between items-start first:pt-0 last:pb-0">
-                    <div className="flex gap-2.5">
-                      <div className="w-6 h-6 bg-secondary text-secondary-foreground rounded flex items-center justify-center text-xs font-bold mt-0.5">
-                        {item.quantity}x
+                {/* Option 1: FoodPay In-App Wallet */}
+                <div
+                  onClick={() => setPaymentMethod('WALLET')}
+                  className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
+                    paymentMethod === 'WALLET'
+                      ? 'border-primary bg-primary/8 shadow-xs'
+                      : 'border-border bg-secondary/40 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center mt-0.5 shrink-0">
+                        <Wallet className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="text-foreground text-sm font-medium">{item.name}</h4>
-                        {item.options && item.options.length > 0 && (
-                          <p className="text-muted-foreground text-xs mt-0.5">{item.options.join(', ')}</p>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <span className="text-foreground font-bold text-sm">Ví điện tử FoodPay</span>
+                          <span className="text-[10px] bg-primary/15 text-primary font-bold px-2 py-0.5 rounded-full border border-primary/25">
+                            Khuyên dùng
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Thanh toán bảo mật tức thì, không cần tiền mặt
+                        </p>
+
+                        <div className="mt-2 flex items-center gap-2.5 flex-wrap">
+                          <span className="text-xs text-muted-foreground">
+                            Số dư khả dụng:{' '}
+                            <strong className="text-foreground font-semibold font-mono">
+                              {isLoadingWallet ? 'Đang tải...' : formatVND(availableBalance)}
+                            </strong>
+                          </span>
+
+                          {walletData && (
+                            isBalanceSufficient ? (
+                              <span className="text-[11px] text-primary flex items-center gap-1 font-semibold bg-primary/12 px-2 py-0.5 rounded-full border border-primary/25">
+                                <CheckCircle2 className="w-3 h-3" /> Đủ số dư
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsTopupModalOpen(true);
+                                }}
+                                className="text-[11px] bg-primary hover:bg-primary-dark text-primary-foreground font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-colors cursor-pointer"
+                              >
+                                <PlusCircle className="w-3 h-3" /> Nạp thêm
+                              </button>
+                            )
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <span className="text-foreground text-sm font-medium font-mono">
-                      {formatVND(item.price * item.quantity)}
-                    </span>
+
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 transition-all mt-1 shrink-0 ${
+                        paymentMethod === 'WALLET'
+                          ? 'border-primary bg-primary'
+                          : 'border-muted-foreground/40 bg-transparent'
+                      }`}
+                    />
                   </div>
-                ))}
-              </div>
-            </section>
+                </div>
 
-            {/* Customer Note / Message for Restaurant & Driver */}
-            <section className="bg-card border border-border rounded-2xl p-5 space-y-2.5 shadow-sm">
-              <h2 className="text-foreground font-semibold text-sm sm:text-base flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-primary" />
-                Ghi chú cho nhà hàng & tài xế
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Thêm yêu cầu chế biến (ví dụ: ít hành, nước dùng để riêng, không cay) hoặc lưu ý giao hàng
-              </p>
-              <textarea
-                value={orderNote}
-                onChange={(e) => setOrderNote(e.target.value)}
-                placeholder="Ví dụ: Ít hành lá, nước lèo để riêng, thêm tương ớt..."
-                rows={2}
-                maxLength={300}
-                className="w-full bg-secondary/30 border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/50 transition-colors resize-none"
+                {/* Option 2: VNPAY QR */}
+                <div
+                  onClick={() => setPaymentMethod('VNPAY')}
+                  className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
+                    paymentMethod === 'VNPAY'
+                      ? 'border-primary bg-primary/8 shadow-xs'
+                      : 'border-border bg-secondary/40 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-xs shrink-0">
+                        VNPAY
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-foreground font-bold text-sm">Cổng thanh toán VNPAY QR</span>
+                          <span className="text-[10px] bg-card text-muted-foreground font-medium px-2 py-0.5 rounded-full border border-border">
+                            Thẻ / QR
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Quét mã QR qua 40+ ứng dụng ngân hàng & Thẻ quốc tế
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 transition-all shrink-0 ${
+                        paymentMethod === 'VNPAY'
+                          ? 'border-primary bg-primary'
+                          : 'border-muted-foreground/40 bg-transparent'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Option 3: MoMo Wallet */}
+                <div
+                  onClick={() => setPaymentMethod('MOMO')}
+                  className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
+                    paymentMethod === 'MOMO'
+                      ? 'border-primary bg-primary/8 shadow-xs'
+                      : 'border-border bg-secondary/40 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-pink-500/15 text-pink-600 dark:text-pink-400 flex items-center justify-center font-bold text-xs shrink-0">
+                        MOMO
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-foreground font-bold text-sm">Ví điện tử MoMo</span>
+                          <span className="text-[10px] bg-card text-muted-foreground font-medium px-2 py-0.5 rounded-full border border-border">
+                            Ví điện tử
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Thanh toán bảo mật tức thì qua ứng dụng Ví MoMo
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 transition-all shrink-0 ${
+                        paymentMethod === 'MOMO'
+                          ? 'border-primary bg-primary'
+                          : 'border-muted-foreground/40 bg-transparent'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Option 4: COD */}
+                <div
+                  onClick={() => setPaymentMethod('COD')}
+                  className={`relative p-3.5 rounded-xl border transition-colors cursor-pointer ${
+                    paymentMethod === 'COD'
+                      ? 'border-primary bg-primary/8 shadow-xs'
+                      : 'border-border bg-secondary/40 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-card border border-border text-muted-foreground flex items-center justify-center shrink-0">
+                        <Banknote className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-foreground font-bold text-sm">Tiền mặt khi nhận hàng (COD)</span>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Thanh toán trực tiếp cho tài xế khi giao đồ ăn
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 transition-all shrink-0 ${
+                        paymentMethod === 'COD'
+                          ? 'border-primary bg-primary'
+                          : 'border-muted-foreground/40 bg-transparent'
+                      }`}
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            {/* RIGHT COLUMN (5 cols): Sticky Loyalty, Vouchers, Price Summary & Desktop CTA */}
+            <div className="lg:col-span-5 lg:sticky lg:top-20 space-y-5">
+              <LoyaltyCheckoutSection
+                subtotal={subtotal}
+                onPointsChange={(points, discount) => {
+                  setPointsToUse(points);
+                  setPointsDiscount(discount);
+                }}
               />
-            </section>
 
-            {/* Loyalty Points Section */}
-            <LoyaltyCheckoutSection
-              subtotal={subtotal}
-              onPointsChange={(points, discount) => {
-                setPointsToUse(points);
-                setPointsDiscount(discount);
-              }}
-            />
+              {/* Voucher Section */}
+              <section className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-heading text-foreground font-bold text-base flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-primary" />
+                    Mã Giảm Giá & Voucher
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setIsVoucherDrawerOpen(true)}
+                    className="text-xs text-primary hover:underline font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors cursor-pointer"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    {selectedVouchers.length > 0 ? 'Đổi voucher' : 'Chọn hoặc nhập mã'}
+                  </button>
+                </div>
 
-            {/* Voucher Section */}
-            <section className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h2 className="text-foreground font-semibold text-sm sm:text-base flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-primary" />
-                  Mã Giảm Giá & Voucher
-                </h2>
+                {selectedVouchers.length > 0 ? (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVouchers.map((v) => (
+                        <span
+                          key={v.id}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/12 border border-amber-500/30 text-amber-700 dark:text-amber-300"
+                        >
+                          <Tag className="w-3 h-3" />
+                          {v.code} (-{formatVND(v.discount_amount)})
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-xs text-primary font-semibold">
+                      ✓ Đã áp dụng {selectedVouchers.length} ưu đãi (Tiết kiệm {formatVND(foodVoucherDiscount + shippingVoucherDiscount)})
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => setIsVoucherDrawerOpen(true)}
+                    className="p-3 rounded-xl bg-secondary/50 border border-border hover:border-primary/40 cursor-pointer flex items-center justify-between text-xs text-muted-foreground transition-colors"
+                  >
+                    <span>Chưa áp dụng voucher. Nhấn để chọn combo!</span>
+                    <span className="text-primary font-bold">Chọn ngay →</span>
+                  </div>
+                )}
+              </section>
+
+              {/* Price Summary + Desktop Place Order Button */}
+              <section className="bg-card border border-border rounded-2xl p-5 space-y-3.5 shadow-sm">
+                <h2 className="font-heading text-foreground font-bold text-base">Chi tiết thanh toán</h2>
+                <div className="flex justify-between text-muted-foreground text-sm">
+                  <span>Tiền món ăn (Tạm tính)</span>
+                  <span className="text-foreground font-semibold font-mono">{formatVND(subtotal)}</span>
+                </div>
+                {pointsDiscount > 0 && (
+                  <div className="flex justify-between text-amber-600 dark:text-amber-400 text-sm font-medium animate-in">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Giảm giá từ điểm ({pointsToUse.toLocaleString('vi-VN')} điểm)
+                    </span>
+                    <span className="font-mono font-bold">-{formatVND(pointsDiscount)}</span>
+                  </div>
+                )}
+                {foodVoucherDiscount > 0 && (
+                  <div className="flex justify-between text-amber-600 dark:text-amber-400 text-sm font-medium animate-in">
+                    <span className="flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5" />
+                      Giảm giá món ăn (Voucher)
+                    </span>
+                    <span className="font-mono font-bold">-{formatVND(foodVoucherDiscount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-muted-foreground text-sm">
+                  <span className="flex items-center gap-1.5">
+                    Phí giao hàng
+                    <span className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-semibold border border-border">
+                      Tiêu chuẩn
+                    </span>
+                  </span>
+                  <span className="text-foreground font-semibold font-mono">{formatVND(shippingFee)}</span>
+                </div>
+                {shippingVoucherDiscount > 0 && (
+                  <div className="flex justify-between text-primary text-sm font-medium animate-in">
+                    <span className="flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5" />
+                      Giảm phí giao hàng (Freeship)
+                    </span>
+                    <span className="font-mono font-bold">-{formatVND(shippingVoucherDiscount)}</span>
+                  </div>
+                )}
+                <div className="pt-3 border-t border-border flex justify-between items-center">
+                  <span className="text-foreground font-bold">Tổng thanh toán</span>
+                  <span className="text-2xl font-extrabold text-primary font-mono tabular-nums">{formatVND(total)}</span>
+                </div>
+
+                {/* Desktop Place Order CTA */}
                 <button
                   type="button"
-                  onClick={() => setIsVoucherDrawerOpen(true)}
-                  className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/20 transition-colors cursor-pointer"
+                  onClick={handlePlaceOrder}
+                  disabled={isSubmitting || !!errorMsg}
+                  className={`hidden lg:flex w-full py-3.5 px-6 rounded-xl font-bold text-white transition-all shadow-md items-center justify-center gap-2 cursor-pointer ${
+                    isSubmitting || !!errorMsg
+                      ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                      : paymentMethod === 'WALLET' && !isBalanceSufficient
+                      ? 'bg-amber-600 hover:bg-amber-500'
+                      : paymentMethod === 'VNPAY'
+                      ? 'bg-sky-600 hover:bg-sky-500'
+                      : paymentMethod === 'MOMO'
+                      ? 'bg-pink-600 hover:bg-pink-500'
+                      : 'bg-primary hover:bg-primary-dark text-primary-foreground'
+                  }`}
                 >
-                  <Zap className="w-3.5 h-3.5" />
-                  {selectedVouchers.length > 0 ? 'Đổi voucher' : 'Chọn hoặc nhập mã'}
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Đang xử lý đơn...</span>
+                    </>
+                  ) : paymentMethod === 'WALLET' && !isBalanceSufficient ? (
+                    <>
+                      <PlusCircle className="w-4 h-4" />
+                      <span>Nạp tiền & Đặt hàng</span>
+                    </>
+                  ) : paymentMethod === 'VNPAY' || paymentMethod === 'MOMO' ? (
+                    <>
+                      <QrCode className="w-4 h-4" />
+                      <span>Thanh toán QR ngay</span>
+                    </>
+                  ) : (
+                    <span>Đặt hàng ngay</span>
+                  )}
                 </button>
-              </div>
-
-              {selectedVouchers.length > 0 ? (
-                <div className="space-y-2 pt-1">
-                  <div className="flex flex-wrap gap-2">
-                    {selectedVouchers.map((v) => (
-                      <span
-                        key={v.id}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/10 border border-amber-500/30 text-amber-300"
-                      >
-                        <Tag className="w-3 h-3" />
-                        {v.code} (-{formatVND(v.discount_amount)})
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-xs text-emerald-400 font-medium">
-                    ✓ Đã áp dụng {selectedVouchers.length} ưu đãi (Tiết kiệm {formatVND(foodVoucherDiscount + shippingVoucherDiscount)})
-                  </p>
-                </div>
-              ) : (
-                <div
-                  onClick={() => setIsVoucherDrawerOpen(true)}
-                  className="p-3 rounded-xl bg-secondary/30 border border-border/60 hover:border-border cursor-pointer flex items-center justify-between text-xs text-muted-foreground transition-colors"
-                >
-                  <span>Chưa áp dụng voucher. Nhấn để chọn combo giảm sâu nhất!</span>
-                  <span className="text-primary font-bold">Chọn ngay →</span>
-                </div>
-              )}
-            </section>
-
-            {/* Price Summary */}
-            <section className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-sm">
-              <h2 className="text-foreground font-semibold text-sm sm:text-base mb-1">Chi tiết thanh toán</h2>
-              <div className="flex justify-between text-muted-foreground text-sm">
-                <span>Tiền món ăn (Tạm tính)</span>
-                <span className="text-foreground font-medium font-mono">{formatVND(subtotal)}</span>
-              </div>
-              {pointsDiscount > 0 && (
-                <div className="flex justify-between text-amber-400 text-sm font-medium animate-in fade-in">
-                  <span className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    Giảm giá từ điểm ({pointsToUse.toLocaleString('vi-VN')} điểm)
-                  </span>
-                  <span className="font-mono font-bold">-{formatVND(pointsDiscount)}</span>
-                </div>
-              )}
-              {foodVoucherDiscount > 0 && (
-                <div className="flex justify-between text-amber-400 text-sm font-medium animate-in fade-in">
-                  <span className="flex items-center gap-1.5">
-                    <Tag className="w-3.5 h-3.5" />
-                    Giảm giá món ăn (Voucher)
-                  </span>
-                  <span className="font-mono font-bold">-{formatVND(foodVoucherDiscount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-muted-foreground text-sm">
-                <span className="flex items-center gap-1.5">
-                  Phí giao hàng (Cố định)
-                  <span className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-semibold border border-border">
-                    Mặc định
-                  </span>
-                </span>
-                <span className="text-foreground font-medium font-mono">{formatVND(shippingFee)}</span>
-              </div>
-              {shippingVoucherDiscount > 0 && (
-                <div className="flex justify-between text-emerald-400 text-sm font-medium animate-in fade-in">
-                  <span className="flex items-center gap-1.5">
-                    <Tag className="w-3.5 h-3.5" />
-                    Giảm phí giao hàng (Freeship)
-                  </span>
-                  <span className="font-mono font-bold">-{formatVND(shippingVoucherDiscount)}</span>
-                </div>
-              )}
-              <div className="pt-3 border-t border-border flex justify-between items-center">
-                <span className="text-foreground font-bold">Tổng thanh toán</span>
-                <span className="text-xl font-bold text-primary font-mono">{formatVND(total)}</span>
-              </div>
-            </section>
-          </>
+              </section>
+            </div>
+          </div>
         )}
       </div>
 
@@ -732,9 +802,9 @@ export default function CheckoutPage() {
         />
       )}
 
-      {/* Fixed Bottom Bar */}
+      {/* Mobile Fixed Bottom Bar */}
       {items.length > 0 && !isValidating && (
-        <div className="fixed bottom-0 left-0 right-0 p-3.5 sm:p-4 bg-card/95 backdrop-blur-md border-t border-border z-20">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3.5 sm:p-4 bg-card/95 backdrop-blur-md border-t border-border z-20">
           <div className="max-w-xl mx-auto flex items-center justify-between gap-4">
             <div>
               <p className="text-muted-foreground text-xs">
@@ -750,6 +820,7 @@ export default function CheckoutPage() {
             </div>
 
             <button
+              type="button"
               onClick={handlePlaceOrder}
               disabled={isSubmitting || !!errorMsg}
               className={`py-3 px-6 rounded-xl font-semibold text-white transition-all shadow-sm flex items-center gap-2 cursor-pointer ${
@@ -761,7 +832,7 @@ export default function CheckoutPage() {
                   ? 'bg-sky-600 hover:bg-sky-500'
                   : paymentMethod === 'MOMO'
                   ? 'bg-pink-600 hover:bg-pink-500'
-                  : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                  : 'bg-primary hover:bg-primary-dark text-primary-foreground'
               }`}
             >
               {isSubmitting ? (

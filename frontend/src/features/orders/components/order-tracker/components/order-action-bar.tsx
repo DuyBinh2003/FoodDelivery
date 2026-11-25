@@ -22,20 +22,19 @@ export function OrderActionBar({
         <Button
           variant="outline"
           size="sm"
-          className="w-full sm:w-auto border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs h-10 px-4 rounded-xl gap-2"
+          className="w-full sm:w-auto text-xs h-10 px-4 rounded-xl gap-2"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Lịch sử đơn hàng
         </Button>
       </Link>
 
-      <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-        {/* Cancel Order Action - Only available when PENDING */}
+      <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
         {status === 'PENDING' && (
           <>
             {confirmCancel ? (
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <span className="text-xs text-rose-300 flex items-center gap-1">
+                <span className="text-xs text-destructive flex items-center gap-1 font-medium">
                   <AlertTriangle className="w-3.5 h-3.5" /> Chắc chắn hủy?
                 </span>
                 <Button
@@ -43,7 +42,7 @@ export function OrderActionBar({
                   variant="destructive"
                   onClick={onCancel}
                   disabled={isCancelling}
-                  className="bg-rose-600 hover:bg-rose-500 text-xs h-10 px-3.5 rounded-xl"
+                  className="text-xs h-10 px-3.5 rounded-xl"
                 >
                   {isCancelling ? 'Đang hủy...' : 'Đồng ý hủy'}
                 </Button>
@@ -51,17 +50,17 @@ export function OrderActionBar({
                   size="sm"
                   variant="ghost"
                   onClick={() => setConfirmCancel(false)}
-                  className="text-xs text-zinc-400 hover:text-white h-10 px-3 rounded-xl"
+                  className="text-xs h-10 px-3 rounded-xl"
                 >
                   Không
                 </Button>
               </div>
             ) : (
               <Button
-                variant="outline"
+                variant="destructive"
                 size="sm"
                 onClick={() => setConfirmCancel(true)}
-                className="w-full sm:w-auto border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 hover:text-rose-200 text-xs h-10 px-4 rounded-xl gap-1.5"
+                className="w-full sm:w-auto text-xs h-10 px-4 rounded-xl gap-1.5"
               >
                 <XCircle className="w-3.5 h-3.5" />
                 Hủy đơn hàng
@@ -70,38 +69,32 @@ export function OrderActionBar({
           </>
         )}
 
-        {/* Review Action - Available when COMPLETED */}
         {status === 'COMPLETED' && (
           <Button
             size="sm"
+            variant="secondary"
             onClick={onOpenReview}
-            className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold text-xs h-10 px-4 rounded-xl gap-2 shadow-lg shadow-amber-500/20"
+            className="w-full sm:w-auto bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 border-amber-500/30 font-bold text-xs h-10 px-4 rounded-xl gap-2"
           >
             <Star className="w-4 h-4 fill-current" />
             {hasReview ? 'Xem lại đánh giá' : 'Đánh giá đơn hàng'}
           </Button>
         )}
 
-        {/* Dispute / Report Issue Action */}
         {onOpenDispute && (status === 'DELIVERING' || status === 'COMPLETED' || status === 'CANCELLED') && (
           <Button
             variant="outline"
             size="sm"
             onClick={onOpenDispute}
-            className="w-full sm:w-auto border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs h-10 px-3.5 rounded-xl gap-1.5"
+            className="w-full sm:w-auto border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 text-xs h-10 px-3.5 rounded-xl gap-1.5"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
             Báo cáo sự cố
           </Button>
         )}
 
-        {/* Re-order link */}
         <Link href="/" className="w-full sm:w-auto">
-          <Button
-            variant="default"
-            size="sm"
-            className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs h-10 px-4 rounded-xl gap-2 shadow-md shadow-orange-600/25"
-          >
+          <Button size="sm" className="w-full sm:w-auto text-xs h-10 px-4 rounded-xl gap-2">
             <RotateCcw className="w-3.5 h-3.5" />
             Đặt thêm món khác
           </Button>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Bike,
   Store,
@@ -61,14 +62,13 @@ export function DriverAvailableTrips({
 
   return (
     <div className="space-y-6">
-      {/* Top action bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-2">
             {isOnline ? (
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+              <span className="w-2.5 h-2.5 rounded-full bg-primary animate-ping" />
             ) : (
-              <span className="w-2.5 h-2.5 rounded-full bg-zinc-500" />
+              <span className="w-2.5 h-2.5 rounded-full bg-muted-foreground" />
             )}
             <span>
               {isOnline
@@ -76,7 +76,7 @@ export function DriverAvailableTrips({
                 : 'Chuyến xe đang tìm tài xế (Tạm dừng)'}
             </span>
           </h2>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {isOnline
               ? 'Hệ thống phát tín hiệu theo thời gian thực (Atomic Claim - Ai bấm trước nhận trước)'
               : 'Tài xế đang ở trạng thái Ngoại tuyến. Bật Trực tuyến để bắt đầu nhận đơn.'}
@@ -85,53 +85,55 @@ export function DriverAvailableTrips({
 
         {isOnline && (
           <button
+            type="button"
             onClick={onRefresh}
             disabled={loading}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card hover:bg-secondary text-xs font-semibold text-foreground border border-border transition-colors cursor-pointer"
           >
-            <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-primary' : ''}`} />
             <span>Làm mới</span>
           </button>
         )}
       </div>
 
-      {/* When Offline: Dedicated Premium Offline Status Banner */}
       {!isOnline ? (
-        <div className="bg-gradient-to-br from-zinc-900/90 via-zinc-900/60 to-amber-950/20 border border-amber-500/20 rounded-3xl p-8 sm:p-10 text-center shadow-2xl backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 right-1/4 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/10">
+        <div className="bg-card border border-amber-500/25 rounded-3xl p-8 sm:p-10 text-center shadow-xs relative overflow-hidden">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/12 border border-amber-500/25 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4">
             <PowerOff className="w-8 h-8" />
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/12 text-amber-700 dark:text-amber-300 border border-amber-500/25 mb-3">
             <span className="w-2 h-2 rounded-full bg-amber-500" />
             <span>Đang Ngoại Tuyến (OFFLINE)</span>
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">
+          <h3 className="font-heading text-xl font-bold text-foreground mb-2">
             Hệ thống đang tạm dừng bắn đơn tới bạn
           </h3>
-          <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto mb-6 leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-6 leading-relaxed">
             Bạn đang ở chế độ ngoại tuyến. Các chuyến xe mới sẽ không được phân phối để đảm bảo bạn không bị làm phiền trong thời gian nghỉ ngơi. Chuyển sang trực tuyến bất cứ lúc nào để tiếp tục nhận cuốc!
           </p>
           {onGoOnline && (
             <button
+              type="button"
               onClick={onGoOnline}
-              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/25 cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-primary hover:bg-primary-dark text-primary-foreground font-bold text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer active:scale-95"
             >
-              <Radio className="w-4 h-4 text-zinc-950 animate-pulse" />
+              <Radio className="w-4 h-4 animate-pulse" />
               <span>Bật Trực Tuyến Để Nhận Đơn</span>
             </button>
           )}
         </div>
       ) : loading && trips.length === 0 ? (
-        <div className="py-16 text-center text-zinc-400">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-amber-500" />
+        <div className="py-16 text-center text-muted-foreground">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-primary" />
           <p className="text-sm">Đang tìm các chuyến xe quanh bạn...</p>
         </div>
       ) : trips.length === 0 ? (
-        <div className="py-16 text-center bg-zinc-900/40 border border-white/5 rounded-3xl p-8">
-          <Bike className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-          <h3 className="text-base font-semibold text-zinc-300 mb-1">Hiện chưa có chuyến xe mới</h3>
-          <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+        <div className="py-16 text-center bg-card border border-border rounded-3xl p-8">
+          <Bike className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+          <h3 className="font-heading text-base font-bold text-foreground mb-1">
+            Hiện chưa có chuyến xe mới
+          </h3>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             Khi nhà hàng chuẩn bị xong món ăn, hệ thống sẽ phát tín hiệu chuyến xe tới đây ngay lập tức.
           </p>
         </div>
@@ -141,62 +143,60 @@ export function DriverAvailableTrips({
             const isClaiming = claimingId === trip.order_id;
 
             return (
-              <div
+              <motion.div
                 key={trip.id}
-                className="bg-zinc-900/90 border border-amber-500/20 hover:border-amber-500/40 rounded-2xl p-5 shadow-2xl backdrop-blur-md transition-all relative overflow-hidden flex flex-col justify-between"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="bg-card border border-primary/25 hover:border-primary/50 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between"
               >
-                {/* Subtle top glow */}
-                <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
-
                 <div>
-                  {/* Card Header: Order ID & Time */}
-                  <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+                      <span className="font-mono text-xs font-bold text-primary bg-primary/12 border border-primary/25 px-2.5 py-1 rounded-lg">
                         #{trip.order_id.slice(0, 8)}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-zinc-400">
-                        <Clock className="w-3 h-3 text-zinc-500" />
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="w-3 h-3" />
                         {formatDate(trip.created_at)}
                       </span>
                     </div>
 
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/12 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25 animate-pulse">
                       <CheckCircle2 className="w-3 h-3" />
                       Món đã sẵn sàng
                     </span>
                   </div>
 
-                  {/* Route Visualizer: Pickup -> Dropoff */}
                   <div className="space-y-3 relative mb-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-7 h-7 rounded-lg bg-amber-500/12 border border-amber-500/25 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
                         <Store className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-white">{trip.pickup_name}</p>
-                        <p className="text-xs text-zinc-400 line-clamp-1">{trip.pickup_address}</p>
+                        <p className="text-xs font-bold text-foreground">{trip.pickup_name}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{trip.pickup_address}</p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-7 h-7 rounded-lg bg-primary/12 border border-primary/25 text-primary flex items-center justify-center shrink-0 mt-0.5">
                         <MapPin className="w-3.5 h-3.5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-bold text-white">Địa chỉ giao hàng</p>
+                          <p className="text-xs font-bold text-foreground">Địa chỉ giao hàng</p>
                           {trip.distance_km != null && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/30 shrink-0">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-primary/12 text-primary border border-primary/25 shrink-0">
                               <Navigation className="w-3 h-3" />
                               {trip.distance_km} km
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-zinc-400 line-clamp-1 mt-0.5">{trip.dropoff_address}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{trip.dropoff_address}</p>
                         {trip.recipient_name && (
-                          <p className="text-[11px] text-zinc-400 mt-0.5">
-                            <span className="text-zinc-300 font-medium">{trip.recipient_name}</span>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            <span className="text-foreground font-semibold">{trip.recipient_name}</span>
                             {trip.recipient_phone && <span> • {trip.recipient_phone}</span>}
                           </p>
                         )}
@@ -204,15 +204,18 @@ export function DriverAvailableTrips({
                     </div>
                   </div>
 
-                  {/* Items summary */}
                   {trip.items && trip.items.length > 0 && (
-                    <div className="bg-white/5 rounded-xl p-3 mb-4 text-xs text-zinc-300">
-                      <span className="font-semibold text-zinc-400 block mb-1">Món ăn cần lấy:</span>
+                    <div className="bg-secondary/60 rounded-xl p-3 mb-4 text-xs text-foreground border border-border">
+                      <span className="font-semibold text-muted-foreground block mb-1">Món ăn cần lấy:</span>
                       <div className="space-y-1">
                         {trip.items.map((item, idx) => (
                           <div key={idx} className="flex justify-between">
-                            <span>{item.quantity}x {item.name || `Món ăn #${item.menu_item_id.slice(0, 6)}`}</span>
-                            <span className="font-mono text-zinc-400">{formatCurrency(item.unit_price * item.quantity)}</span>
+                            <span>
+                              {item.quantity}x {item.name || `Món ăn #${item.menu_item_id.slice(0, 6)}`}
+                            </span>
+                            <span className="font-mono text-muted-foreground">
+                              {formatCurrency(item.unit_price * item.quantity)}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -220,36 +223,41 @@ export function DriverAvailableTrips({
                   )}
                 </div>
 
-                {/* Footer: Driver Earnings & Claim Button */}
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-4 mt-2">
+                <div className="pt-4 border-t border-border flex items-center justify-between gap-4 mt-2">
                   <div>
-                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
-                      <span>Cước ship: <strong className="text-zinc-200">{formatCurrency(trip.delivery_fee || 15000)}</strong></span>
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <span>
+                        Cước ship:{' '}
+                        <strong className="text-foreground">{formatCurrency(trip.delivery_fee || 15000)}</strong>
+                      </span>
                       <span>•</span>
-                      <span className="text-red-400/90 font-medium">Phí sàn (10%): -{formatCurrency(trip.platform_fee || 1500)}</span>
+                      <span className="text-destructive font-medium">
+                        Phí sàn (10%): -{formatCurrency(trip.platform_fee || 1500)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-amber-400 font-semibold">Tài xế thực nhận:</span>
-                      <span className="text-lg font-extrabold text-amber-400 font-mono">
+                      <span className="text-xs text-primary font-semibold">Tài xế thực nhận:</span>
+                      <span className="text-lg font-extrabold text-primary font-mono">
                         +{formatCurrency(trip.driver_earnings || 13500)}
                       </span>
                     </div>
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => handleClaim(trip.order_id)}
                     disabled={isClaiming}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-zinc-950 font-bold text-xs transition-all shadow-lg shadow-amber-500/25 cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary hover:bg-primary-dark text-primary-foreground font-bold text-xs transition-all shadow-sm cursor-pointer disabled:opacity-50"
                   >
                     {isClaiming ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-zinc-950" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <Navigation className="w-4 h-4 text-zinc-950" />
+                      <Navigation className="w-4 h-4" />
                     )}
                     <span>Nhận chuyến ngay</span>
                   </button>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>

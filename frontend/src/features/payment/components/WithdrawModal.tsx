@@ -145,35 +145,35 @@ export function WithdrawModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-card text-card-foreground border border-border rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
         {/* Close button */}
         <button
           onClick={onClose}
           disabled={submitting}
-          className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors"
+          className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center border border-orange-500/30">
+          <div className="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center border border-primary/25">
             <Building2 className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white tracking-tight">Rút tiền về tài khoản ngân hàng</h2>
-            <p className="text-xs text-zinc-400">Chuyển tiền nhanh 24/7 qua chuẩn VietQR / Napas</p>
+            <h2 className="text-lg font-bold text-foreground tracking-tight">Rút tiền về tài khoản ngân hàng</h2>
+            <p className="text-xs text-muted-foreground">Chuyển tiền nhanh 24/7 qua chuẩn VietQR / Napas</p>
           </div>
         </div>
 
         {/* Balance Card */}
-        <div className="bg-zinc-950/80 border border-zinc-800 rounded-xl p-4 mb-5 flex items-center justify-between">
+        <div className="bg-muted/50 border border-border rounded-xl p-4 mb-5 flex items-center justify-between">
           <div>
-            <p className="text-xs text-zinc-400">Số dư khả dụng có thể rút</p>
-            <p className="text-xl font-extrabold text-emerald-400 tracking-tight mt-0.5">
+            <p className="text-xs text-muted-foreground">Số dư khả dụng có thể rút</p>
+            <p className="text-xl font-extrabold text-primary tracking-tight mt-0.5 font-mono tabular-nums">
               {fetchingWallet ? (
-                <span className="text-sm font-normal text-zinc-500 animate-pulse">Đang kiểm tra số dư ví...</span>
+                <span className="text-sm font-normal text-muted-foreground animate-pulse">Đang kiểm tra số dư ví...</span>
               ) : (
                 formatVND(currentAvailableBalance)
               )}
@@ -183,21 +183,21 @@ export function WithdrawModal({
             type="button"
             disabled={fetchingWallet || currentAvailableBalance <= 0}
             onClick={() => setAmount(currentAvailableBalance)}
-            className="text-xs px-3 py-1.5 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 font-medium transition-colors disabled:opacity-40"
+            className="text-xs px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-medium transition-colors disabled:opacity-40 cursor-pointer"
           >
             Rút toàn bộ
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-2.5 text-xs text-red-400">
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-xl flex items-center gap-2.5 text-xs text-destructive">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2.5 text-xs text-emerald-400">
+          <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2.5 text-xs text-emerald-600 dark:text-emerald-400">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{successMsg}</span>
           </div>
@@ -207,11 +207,11 @@ export function WithdrawModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Ngân hàng */}
           <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5">Ngân hàng thụ hưởng</label>
+            <label className="block text-xs font-medium text-foreground mb-1.5">Ngân hàng thụ hưởng</label>
             <select
               value={bankCode}
               onChange={(e) => setBankCode(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 transition-colors"
+              className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
             >
               {VIETNAM_BANKS.map((b) => (
                 <option key={b.code} value={b.code}>
@@ -224,30 +224,30 @@ export function WithdrawModal({
           {/* Số tài khoản & Tên chủ TK */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">Số tài khoản</label>
+              <label className="block text-xs font-medium text-foreground mb-1.5">Số tài khoản</label>
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Ví dụ: 1029384756"
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value.replace(/\s+/g, ''))}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 font-mono transition-colors"
+                  className="w-full bg-background border border-border rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono transition-colors"
                 />
-                <CreditCard className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
+                <CreditCard className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1.5">Tên chủ tài khoản</label>
+              <label className="block text-xs font-medium text-foreground mb-1.5">Tên chủ tài khoản</label>
               <div className="relative">
                 <input
                   type="text"
                   placeholder="NGUYEN VAN A"
                   value={accountName}
                   onChange={(e) => setAccountName(e.target.value.toUpperCase())}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 uppercase transition-colors"
+                  className="w-full bg-background border border-border rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary uppercase transition-colors"
                 />
-                <User className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
+                <User className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               </div>
             </div>
           </div>
@@ -255,8 +255,8 @@ export function WithdrawModal({
           {/* Số tiền cần rút */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-zinc-300">Số tiền rút (VND)</label>
-              <span className="text-[11px] text-zinc-500">Tối thiểu: 50.000 ₫</span>
+              <label className="text-xs font-medium text-foreground">Số tiền rút (VND)</label>
+              <span className="text-[11px] text-muted-foreground">Tối thiểu: 50.000 ₫</span>
             </div>
             <input
               type="number"
@@ -265,7 +265,7 @@ export function WithdrawModal({
               step={10000}
               value={amount}
               onChange={(e) => setAmount(e.target.value ? Number(e.target.value) : '')}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 font-mono transition-colors"
+              className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-mono transition-colors"
             />
           </div>
 
@@ -276,10 +276,10 @@ export function WithdrawModal({
                 key={val}
                 type="button"
                 onClick={() => handleSelectQuickAmount(val)}
-                className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
+                className={`text-xs px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
                   amount === val
-                    ? 'bg-orange-500 text-white border-orange-500 font-semibold'
-                    : 'bg-zinc-800/60 text-zinc-400 border-zinc-700/60 hover:text-white hover:bg-zinc-800'
+                    ? 'bg-primary text-primary-foreground border-primary font-semibold'
+                    : 'bg-muted text-muted-foreground border-border hover:text-foreground hover:bg-muted/80'
                 }`}
               >
                 {val >= 1000000 ? `${val / 1000000}tr` : `${val / 1000}k`}
@@ -288,16 +288,16 @@ export function WithdrawModal({
           </div>
 
           {/* Summary */}
-          <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
-            <span>Phí xử lý: <strong className="text-emerald-400 font-normal">Miễn phí</strong></span>
-            <span>Thực nhận: <strong className="text-white text-sm font-bold font-mono">{formatVND(Number(amount) || 0)}</strong></span>
+          <div className="pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+            <span>Phí xử lý: <strong className="text-primary font-medium">Miễn phí</strong></span>
+            <span>Thực nhận: <strong className="text-foreground text-sm font-bold font-mono tabular-nums">{formatVND(Number(amount) || 0)}</strong></span>
           </div>
 
           {/* Submit CTA */}
           <button
             type="submit"
             disabled={submitting || fetchingWallet || !amount || Number(amount) < 50000}
-            className="w-full mt-2 py-3 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all cursor-pointer"
+            className="w-full mt-2 py-3 px-4 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all cursor-pointer"
           >
             {submitting ? (
               <>

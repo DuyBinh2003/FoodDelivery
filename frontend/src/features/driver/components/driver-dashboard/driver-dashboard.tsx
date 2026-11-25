@@ -262,18 +262,18 @@ export function DriverDashboard() {
   // If not approved and not pending
   if (!loading && !isApproved && !isPending && user?.role !== 'ADMIN') {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-zinc-900 border border-white/10 rounded-3xl p-8 text-center shadow-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-[80vh] flex items-center justify-center p-4 bg-background text-foreground">
+        <div className="max-w-md w-full bg-card border border-border rounded-3xl p-8 text-center shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-primary/12 border border-primary/25 text-primary flex items-center justify-center mx-auto mb-4">
             <Bike className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Bạn chưa là tài xế</h2>
-          <p className="text-sm text-zinc-400 mb-6">
+          <h2 className="font-heading text-xl font-bold text-foreground mb-2">Bạn chưa là tài xế</h2>
+          <p className="text-sm text-muted-foreground mb-6">
             Đăng ký tham gia đội ngũ tài xế FoodDelivery ngay hôm nay để nhận thu nhập hấp dẫn!
           </p>
           <Link
             href="/register/driver"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-semibold text-sm transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary hover:bg-primary-dark text-primary-foreground font-bold text-sm transition-all"
           >
             <span>Đăng ký làm tài xế</span>
             <ArrowRight className="w-4 h-4" />
@@ -286,18 +286,19 @@ export function DriverDashboard() {
   // If pending approval
   if (!loading && isPending) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-zinc-900 border border-amber-500/20 rounded-3xl p-8 text-center shadow-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4 animate-bounce">
+      <div className="min-h-[80vh] flex items-center justify-center p-4 bg-background text-foreground">
+        <div className="max-w-md w-full bg-card border border-amber-500/25 rounded-3xl p-8 text-center shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/12 border border-amber-500/25 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4 animate-bounce">
             <AlertCircle className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Hồ sơ đang chờ phê duyệt</h2>
-          <p className="text-sm text-zinc-400 mb-6">
+          <h2 className="font-heading text-xl font-bold text-foreground mb-2">Hồ sơ đang chờ phê duyệt</h2>
+          <p className="text-sm text-muted-foreground mb-6">
             Yêu cầu trở thành tài xế của bạn đã được gửi tới Ban quản trị và đang trong quá trình xét duyệt. Chúng tôi sẽ thông báo cho bạn ngay khi có kết quả!
           </p>
           <button
+            type="button"
             onClick={() => loadData()}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium text-xs transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-secondary hover:bg-muted border border-border text-foreground font-semibold text-xs transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Kiểm tra lại trạng thái</span>

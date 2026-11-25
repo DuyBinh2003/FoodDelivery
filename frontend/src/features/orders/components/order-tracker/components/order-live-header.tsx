@@ -30,41 +30,39 @@ export function OrderLiveHeader({
     : null;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
       <div>
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
             Theo dõi đơn hàng
           </h1>
           {isLive ? (
-            <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 gap-1.5 px-2.5 py-0.5 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <Badge variant="success" className="gap-1.5 px-3 py-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               Live Realtime
             </Badge>
           ) : (
-            <Badge variant="outline" className="text-zinc-400 border-white/10 bg-white/5 text-xs">
-              Đã kết thúc
-            </Badge>
+            <Badge variant="secondary">Đã kết thúc</Badge>
           )}
         </div>
 
-        <div className="flex items-center gap-2 mt-1.5 text-xs text-zinc-400">
+        <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
           <span>Mã đơn:</span>
-          <span className="font-mono text-zinc-200 font-semibold">{orderId}</span>
+          <span className="font-mono text-foreground font-semibold">{orderId}</span>
           <button
             type="button"
             onClick={handleCopy}
-            className="inline-flex items-center text-zinc-400 hover:text-white transition-colors p-1 rounded hover:bg-white/5"
+            className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-secondary cursor-pointer"
             title="Sao chép mã đơn"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         {formattedTime && (
-          <span className="text-[11px] text-zinc-500 font-mono hidden sm:inline-block">
+          <span className="text-[11px] text-muted-foreground font-mono hidden sm:inline-block">
             Cập nhật: {formattedTime}
           </span>
         )}
@@ -73,9 +71,9 @@ export function OrderLiveHeader({
           size="sm"
           onClick={onRefresh}
           disabled={isFetching}
-          className="border-white/10 bg-white/5 text-zinc-300 hover:text-white hover:bg-white/10 text-xs gap-1.5 h-8 px-3 rounded-full"
+          className="text-xs gap-1.5 h-8.5 px-3.5 rounded-full"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-orange-400' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-primary' : ''}`} />
           {isFetching ? 'Đang cập nhật...' : 'Làm mới'}
         </Button>
       </div>

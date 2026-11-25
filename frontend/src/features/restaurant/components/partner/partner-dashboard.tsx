@@ -251,8 +251,8 @@ export function PartnerDashboard() {
   if (loading) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center">
-        <Loader2 className="w-10 h-10 text-orange-500 animate-spin mb-4" />
-        <p className="text-zinc-400 text-sm">Đang tải thông tin quán ăn của bạn...</p>
+        <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+        <p className="text-muted-foreground text-sm">Đang tải thông tin quán ăn của bạn...</p>
       </div>
     );
   }
@@ -260,13 +260,16 @@ export function PartnerDashboard() {
   if (error) {
     return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center">
-        <div className="bg-red-500/10 border border-red-500/20 rounded-3xl p-8">
-          <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-white mb-2">Đã xảy ra lỗi khi tải dữ liệu</h3>
-          <p className="text-sm text-zinc-400 mb-6">{error}</p>
+        <div className="bg-destructive/10 border border-destructive/25 rounded-3xl p-8">
+          <AlertCircle className="w-10 h-10 text-destructive mx-auto mb-3" />
+          <h3 className="font-heading text-lg font-bold text-foreground mb-2">
+            Đã xảy ra lỗi khi tải dữ liệu
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6">{error}</p>
           <button
+            type="button"
             onClick={() => loadData()}
-            className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-colors cursor-pointer"
           >
             Thử lại
           </button>
@@ -275,33 +278,32 @@ export function PartnerDashboard() {
     );
   }
 
-  // If user does not have a registered / approved restaurant
   if (!restaurant) {
     return (
       <div className="max-w-3xl mx-auto py-16 px-4">
-        <div className="bg-zinc-900 border border-white/10 rounded-3xl p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden">
-          <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-orange-500">
+        <div className="bg-card border border-border rounded-3xl p-8 sm:p-12 text-center shadow-lg relative overflow-hidden">
+          <div className="w-20 h-20 bg-primary/12 border border-primary/25 rounded-3xl flex items-center justify-center mx-auto mb-6 text-primary">
             <Store className="w-10 h-10" />
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+          <h2 className="font-heading text-2xl sm:text-3xl font-extrabold text-foreground mb-3">
             Bạn chưa có nhà hàng được kích hoạt
           </h2>
-          <p className="text-zinc-400 max-w-lg mx-auto mb-8 text-sm sm:text-base">
+          <p className="text-muted-foreground max-w-lg mx-auto mb-8 text-sm sm:text-base">
             Nếu bạn đã gửi yêu cầu đăng ký mở quán, vui lòng chờ Ban quản trị phê duyệt. Sau khi được duyệt, bạn sẽ có thể quản lý thực đơn, đặt giá bán và mở cửa nhận đơn tại đây.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/register/restaurant"
-              className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg shadow-orange-500/25 transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-dark shadow-sm transition-all"
             >
               <span>Đăng ký mở quán ngay</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/menu"
-              className="px-6 py-3 rounded-xl text-sm font-semibold text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+              className="px-6 py-3 rounded-xl text-sm font-semibold text-foreground bg-secondary hover:bg-muted border border-border transition-colors"
             >
               Khám phá thực đơn
             </Link>
@@ -314,445 +316,430 @@ export function PartnerDashboard() {
   const activeDishesCount = menuItems.filter((i) => i.is_available).length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Toast notification */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
       {toastMessage && (
         <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border transition-all animate-in fade-in slide-in-from-bottom-5 ${
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border transition-all animate-in ${
             toastMessage.type === 'success'
-              ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-300'
-              : 'bg-red-950/90 border-red-500/30 text-red-300'
+              ? 'bg-card border-primary/35 text-primary'
+              : 'bg-card border-destructive/35 text-destructive'
           }`}
         >
           {toastMessage.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-5 h-5 shrink-0" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+            <AlertCircle className="w-5 h-5 shrink-0" />
           )}
-          <span className="text-sm font-medium">{toastMessage.text}</span>
+          <span className="text-sm font-semibold">{toastMessage.text}</span>
         </div>
       )}
 
-      {/* Top Banner & Online/Offline Status Bar */}
-      <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-        {restaurant.banner_url && (
-          <>
-            <div
-              className="absolute inset-0 bg-cover bg-center opacity-25 pointer-events-none transition-opacity duration-300"
-              style={{ backgroundImage: `url(${restaurant.banner_url})` }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/75 to-zinc-950/90 pointer-events-none" />
-          </>
-        )}
-        {/* Glow accent */}
-        <div
-          className={`absolute top-0 right-0 -mr-24 -mt-24 w-80 h-80 rounded-full blur-3xl pointer-events-none transition-colors duration-500 ${
-            restaurant.is_active ? 'bg-emerald-500/15' : 'bg-amber-500/15'
-          }`}
-        />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          {/* Restaurant identity */}
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                {restaurant.name}
-              </h1>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Đối tác đã duyệt
-              </span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Desktop Sidebar (240px equivalent: 3 cols) */}
+        <aside className="lg:col-span-3 lg:sticky lg:top-20 bg-card border border-border rounded-3xl p-5 space-y-5 shadow-xs">
+          <div className="space-y-2 pb-4 border-b border-border">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/12 text-primary border border-primary/25">
+              <CheckCircle2 className="w-3 h-3" />
+              Đối tác đã duyệt
+            </span>
+            <h1 className="font-heading text-xl font-extrabold text-foreground leading-tight">
+              {restaurant.name}
+            </h1>
+            <p className="text-xs text-muted-foreground flex items-start gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+              <span className="line-clamp-2">{restaurant.address || 'Chưa cập nhật địa chỉ'}</span>
+            </p>
+            <div className="flex items-center gap-1 text-xs font-bold text-amber-500 pt-0.5">
+              <Star className="w-3.5 h-3.5 fill-amber-500" />
+              <span>{restaurant.rating || 5.0}</span>
+              <span className="text-muted-foreground font-normal">(Đánh giá)</span>
             </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-400">
-              <span className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-orange-400" />
-                {restaurant.address || 'Chưa cập nhật địa chỉ'}
-              </span>
-              <span className="flex items-center gap-1 text-amber-400 font-medium">
-                <Star className="w-4 h-4 fill-amber-400" />
-                {restaurant.rating || 5.0} (Đánh giá)
-              </span>
-            </div>
-
-            {/* Categories tags */}
-            {restaurant.categories && restaurant.categories.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                {restaurant.categories.map((c) => (
-                  <span
-                    key={c.id}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 text-zinc-300 border border-white/5"
-                  >
-                    {c.name}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
 
-          {/* Quick status switch & Actions */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 border-t lg:border-t-0 pt-4 lg:pt-0 border-white/10">
-            {/* Big Status Switch */}
-            <div
-              className={`p-4 rounded-2xl border transition-all flex items-center justify-between sm:justify-start gap-5 ${
-                restaurant.is_active
-                  ? 'bg-emerald-950/30 border-emerald-500/30'
-                  : 'bg-amber-950/30 border-amber-500/30'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-3.5 h-3.5 rounded-full animate-pulse ${
-                    restaurant.is_active ? 'bg-emerald-500 shadow-md shadow-emerald-500/50' : 'bg-amber-500'
+          {/* Store Online Switch */}
+          <div
+            className={`p-3.5 rounded-2xl border transition-colors ${
+              restaurant.is_active
+                ? 'bg-primary/8 border-primary/30'
+                : 'bg-amber-500/8 border-amber-500/30'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                    restaurant.is_active ? 'bg-primary animate-pulse' : 'bg-amber-500'
                   }`}
                 />
-                <div>
-                  <p className="text-sm font-bold text-white">
-                    {restaurant.is_active ? 'ĐANG MỞ CỬA NHẬN ĐƠN' : 'TẠM ĐÓNG CỬA'}
-                  </p>
-                  <p className="text-xs text-zinc-400">
-                    {restaurant.is_active
-                      ? 'Khách hàng có thể đặt món trực tiếp'
-                      : 'Hệ thống đang ngưng nhận đơn hàng'}
-                  </p>
-                </div>
+                <span className="text-xs font-bold text-foreground truncate">
+                  {restaurant.is_active ? 'Đang mở cửa' : 'Tạm đóng cửa'}
+                </span>
               </div>
-
               <button
                 type="button"
                 onClick={handleToggleStatus}
                 disabled={statusToggling}
-                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  restaurant.is_active ? 'bg-emerald-500' : 'bg-zinc-700'
+                aria-label="Chuyển trạng thái mở cửa"
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${
+                  restaurant.is_active ? 'bg-primary' : 'bg-muted-foreground/40'
                 }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                    restaurant.is_active ? 'translate-x-7' : 'translate-x-0'
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200 ${
+                    restaurant.is_active ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>
             </div>
+          </div>
+
+          {/* Primary Navigation */}
+          <nav className="space-y-1.5">
+            <button
+              type="button"
+              onClick={() => setActiveTab('orders')}
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
+                activeTab === 'orders'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              }`}
+            >
+              <ChefHat className="w-4 h-4" />
+              <span>Bếp & Đơn hàng</span>
+            </button>
 
             <button
+              type="button"
+              onClick={() => setActiveTab('menu')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
+                activeTab === 'menu'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              }`}
+            >
+              <span className="flex items-center gap-2.5">
+                <UtensilsCrossed className="w-4 h-4" />
+                <span>Thực đơn</span>
+              </span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-black/10 dark:bg-white/10">
+                {menuItems.length}
+              </span>
+            </button>
+          </nav>
+
+          {/* Utility Actions */}
+          <div className="pt-3 border-t border-border space-y-2">
+            <button
+              type="button"
               onClick={() => setIsWithdrawModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-sm font-medium text-emerald-400 border border-emerald-500/20 transition-colors"
+              className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-primary/10 hover:bg-primary/15 text-xs font-bold text-primary border border-primary/20 transition-colors cursor-pointer"
             >
               <Banknote className="w-4 h-4" />
               <span>Rút doanh thu</span>
             </button>
 
             <button
-              onClick={() => setIsProfileModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-sm font-medium text-zinc-300 hover:text-white border border-white/10 transition-colors"
-            >
-              <Edit2 className="w-4 h-4" />
-              <span>Sửa thông tin quán</span>
-            </button>
-            <button
+              type="button"
               onClick={() => setIsOperatingHoursModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-sm font-medium text-amber-400 hover:text-amber-300 border border-amber-500/20 transition-colors"
+              className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-secondary hover:bg-muted text-xs font-semibold text-foreground border border-border transition-colors cursor-pointer"
             >
-              <Clock className="w-4 h-4" />
+              <Clock className="w-4 h-4 text-primary" />
               <span>Giờ mở cửa</span>
             </button>
-          </div>
-        </div>
 
-        {/* Stats summary cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/10">
-          <div className="p-4 rounded-2xl bg-zinc-800/40 border border-white/5">
-            <span className="text-xs text-zinc-400 uppercase tracking-wider font-medium">Tổng món</span>
-            <p className="text-2xl font-bold text-white mt-1">{menuItems.length}</p>
-          </div>
-          <div className="p-4 rounded-2xl bg-zinc-800/40 border border-white/5">
-            <span className="text-xs text-zinc-400 uppercase tracking-wider font-medium">Đang mở bán</span>
-            <p className="text-2xl font-bold text-emerald-400 mt-1">{activeDishesCount}</p>
-          </div>
-          <div className="p-4 rounded-2xl bg-zinc-800/40 border border-white/5">
-            <span className="text-xs text-zinc-400 uppercase tracking-wider font-medium">Tạm hết món</span>
-            <p className="text-2xl font-bold text-zinc-400 mt-1">
-              {menuItems.length - activeDishesCount}
-            </p>
-          </div>
-          <div className="p-4 rounded-2xl bg-zinc-800/40 border border-white/5">
-            <span className="text-xs text-zinc-400 uppercase tracking-wider font-medium">Trạng thái</span>
-            <p
-              className={`text-base font-bold mt-2 flex items-center gap-1.5 ${
-                restaurant.is_active ? 'text-emerald-400' : 'text-amber-400'
-              }`}
-            >
-              <Power className="w-4 h-4" />
-              {restaurant.is_active ? 'Đang nhận đơn' : 'Nghỉ bán'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-        <button
-          onClick={() => setActiveTab('orders')}
-          className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-sm font-bold transition-all cursor-pointer ${
-            activeTab === 'orders'
-              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/25'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <ChefHat className="w-4 h-4" />
-          <span>Bếp & Quản lý đơn hàng</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('menu')}
-          className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-sm font-bold transition-all cursor-pointer ${
-            activeTab === 'menu'
-              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/25'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <UtensilsCrossed className="w-4 h-4" />
-          <span>Thực đơn & Món ăn ({menuItems.length})</span>
-        </button>
-      </div>
-
-      {activeTab === 'orders' ? (
-        <KitchenOrdersTab
-          restaurantId={restaurant.id}
-          showToast={showToast}
-          menuItems={menuItems}
-        />
-      ) : (
-        /* Menu Management Section */
-        <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Quản lý thực đơn món ăn</h2>
-            <p className="text-xs sm:text-sm text-zinc-400">
-              Điều chỉnh giá cả, bật/tắt còn món, gán tag và danh mục món ăn
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              setEditingItem(null);
-              setIsMenuModalOpen(true);
-            }}
-            className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-md shadow-orange-500/20 transition-all self-start sm:self-auto"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Thêm món mới</span>
-          </button>
-        </div>
-
-        {/* Filter Bar */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm theo tên món ăn..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-orange-500 transition-colors"
-            />
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 custom-scrollbar">
             <button
-              onClick={() => setSelectedCategoryFilter('ALL')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategoryFilter === 'ALL'
-                  ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/30'
-                  : 'bg-zinc-900 text-zinc-400 hover:text-white border border-white/5'
-              }`}
+              type="button"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-secondary hover:bg-muted text-xs font-semibold text-foreground border border-border transition-colors cursor-pointer"
             >
-              Tất cả ({menuItems.length})
+              <Edit2 className="w-4 h-4 text-muted-foreground" />
+              <span>Sửa thông tin quán</span>
             </button>
-            {categories.map((cat) => {
-              const count = menuItems.filter((m) => m.category_id === cat.id).length;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategoryFilter(cat.id)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                    selectedCategoryFilter === cat.id
-                      ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/30'
-                      : 'bg-zinc-900 text-zinc-400 hover:text-white border border-white/5'
-                  }`}
-                >
-                  {cat.name} ({count})
-                </button>
-              );
-            })}
           </div>
-        </div>
+        </aside>
 
-        {/* Food Items Grid */}
-        {filteredMenuItems.length === 0 ? (
-          <div className="bg-zinc-900/60 border border-white/10 rounded-3xl p-12 text-center">
-            <UtensilsCrossed className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-            <p className="text-white font-medium">Không tìm thấy món ăn phù hợp</p>
-            <p className="text-zinc-500 text-xs mt-1">
-              {searchQuery ? 'Thử tìm với từ khóa khác' : 'Bấm "+ Thêm món mới" để bắt đầu xây dựng thực đơn'}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredMenuItems.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => setViewingMenuItem(item)}
-                className={`group bg-zinc-900 border rounded-2xl p-4 shadow-lg transition-all flex flex-col justify-between cursor-pointer ${
-                  item.is_available
-                    ? 'border-white/10 hover:border-orange-500/50 hover:shadow-orange-500/10'
-                    : 'border-white/5 opacity-70 bg-zinc-900/50'
+        {/* Main Workspace (9 cols) */}
+        <div className="lg:col-span-9 space-y-6">
+          {/* Stats Summary */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+              <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
+                Tổng món
+              </span>
+              <p className="font-heading text-2xl font-extrabold text-foreground mt-1">
+                {menuItems.length}
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+              <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
+                Đang mở bán
+              </span>
+              <p className="font-heading text-2xl font-extrabold text-primary mt-1">
+                {activeDishesCount}
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+              <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
+                Tạm hết món
+              </span>
+              <p className="font-heading text-2xl font-extrabold text-muted-foreground mt-1">
+                {menuItems.length - activeDishesCount}
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+              <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
+                Trạng thái
+              </span>
+              <p
+                className={`text-sm font-bold mt-2 flex items-center gap-1.5 ${
+                  restaurant.is_active ? 'text-primary' : 'text-amber-600 dark:text-amber-400'
                 }`}
               >
-                <div className="space-y-3">
-                  {/* Image & Price banner */}
-                  <div className="relative h-40 w-full rounded-xl overflow-hidden bg-zinc-800">
-                    {item.image_url ? (
-                      <Image
-                        src={item.image_url}
-                        alt={item.name}
-                        fill
-                        unoptimized
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-zinc-600">
-                        <UtensilsCrossed className="w-8 h-8 mb-1" />
-                        <span className="text-xs">Chưa có ảnh</span>
-                      </div>
-                    )}
+                <Power className="w-4 h-4" />
+                {restaurant.is_active ? 'Đang nhận đơn' : 'Nghỉ bán'}
+              </p>
+            </div>
+          </div>
 
-                    {/* Category badge */}
-                    {item.category && (
-                      <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-black/70 backdrop-blur-md text-orange-400 border border-white/10">
-                        {item.category.name}
-                      </div>
-                    )}
-
-                    {/* Price & Net earnings pill */}
-                    <div className="absolute bottom-2.5 right-2.5 flex flex-col items-end gap-1">
-                      <div className="px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-500 text-white shadow-md shadow-orange-500/30">
-                        {Number(item.price).toLocaleString('vi-VN')} ₫
-                      </div>
-                      <div className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30">
-                        Thực nhận: {Math.round(Number(item.price) * 0.8).toLocaleString('vi-VN')} ₫
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Title & Description */}
-                  <div>
-                    <h3 className="text-base font-bold text-white group-hover:text-orange-400 transition-colors">
-                      {item.name}
-                    </h3>
-                    {item.description && (
-                      <p className="text-xs text-zinc-400 line-clamp-2 mt-1">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Tags */}
-                  {item.tags && item.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {item.tags.map((t) => (
-                        <span
-                          key={t.id}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-white/5"
-                        >
-                          #{t.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+          {activeTab === 'orders' ? (
+            <KitchenOrdersTab
+              restaurantId={restaurant.id}
+              showToast={showToast}
+              menuItems={menuItems}
+            />
+          ) : (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="font-heading text-xl sm:text-2xl font-extrabold text-foreground">
+                    Quản lý thực đơn món ăn
+                  </h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Điều chỉnh giá cả, bật/tắt còn món, gán tag và danh mục món ăn
+                  </p>
                 </div>
 
-                {/* Footer Controls: Availability Toggle & Edit/Delete */}
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingItem(null);
+                    setIsMenuModalOpen(true);
+                  }}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-primary-foreground bg-primary hover:bg-primary-dark shadow-sm transition-all self-start sm:self-auto cursor-pointer"
                 >
-                  {/* Availability toggle */}
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={item.is_available}
-                      onChange={() => handleToggleItemAvailability(item)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 relative" />
-                    <span
-                      className={`text-xs font-semibold ${
-                        item.is_available ? 'text-emerald-400' : 'text-zinc-500'
-                      }`}
-                    >
-                      {item.is_available ? 'Còn món' : 'Hết món'}
-                    </span>
-                  </label>
+                  <Plus className="w-4 h-4" />
+                  <span>Thêm món mới</span>
+                </button>
+              </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => {
-                        setEditingItem(item);
-                        setIsMenuModalOpen(true);
-                      }}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                      title="Chỉnh sửa món"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setDeletingItemId(item.id)}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-400/10 transition-colors cursor-pointer"
-                      title="Xóa món"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+              {/* Filter Bar */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Tìm kiếm theo tên món ăn..."
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-card border border-input text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategoryFilter('ALL')}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                      selectedCategoryFilter === 'ALL'
+                        ? 'bg-primary text-primary-foreground shadow-xs'
+                        : 'bg-card text-muted-foreground hover:text-foreground border border-border'
+                    }`}
+                  >
+                    Tất cả ({menuItems.length})
+                  </button>
+                  {categories.map((cat) => {
+                    const count = menuItems.filter((m) => m.category_id === cat.id).length;
+                    return (
+                      <button
+                        type="button"
+                        key={cat.id}
+                        onClick={() => setSelectedCategoryFilter(cat.id)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                          selectedCategoryFilter === cat.id
+                            ? 'bg-primary text-primary-foreground shadow-xs'
+                            : 'bg-card text-muted-foreground hover:text-foreground border border-border'
+                        }`}
+                      >
+                        {cat.name} ({count})
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+
+              {/* Food Items Grid */}
+              {filteredMenuItems.length === 0 ? (
+                <div className="bg-card border border-border rounded-3xl p-12 text-center">
+                  <UtensilsCrossed className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-foreground font-bold">Không tìm thấy món ăn phù hợp</p>
+                  <p className="text-muted-foreground text-xs mt-1">
+                    {searchQuery
+                      ? 'Thử tìm với từ khóa khác'
+                      : 'Bấm "+ Thêm món mới" để bắt đầu xây dựng thực đơn'}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredMenuItems.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => setViewingMenuItem(item)}
+                      className={`group bg-card border rounded-2xl p-4 shadow-xs transition-all flex flex-col justify-between cursor-pointer ${
+                        item.is_available
+                          ? 'border-border hover:border-primary/45 hover:shadow-md'
+                          : 'border-border opacity-70'
+                      }`}
+                    >
+                      <div className="space-y-3">
+                        <div className="relative h-40 w-full rounded-xl overflow-hidden bg-muted">
+                          {item.image_url ? (
+                            <Image
+                              src={item.image_url}
+                              alt={item.name}
+                              fill
+                              unoptimized
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
+                              <UtensilsCrossed className="w-8 h-8 mb-1" />
+                              <span className="text-xs">Chưa có ảnh</span>
+                            </div>
+                          )}
+
+                          {item.category && (
+                            <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-black/70 backdrop-blur-md text-white">
+                              {item.category.name}
+                            </div>
+                          )}
+
+                          <div className="absolute bottom-2.5 right-2.5 flex flex-col items-end gap-1">
+                            <div className="px-2.5 py-1 rounded-lg text-xs font-bold bg-primary text-primary-foreground shadow-sm">
+                              {Number(item.price).toLocaleString('vi-VN')} ₫
+                            </div>
+                            <div className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black/75 backdrop-blur-md text-emerald-300">
+                              Thực nhận: {Math.round(Number(item.price) * 0.8).toLocaleString('vi-VN')} ₫
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="font-heading text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                            {item.name}
+                          </h3>
+                          {item.description && (
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {item.tags.map((t) => (
+                              <span
+                                key={t.id}
+                                className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-secondary text-secondary-foreground border border-border"
+                              >
+                                #{t.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="pt-4 mt-4 border-t border-border flex items-center justify-between"
+                      >
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={item.is_available}
+                            onChange={() => handleToggleItemAvailability(item)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary relative" />
+                          <span
+                            className={`text-xs font-semibold ${
+                              item.is_available ? 'text-primary' : 'text-muted-foreground'
+                            }`}
+                          >
+                            {item.is_available ? 'Còn món' : 'Hết món'}
+                          </span>
+                        </label>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingItem(item);
+                              setIsMenuModalOpen(true);
+                            }}
+                            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                            title="Chỉnh sửa món"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeletingItemId(item.id)}
+                            className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                            title="Xóa món"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Delete Confirmation Dialog */}
       {deletingItemId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setDeletingItemId(null)}
           />
-          <div className="relative w-full max-w-sm rounded-2xl bg-zinc-900 border border-white/10 p-6 shadow-2xl z-10 animate-in fade-in zoom-in-95 duration-200 text-center">
-            <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+          <div className="relative w-full max-w-sm rounded-2xl bg-card border border-border p-6 shadow-2xl z-10 animate-in text-center">
+            <div className="w-12 h-12 rounded-full bg-destructive/12 text-destructive flex items-center justify-center mx-auto mb-4 border border-destructive/25">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-white mb-2">Xác nhận xóa món ăn?</h3>
-            <p className="text-xs text-zinc-400 mb-6">
+            <h3 className="font-heading text-base font-bold text-foreground mb-2">
+              Xác nhận xóa món ăn?
+            </h3>
+            <p className="text-xs text-muted-foreground mb-6">
               Món ăn sẽ bị gỡ bỏ khỏi thực đơn quán và khách hàng không thể đặt món này nữa.
             </p>
             <div className="flex items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={() => setDeletingItemId(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-colors"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-foreground bg-secondary hover:bg-muted transition-colors cursor-pointer"
               >
                 Hủy bỏ
               </button>
               <button
                 type="button"
                 onClick={() => handleDeleteMenuItem(deletingItemId)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-700 shadow-md shadow-red-600/30 transition-colors"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-destructive hover:opacity-90 transition-colors cursor-pointer"
               >
                 Xác nhận xóa
               </button>

@@ -24,33 +24,31 @@ export const MenuToolbar: React.FC<MenuToolbarProps> = ({ totalItems, totalResta
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (value === 'default') {
       params.delete('sort');
     } else {
       params.set('sort', value);
     }
-    
+
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5 bg-zinc-900/40 rounded-2xl border border-white/5 backdrop-blur-md mb-8">
-      {/* Result Counter */}
-      <div className="flex items-center gap-2 text-sm text-zinc-300">
-        <div className="w-8 h-8 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 shrink-0">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5 bg-card rounded-2xl border border-border shadow-xs mb-8">
+      <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+        <div className="w-9 h-9 rounded-xl bg-primary/12 border border-primary/20 flex items-center justify-center text-primary shrink-0">
           <Utensils className="w-4 h-4" />
         </div>
         <div>
-          Tìm thấy <span className="font-bold text-white text-base">{totalItems}</span> món ăn từ{' '}
-          <span className="font-bold text-orange-400">{totalRestaurants}</span> quán ăn
+          Tìm thấy <span className="font-bold text-foreground text-base">{totalItems}</span> món ăn từ{' '}
+          <span className="font-bold text-primary">{totalRestaurants}</span> quán ăn
         </div>
       </div>
 
-      {/* Sort Dropdown */}
       <div className="flex items-center gap-2.5 self-end sm:self-auto text-xs sm:text-sm">
-        <label htmlFor="sort-select" className="text-zinc-400 flex items-center gap-1.5 shrink-0">
-          <ArrowUpDown className="w-3.5 h-3.5 text-zinc-500" />
+        <label htmlFor="sort-select" className="text-muted-foreground flex items-center gap-1.5 shrink-0 font-medium">
+          <ArrowUpDown className="w-3.5 h-3.5" />
           Sắp xếp:
         </label>
         <div className="relative">
@@ -59,15 +57,15 @@ export const MenuToolbar: React.FC<MenuToolbarProps> = ({ totalItems, totalResta
             value={currentSort}
             onChange={handleSortChange}
             aria-label="Sắp xếp thực đơn"
-            className="appearance-none bg-zinc-800/80 hover:bg-zinc-800 border border-white/10 text-white rounded-xl px-3.5 py-1.5 pr-8 focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer transition-colors text-xs sm:text-sm"
+            className="appearance-none bg-secondary hover:bg-secondary/80 border border-border text-foreground font-medium rounded-xl px-3.5 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-colors text-xs sm:text-sm"
           >
             {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-zinc-900 text-white">
+              <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
             ))}
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-zinc-400">
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground">
             <ArrowDownAZ className="w-3.5 h-3.5" />
           </div>
         </div>

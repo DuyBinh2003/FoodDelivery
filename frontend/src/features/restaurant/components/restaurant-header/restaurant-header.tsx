@@ -128,9 +128,9 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
       )}
 
       {/* 2. Restaurant Hero Banner */}
-      <section className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-card border border-border shadow-xl">
+      <section className="relative w-full rounded-3xl overflow-hidden bg-card border border-border shadow-md">
         {/* Cover Graphic Image */}
-        <div className="relative h-44 sm:h-60 md:h-72 w-full overflow-hidden bg-muted">
+        <div className="relative h-48 sm:h-64 md:h-72 w-full overflow-hidden bg-muted">
           <Image
             src={coverImage}
             alt={restaurant.name}
@@ -140,8 +140,8 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
             sizes="(max-width: 1280px) 100vw, 1280px"
             className={`object-cover ${!restaurant.is_active ? 'grayscale contrast-75 brightness-75' : ''}`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/55 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-transparent to-black/20" />
         </div>
 
         {/* Identity Overlay Card */}
@@ -162,23 +162,16 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
             {/* Title, Badges, Address */}
             <div className="space-y-2 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight leading-tight">
+                <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight leading-tight">
                   {restaurant.name}
                 </h1>
                 {restaurant.verification_status === 'VERIFIED' && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/12 text-primary border border-primary/25">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     Đối tác chính hãng
                   </span>
                 )}
-                <Badge
-                  variant="outline"
-                  className={
-                    restaurant.is_active
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-medium'
-                      : 'bg-muted text-muted-foreground border-border text-xs'
-                  }
-                >
+                <Badge variant={restaurant.is_active ? 'success' : 'secondary'}>
                   {restaurant.is_active ? 'Đang mở cửa' : 'Tạm đóng'}
                 </Badge>
               </div>
@@ -191,34 +184,30 @@ export function RestaurantHeader({ restaurant }: RestaurantHeaderProps) {
 
               {/* Dynamic Delivery Metric Row */}
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1 text-xs sm:text-sm">
-                {/* Rating */}
-                <div className="flex items-center gap-1.5 text-amber-400 font-bold">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                <div className="flex items-center gap-1.5 text-amber-500 font-bold">
+                  <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                   <span>{ratingValue}</span>
                   <span className="text-muted-foreground font-normal">({ratingCount}+ đánh giá)</span>
                 </div>
 
                 <span className="text-muted-foreground/40 hidden sm:inline">•</span>
 
-                {/* Distance */}
-                <div className="flex items-center gap-1.5 text-foreground/90">
+                <div className="flex items-center gap-1.5 text-foreground/90 font-medium">
                   <MapPin className="w-4 h-4 text-primary" />
                   <span>Cách {formattedDistance}</span>
                 </div>
 
                 <span className="text-muted-foreground/40 hidden sm:inline">•</span>
 
-                {/* ETA */}
-                <div className="flex items-center gap-1.5 text-foreground/90">
+                <div className="flex items-center gap-1.5 text-foreground/90 font-medium">
                   <Clock className="w-4 h-4 text-primary" />
                   <span>{formattedEta}</span>
                 </div>
 
                 <span className="text-muted-foreground/40 hidden sm:inline">•</span>
 
-                {/* Delivery Fee */}
-                <div className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                  <Truck className="w-4 h-4 text-emerald-400" />
+                <div className="flex items-center gap-1.5 text-primary font-semibold">
+                  <Truck className="w-4 h-4 text-primary" />
                   <span>Phí ship: <strong className="font-bold text-foreground">{displayDeliveryFee}</strong></span>
                 </div>
               </div>

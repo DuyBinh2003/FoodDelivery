@@ -110,7 +110,7 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border">
             {trip.status}
           </span>
         );
@@ -128,40 +128,40 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
   };
 
   return (
-    <div className="bg-zinc-900/90 border border-white/10 rounded-2xl p-5 shadow-xl backdrop-blur-md transition-all duration-300 hover:border-white/20">
+    <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-sm transition-all duration-300 hover:border-primary/40">
       {/* Top Header: Order ID, Driver Milestone Timestamps & Status */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-white/5">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-border/60">
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="text-xs font-mono font-medium text-zinc-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+          <div className="text-xs font-mono font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-lg border border-border">
             #{trip.order_id.slice(0, 8)}
           </div>
           {trip.claimed_at && trip.completed_at ? (
-            <div className="flex items-center gap-1.5 text-xs text-zinc-300 bg-zinc-800/60 px-2.5 py-1 rounded-lg border border-white/5">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-lg border border-border">
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
               <span>
-                Nhận: <span className="font-semibold text-white">{formatTime(trip.claimed_at)}</span>
+                Nhận: <span className="font-semibold text-foreground">{formatTime(trip.claimed_at)}</span>
               </span>
-              <span className="text-zinc-500">➔</span>
+              <span className="text-muted-foreground">➔</span>
               <span>
-                Giao: <span className="font-semibold text-emerald-400">{formatTime(trip.completed_at)}</span>
+                Giao: <span className="font-semibold text-primary">{formatTime(trip.completed_at)}</span>
               </span>
-              <span className="text-zinc-500 text-[11px]">({formatFullDate(trip.completed_at)})</span>
+              <span className="text-muted-foreground text-[11px]">({formatFullDate(trip.completed_at)})</span>
               {trip.duration_minutes && (
-                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300">
+                <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-primary/15 text-primary">
                   ⚡ {trip.duration_minutes} phút
                 </span>
               )}
             </div>
           ) : trip.claimed_at ? (
-            <div className="flex items-center gap-1.5 text-xs text-zinc-300 bg-zinc-800/60 px-2.5 py-1 rounded-lg border border-white/5">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-lg border border-border">
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
               <span>
-                Nhận cuốc: <span className="font-semibold text-white">{formatTime(trip.claimed_at)}</span> ({formatFullDate(trip.claimed_at)})
+                Nhận cuốc: <span className="font-semibold text-foreground">{formatTime(trip.claimed_at)}</span> ({formatFullDate(trip.claimed_at)})
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-              <Clock className="w-3.5 h-3.5 text-zinc-500" />
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock className="w-3.5 h-3.5" />
               <span>{formatDate(trip.created_at)}</span>
             </div>
           )}
@@ -176,22 +176,22 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
         {/* Pickup */}
         <div className="flex items-start gap-3 relative">
           <div className="flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0">
               <Store className="w-4 h-4" />
             </div>
-            <div className="w-0.5 h-8 bg-zinc-700/60 my-1 border-dashed" />
+            <div className="w-0.5 h-8 bg-border my-1 border-dashed" />
           </div>
           <div className="flex-1 min-w-0 pt-0.5">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                 Điểm Đón (Lấy món)
               </span>
             </div>
-            <div className="text-sm font-semibold text-white truncate mt-0.5">
+            <div className="text-sm font-semibold text-foreground truncate mt-0.5">
               {trip.pickup_name}
             </div>
-            <p className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
-              <MapPin className="w-3 h-3 text-zinc-500 shrink-0" />
+            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+              <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">{trip.pickup_address}</span>
             </p>
           </div>
@@ -199,27 +199,27 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
 
         {/* Dropoff */}
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
             <Navigation className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0 pt-0.5">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-semibold text-orange-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                 Điểm Đến (Giao khách)
               </span>
               {trip.distance_km != null && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
                   <Navigation className="w-3 h-3" />
                   {trip.distance_km} km
                 </span>
               )}
             </div>
-            <div className="text-sm font-medium text-zinc-200 mt-0.5">
+            <div className="text-sm font-medium text-foreground mt-0.5">
               {trip.dropoff_address}
             </div>
             {trip.recipient_name && (
-              <p className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
-                <span className="text-zinc-300 font-medium">{trip.recipient_name}</span>
+              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <span className="text-foreground font-medium">{trip.recipient_name}</span>
                 {trip.recipient_phone && <span>• {trip.recipient_phone}</span>}
               </p>
             )}
@@ -228,25 +228,25 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
       </div>
 
       {/* Financials & Items Toggle */}
-      <div className="pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+      <div className="pt-3 border-t border-border/60 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div>
-            <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-              <span>Cước ship: <strong className="text-zinc-200">{formatCurrency(trip.delivery_fee || 15000)}</strong></span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span>Cước ship: <strong className="text-foreground">{formatCurrency(trip.delivery_fee || 15000)}</strong></span>
               <span>•</span>
-              <span className="text-red-400/90 font-medium">Phí sàn (10%): -{formatCurrency(trip.platform_fee || 1500)}</span>
+              <span className="text-destructive font-medium">Phí sàn (10%): -{formatCurrency(trip.platform_fee || 1500)}</span>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-xs text-emerald-400 font-semibold">Tài xế thực nhận:</span>
-              <span className="text-lg font-extrabold text-emerald-400 font-mono">
+              <span className="text-xs text-primary font-semibold">Tài xế thực nhận:</span>
+              <span className="text-lg font-extrabold text-primary font-mono tabular-nums">
                 +{formatCurrency(trip.driver_earnings || 13500)}
               </span>
             </div>
           </div>
-          <div className="h-8 w-px bg-white/10 hidden sm:block" />
+          <div className="h-8 w-px bg-border hidden sm:block" />
           <div className="hidden sm:block">
-            <span className="text-xs text-zinc-400 block">Tổng đơn:</span>
-            <span className="text-sm font-medium text-zinc-300">
+            <span className="text-xs text-muted-foreground block">Tổng đơn:</span>
+            <span className="text-sm font-medium text-foreground font-mono tabular-nums">
               {formatCurrency(trip.total_amount)}
             </span>
           </div>
@@ -256,7 +256,7 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
           {trip.items && trip.items.length > 0 && (
             <button
               onClick={() => setShowItems(!showItems)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground bg-muted hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <span>{trip.items.length} món</span>
               {showItems ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -267,7 +267,7 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
             <button
               onClick={() => setIsPodOpen(true)}
               disabled={completing}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 transition-all cursor-pointer disabled:opacity-50"
             >
               {completing ? (
                 <>
@@ -287,19 +287,19 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
 
       {/* Expandable Items List */}
       {showItems && trip.items && trip.items.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-white/5 bg-zinc-950/50 rounded-xl p-3 space-y-2">
-          <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
+        <div className="mt-3 pt-3 border-t border-border/60 bg-muted/40 rounded-xl p-3 space-y-2">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
             Danh sách món ăn
           </span>
           {trip.items.map((item, idx) => (
-            <div key={idx} className="flex items-center justify-between text-xs text-zinc-300">
+            <div key={idx} className="flex items-center justify-between text-xs text-foreground">
               <span className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center text-zinc-400 font-medium">
+                <span className="w-5 h-5 rounded-md bg-muted flex items-center justify-center text-muted-foreground font-medium">
                   {item.quantity}x
                 </span>
                 <span>{item.name || `Món #${item.menu_item_id.slice(0, 6)}`}</span>
               </span>
-              <span className="text-zinc-400">{formatCurrency(item.unit_price * item.quantity)}</span>
+              <span className="text-muted-foreground font-mono tabular-nums">{formatCurrency(item.unit_price * item.quantity)}</span>
             </div>
           ))}
         </div>
@@ -307,9 +307,9 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
 
       {/* Attached Customer Review (If exists) */}
       {trip.review && trip.review.driver_rating && (
-        <div className="mt-3 pt-3 border-t border-white/5 bg-amber-500/5 border border-amber-500/10 rounded-xl p-3">
+        <div className="mt-3 pt-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-semibold text-amber-400 flex items-center gap-1">
+            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
               <span>Đánh giá từ khách hàng:</span>
             </span>
             <div className="flex items-center gap-0.5">
@@ -319,14 +319,14 @@ export function DriverTripCard({ trip, onCompleteTrip }: DriverTripCardProps) {
                   className={`w-3.5 h-3.5 ${
                     star <= (trip.review?.driver_rating || 0)
                       ? 'text-amber-400 fill-amber-400'
-                      : 'text-zinc-700'
+                      : 'text-muted-foreground/30'
                   }`}
                 />
               ))}
             </div>
           </div>
           {trip.review.comment && (
-            <p className="text-xs text-zinc-300 italic">
+            <p className="text-xs text-foreground/80 italic">
               &ldquo;{trip.review.comment}&rdquo;
             </p>
           )}

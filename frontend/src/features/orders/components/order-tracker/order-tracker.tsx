@@ -37,7 +37,7 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
     (activeOrder.driver || activeOrder.driver_id);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* 1. Header with Live Pulse and Manual Refresh */}
       <OrderLiveHeader
         orderId={activeOrder.id}
@@ -47,14 +47,14 @@ export default function OrderTracker({ order: initialOrder, paymentDetails }: Or
         onRefresh={() => refetch()}
       />
 
-      {/* 2. Hero Status Banner with dynamic visual & explanations */}
+      {/* 2. Hero Status Banner */}
       <OrderStatusBanner
         status={activeOrder.status}
         estimatedDeliveryTime={activeOrder.estimated_delivery_time}
       />
 
       {/* 3. 5-Step Progressive Stepper */}
-      <div className="rounded-2xl bg-zinc-900/80 border border-white/[0.08] p-5 shadow-lg shadow-black/20 backdrop-blur-md">
+      <div className="rounded-2xl bg-card border border-border p-5 shadow-xs">
         <OrderLiveStepper
           currentStatus={activeOrder.status}
           milestones={{

@@ -1,0 +1,84 @@
+{
+  "common": {
+    "brand": "FoodDelivery",
+    "loading": "Đang tải...",
+    "retry": "Thử lại",
+    "close": "Đóng",
+    "viewAll": "Xem tất cả",
+    "backHome": "Về trang chủ",
+    "search": "Tìm kiếm",
+    "lightMode": "Giao diện sáng",
+    "darkMode": "Giao diện tối",
+    "language": "Ngôn ngữ"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "restaurants": "Nhà hàng",
+    "menu": "Thực đơn",
+    "promotions": "Khuyến mãi",
+    "vouchers": "Kho Voucher",
+    "orders": "Đơn hàng",
+    "rewards": "Điểm thưởng",
+    "addresses": "Sổ địa chỉ",
+    "profile": "Hồ sơ",
+    "login": "Đăng nhập",
+    "registerPartner": "Trở thành đối tác",
+    "logout": "Đăng xuất",
+    "deliverTo": "Giao đến",
+    "cart": "Giỏ hàng",
+    "notifications": "Thông báo"
+  },
+  "hero": {
+    "badge": "Giao nhanh trong 20 phút • Miễn phí đơn đầu",
+    "titleStart": "Món ngon tươi nóng,",
+    "titleHighlight": "giao tận cửa nhà",
+    "subtitle": "Khám phá hàng trăm nhà hàng tuyển chọn, theo dõi tài xế theo thời gian thực và tận hưởng ưu đãi độc quyền mỗi ngày.",
+    "searchPlaceholder": "Bạn đang thèm món gì hôm nay? (Phở bò, Cơm tấm, Trà sữa...)",
+    "searchButton": "Tìm món ngay",
+    "popularLabel": "Phổ biến:",
+    "statRestaurants": "500+ Quán đối tác",
+    "statDelivery": "20 phút giao trung bình",
+    "statRating": "4.9/5 Đánh giá hài lòng"
+  },
+  "home": {
+    "categoriesTitle": "Danh mục ẩm thực",
+    "orderAgainTitle": "Đặt lại lần nữa",
+    "orderAgainSubtitle": "Những quán quen và món ngon bạn đã từng thưởng thức",
+    "nearYouTitle": "Gần bạn nhất",
+    "nearYouSubtitle": "Cự ly dưới 3.5km • Giao nhanh thần tốc trong 20 phút",
+    "promoTitle": "Đang có khuyến mãi",
+    "promoSubtitle": "Freeship đơn từ 0Đ và ưu đãi độc quyền hôm nay",
+    "topRatedTitle": "Quán ngon nổi bật",
+    "topRatedSubtitle": "Được cộng đồng ẩm thực đánh giá cao nhất từ 4.5 sao",
+    "allRestaurantsTitle": "Khám Phá Tất Cả Quán Ngon",
+    "emptyTitle": "Không tìm thấy quán ăn nào phù hợp",
+    "emptySubtitle": "Hãy thử mở rộng bán kính hoặc chọn địa chỉ giao hàng khác"
+  },
+  "footer": {
+    "tagline": "Nền tảng giao đồ ăn tươi ngon & điều phối logistics thông minh theo thời gian thực.",
+    "aboutTitle": "Về FoodDelivery",
+    "aboutLinks": {
+      "about": "Giới thiệu nền tảng",
+      "restaurants": "Danh sách nhà hàng",
+      "vouchers": "Ưu đãi & Flash Sale",
+      "rewards": "Hội viên Rewards"
+    },
+    "partnerTitle": "Hợp tác & Phát triển",
+    "partnerLinks": {
+      "becomePartner": "Đăng ký đối tác",
+      "merchant": "Mở quán bán hàng",
+      "driver": "Trở thành tài xế",
+      "partnerPortal": "Kênh đối tác quán"
+    },
+    "supportTitle": "Hỗ trợ khách hàng",
+    "supportLinks": {
+      "orders": "Tra cứu đơn hàng",
+      "addresses": "Sổ địa chỉ giao nhận",
+      "terms": "Điều khoản sử dụng",
+      "privacy": "Chính sách bảo mật"
+    },
+    "appTitle": "Tải ứng dụng ngay",
+    "appSubtitle": "Đặt món nhanh hơn, nhận thông báo ưu đãi tức thì.",
+    "copyright": "© 2026 FoodDelivery Platform. Bảo lưu mọi quyền."
+  }
+}

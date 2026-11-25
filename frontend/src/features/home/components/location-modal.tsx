@@ -53,7 +53,6 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
-    // Thiết lập địa chỉ thủ công
     setLocation({
       address: searchQuery.trim(),
       label: 'Địa chỉ tìm kiếm',
@@ -64,23 +63,28 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm animate-in">
+      <div className="relative w-full max-w-lg rounded-3xl border border-border bg-card text-card-foreground p-6 shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+        <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-primary/12 text-primary">
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Chọn địa chỉ giao hàng</h3>
-              <p className="text-xs text-zinc-400">Quán ăn và phí ship sẽ tự động tính theo vị trí này</p>
+              <h3 className="font-heading text-lg font-bold text-foreground">
+                Chọn địa chỉ giao hàng
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Quán ăn và phí ship sẽ tự động tính theo vị trí này
+              </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            aria-label="Đóng"
+            className="p-1.5 rounded-xl bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -92,10 +96,10 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
             type="button"
             onClick={handleUseGps}
             disabled={isLoadingGps}
-            className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 border border-amber-500/30 text-amber-300 font-semibold text-sm transition-all cursor-pointer group"
+            className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-primary/8 hover:bg-primary/14 border border-primary/25 text-primary font-semibold text-sm transition-all cursor-pointer group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
                 {isLoadingGps ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
@@ -103,102 +107,117 @@ export function LocationModal({ isOpen, onClose }: LocationModalProps) {
                 )}
               </div>
               <div className="text-left">
-                <p className="text-white text-sm font-bold">Dùng vị trí hiện tại (GPS)</p>
-                <p className="text-xs text-amber-400/80">Tự động định vị qua vệ tinh trình duyệt</p>
+                <p className="text-foreground text-sm font-bold">
+                  Dùng vị trí hiện tại (GPS)
+                </p>
+                <p className="text-xs text-primary font-medium">
+                  Tự động định vị qua trình duyệt
+                </p>
               </div>
             </div>
             {currentLocation.source === 'gps' && (
-              <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <span className="w-6 h-6 rounded-full bg-primary/15 text-primary flex items-center justify-center">
                 <Check className="w-4 h-4" />
               </span>
             )}
           </button>
 
           {gpsError && (
-            <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-xl bg-red-950/50 border border-red-500/30 text-red-300 text-xs">
+            <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/25 text-destructive text-xs">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{gpsError}</span>
             </div>
           )}
         </div>
 
-        {/* Search Address Bar */}
-        <form onSubmit={handleManualAddressSubmit} className="relative mb-5">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Nhập tên đường, tòa nhà hoặc số nhà..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-amber-500 transition-colors"
-          />
+        {/* Manual Address Search */}
+        <form onSubmit={handleManualAddressSubmit} className="mb-5">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+            Hoặc nhập địa chỉ mới
+          </label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Số nhà, tên đường, phường/xã..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-input text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!searchQuery.trim()}
+              className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary-dark disabled:opacity-50 cursor-pointer transition-colors"
+            >
+              Áp dụng
+            </button>
+          </div>
         </form>
 
-        {/* Saved Addresses List */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-zinc-400 font-semibold px-1">
-            <span>ĐỊA CHỈ ĐÃ LƯU</span>
+        {/* Saved Addresses */}
+        <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Địa chỉ đã lưu
+            </span>
             <Link
               href="/profile/addresses"
               onClick={onClose}
-              className="text-amber-400 hover:text-amber-300 flex items-center gap-1"
+              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Thêm mới</span>
+              Quản lý sổ địa chỉ
             </Link>
           </div>
 
-          <div className="max-h-52 overflow-y-auto space-y-2 pr-1 no-scrollbar">
-            {savedAddresses.length === 0 ? (
-              <div className="p-4 rounded-2xl bg-zinc-900/50 border border-white/5 text-center text-xs text-zinc-500">
-                Chưa có địa chỉ nào được lưu. Bạn có thể thêm trong mục Quản lý Địa chỉ.
-              </div>
-            ) : (
-              savedAddresses.map((addr) => {
-                const isSelected =
-                  currentLocation.address === (addr.full_address || addr.street_address);
-
-                const IconComponent =
-                  addr.label === 'HOME' ? Home : addr.label === 'WORK' ? Briefcase : MapPin;
-
-                return (
-                  <button
-                    key={addr.id}
-                    type="button"
-                    onClick={() => handleSelectAddress(addr)}
-                    className={`w-full flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-amber-500/10 border-amber-500/40 text-white'
-                        : 'bg-zinc-900/60 hover:bg-zinc-900 border-white/5 text-zinc-300'
+          {savedAddresses.length === 0 ? (
+            <div className="p-4 rounded-xl bg-secondary/50 border border-border text-center text-xs text-muted-foreground">
+              Chưa có địa chỉ nào được lưu. Thêm địa chỉ trong phần hồ sơ để đặt món nhanh hơn.
+            </div>
+          ) : (
+            savedAddresses.map((addr) => {
+              const isSelected = currentLocation.address === addr.full_address;
+              return (
+                <button
+                  key={addr.id}
+                  type="button"
+                  onClick={() => handleSelectAddress(addr)}
+                  className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all cursor-pointer ${isSelected
+                      ? 'bg-primary/10 border-primary/40'
+                      : 'bg-secondary/40 hover:bg-secondary border-border'
                     }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                          isSelected ? 'bg-amber-500 text-zinc-950' : 'bg-white/5 text-zinc-400'
-                        }`}
-                      >
-                        <IconComponent className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-bold text-xs text-white truncate">
-                          {addr.label === 'HOME'
-                            ? 'Nhà riêng'
-                            : addr.label === 'WORK'
-                            ? 'Công ty'
-                            : addr.recipient_name || 'Địa chỉ giao hàng'}
-                        </p>
-                        <p className="text-[11px] text-zinc-400 truncate mt-0.5">
-                          {addr.full_address || addr.street_address}
-                        </p>
-                      </div>
+                >
+                  <div className="flex items-start gap-2.5 min-w-0 pr-2">
+                    <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center text-primary shrink-0 mt-0.5">
+                      {addr.label?.toLowerCase().includes('nhà') ? (
+                        <Home className="w-4 h-4" />
+                      ) : addr.label?.toLowerCase().includes('công ty') ? (
+                        <Briefcase className="w-4 h-4" />
+                      ) : (
+                        <MapPin className="w-4 h-4" />
+                      )}
                     </div>
-                    {isSelected && <Check className="w-4 h-4 text-amber-400 shrink-0 ml-2" />}
-                  </button>
-                );
-              })
-            )}
-          </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <span>{addr.label || 'Địa chỉ'}</span>
+                        {addr.is_default && (
+                          <span className="px-1.5 py-0.5 rounded bg-primary/12 text-primary text-[10px]">
+                            Mặc định
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
+                        {addr.full_address}
+                      </p>
+                    </div>
+                  </div>
+                  {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
+                </button>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

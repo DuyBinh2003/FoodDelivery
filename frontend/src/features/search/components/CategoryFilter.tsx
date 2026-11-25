@@ -21,13 +21,13 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories }) =>
 
   const handleSelect = (categoryId: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (!categoryId || activeCategoryId === categoryId) {
       params.delete('category');
     } else {
       params.set('category', categoryId);
     }
-    
+
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
@@ -35,26 +35,20 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories }) =>
 
   return (
     <div className="w-full">
-      <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 no-scrollbar scroll-smooth">
-        {/* Nút "Tất cả" */}
+      <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pt-1 no-scrollbar scroll-smooth">
         <button
           type="button"
           onClick={() => handleSelect(null)}
-          className={`group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border transition-all duration-300 shrink-0 select-none ${
+          className={`group flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 shrink-0 select-none cursor-pointer ${
             isAllActive
-              ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-semibold border-orange-400/30 shadow-lg shadow-orange-500/25 scale-[1.02]'
-              : 'bg-zinc-900/60 text-zinc-400 hover:text-zinc-200 border-white/5 hover:border-white/15 hover:bg-zinc-800/60'
+              ? 'bg-primary text-primary-foreground font-semibold border-primary shadow-sm shadow-primary/20'
+              : 'bg-card text-muted-foreground hover:text-foreground border-border hover:border-primary/35'
           }`}
         >
-          <div className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
-            isAllActive ? 'bg-white/20 text-white' : 'bg-white/5 text-zinc-400 group-hover:text-zinc-200'
-          }`}>
-            <LayoutGrid className="w-4 h-4" />
-          </div>
-          <span className="text-sm font-medium whitespace-nowrap">Tất cả món</span>
+          <LayoutGrid className="w-4 h-4" />
+          <span className="text-xs sm:text-sm whitespace-nowrap">Tất cả món</span>
         </button>
 
-        {/* Danh sách categories từ backend */}
         {categories.map((cat) => {
           const isActive = activeCategoryId === cat.id;
           return (
@@ -62,18 +56,14 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories }) =>
               key={cat.id}
               type="button"
               onClick={() => handleSelect(cat.id)}
-              className={`group flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border transition-all duration-300 shrink-0 select-none ${
-                isActive 
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-semibold border-orange-400/30 shadow-lg shadow-orange-500/25 scale-[1.02]' 
-                  : 'bg-zinc-900/60 text-zinc-400 hover:text-zinc-200 border-white/5 hover:border-white/15 hover:bg-zinc-800/60'
+              className={`group flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 shrink-0 select-none cursor-pointer ${
+                isActive
+                  ? 'bg-primary text-primary-foreground font-semibold border-primary shadow-sm shadow-primary/20'
+                  : 'bg-card text-muted-foreground hover:text-foreground border-border hover:border-primary/35'
               }`}
             >
-              <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-base transition-colors ${
-                isActive ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10'
-              }`}>
-                {cat.icon || '🍜'}
-              </div>
-              <span className="text-sm font-medium whitespace-nowrap">{cat.name}</span>
+              <span className="text-sm">{cat.icon || '🍜'}</span>
+              <span className="text-xs sm:text-sm whitespace-nowrap">{cat.name}</span>
             </button>
           );
         })}

@@ -284,7 +284,7 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-800 text-zinc-300">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground">
             {status}
           </span>
         );
@@ -295,42 +295,42 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
     <div className="space-y-6">
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-zinc-900/80 border border-amber-500/20 rounded-2xl p-5 backdrop-blur-sm">
+        <div className="bg-card border border-amber-500/25 rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Đơn Chờ Nhận</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Đơn Chờ Nhận</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-white">{pendingCount}</div>
-          <p className="text-xs text-zinc-400 mt-1">Cần bếp xác nhận nhận đơn</p>
+          <div className="text-3xl font-extrabold text-foreground tabular-nums">{pendingCount}</div>
+          <p className="text-xs text-muted-foreground mt-1">Cần bếp xác nhận nhận đơn</p>
         </div>
 
-        <div className="bg-zinc-900/80 border border-orange-500/20 rounded-2xl p-5 backdrop-blur-sm">
+        <div className="bg-card border border-primary/25 rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-orange-400 uppercase tracking-wider">Đang Nấu</span>
-            <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center">
+            <span className="text-xs font-semibold text-primary uppercase tracking-wider">Đang Nấu</span>
+            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <Flame className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-white">{cookingCount}</div>
-          <p className="text-xs text-zinc-400 mt-1">Bếp đang chuẩn bị món</p>
+          <div className="text-3xl font-extrabold text-foreground tabular-nums">{cookingCount}</div>
+          <p className="text-xs text-muted-foreground mt-1">Bếp đang chuẩn bị món</p>
         </div>
 
-        <div className="bg-zinc-900/80 border border-blue-500/20 rounded-2xl p-5 backdrop-blur-sm">
+        <div className="bg-card border border-blue-500/25 rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Chờ Tài Xế</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Chờ Tài Xế</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <Bike className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-white">{readyCount}</div>
-          <p className="text-xs text-zinc-400 mt-1">Món xong, đang điều phối xe</p>
+          <div className="text-3xl font-extrabold text-foreground tabular-nums">{readyCount}</div>
+          <p className="text-xs text-muted-foreground mt-1">Món xong, đang điều phối xe</p>
         </div>
       </div>
 
       {/* Filter Tabs & Refresh Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
         <div className="flex flex-wrap items-center gap-2">
           {(
             [
@@ -346,8 +346,8 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
               onClick={() => setStatusFilter(tab.key)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === tab.key
-                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                  : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
               }`}
             >
               {tab.label}
@@ -358,7 +358,7 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
         <button
           onClick={fetchOrders}
           disabled={loading}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted hover:bg-muted/80 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
           <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           <span>Làm mới</span>
@@ -367,8 +367,8 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
 
       {/* Orders List */}
       {loading && orders.length === 0 ? (
-        <div className="py-16 text-center text-zinc-400">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-orange-500" />
+        <div className="py-16 text-center text-muted-foreground">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-primary" />
           <p className="text-sm">Đang tải danh sách đơn hàng của quán...</p>
         </div>
       ) : fetchError && orders.length === 0 ? (
@@ -379,10 +379,10 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
           retryText="Tải lại đơn hàng"
         />
       ) : filteredOrders.length === 0 ? (
-        <div className="py-16 text-center bg-zinc-900/40 border border-white/5 rounded-3xl">
-          <UtensilsCrossed className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-          <h3 className="text-base font-semibold text-zinc-300 mb-1">Hiện không có đơn hàng nào</h3>
-          <p className="text-xs text-zinc-500">Đơn hàng mới từ khách hàng sẽ tự động xuất hiện tại đây.</p>
+        <div className="py-16 text-center bg-card border border-border rounded-3xl">
+          <UtensilsCrossed className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+          <h3 className="text-base font-semibold text-foreground mb-1">Hiện không có đơn hàng nào</h3>
+          <p className="text-xs text-muted-foreground">Đơn hàng mới từ khách hàng sẽ tự động xuất hiện tại đây.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -395,24 +395,24 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
             return (
               <div
                 key={order.id}
-                className="bg-zinc-900/90 border border-white/10 hover:border-white/20 rounded-2xl p-5 shadow-xl transition-all"
+                className="bg-card text-card-foreground border border-border hover:border-primary/40 rounded-2xl p-5 shadow-sm transition-all"
               >
                 {/* Header: ID, Date, Status */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/5">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/60">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-mono text-xs font-bold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1 rounded-lg">
+                    <span className="font-mono text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-lg">
                       #{order.id.slice(0, 8)}
                     </span>
                     <button
                       onClick={() => setSelectedOrder(order)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white border border-white/10 hover:border-white/20 transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted hover:bg-muted/80 text-xs font-semibold text-foreground border border-border transition-all cursor-pointer"
                       title="Xem chi tiết đơn hàng"
                     >
-                      <Eye className="w-3.5 h-3.5 text-orange-400" />
+                      <Eye className="w-3.5 h-3.5 text-primary" />
                       <span>Chi tiết</span>
                     </button>
-                    <span className="flex items-center gap-1.5 text-xs text-zinc-400">
-                      <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Clock className="w-3.5 h-3.5" />
                       {formatDate(order.created_at)}
                     </span>
                     {getKitchenMilestoneBadge(order)}
@@ -436,15 +436,15 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
                             order.id,
                           )
                         }
-                        className="flex items-start justify-between text-sm p-2 -mx-1.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group"
+                        className="flex items-start justify-between text-sm p-2 -mx-1.5 rounded-xl hover:bg-muted/60 transition-colors cursor-pointer group"
                         title="Bấm để xem ảnh, thành phần và yêu cầu khách hàng"
                       >
                         <div className="flex items-start gap-2.5 min-w-0">
-                          <span className="w-6 h-6 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="w-6 h-6 rounded-lg bg-primary/10 border border-primary/20 text-primary font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                             {item.quantity}x
                           </span>
                           <div className="min-w-0">
-                            <span className="text-zinc-200 font-medium group-hover:text-orange-400 transition-colors block truncate">
+                            <span className="text-foreground font-medium group-hover:text-primary transition-colors block truncate">
                               {item.name || `Món ăn #${item.menu_item_id.slice(0, 6)}`}
                             </span>
 
@@ -454,7 +454,7 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
                                 {item.options.map((opt, i) => (
                                   <span
                                     key={i}
-                                    className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                                    className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30"
                                   >
                                     ⚡ {opt}
                                   </span>
@@ -463,13 +463,13 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
                             )}
 
                             {item.notes && (!item.options || !item.options.includes(item.notes)) && (
-                              <span className="text-[11px] text-amber-200/80 italic block mt-0.5">
+                              <span className="text-[11px] text-amber-600 dark:text-amber-300 italic block mt-0.5">
                                 Ghi chú: {item.notes}
                               </span>
                             )}
                           </div>
                         </div>
-                        <span className="text-zinc-400 font-mono text-xs shrink-0 ml-2 group-hover:text-zinc-300 mt-0.5">
+                        <span className="text-muted-foreground font-mono text-xs shrink-0 ml-2 group-hover:text-foreground mt-0.5 tabular-nums">
                           {formatCurrency(item.unit_price * item.quantity)}
                         </span>
                       </div>
@@ -477,22 +477,22 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
                   </div>
 
                   {order.note && (
-                    <div className="bg-amber-500/5 border border-amber-500/15 rounded-xl p-2.5 text-xs text-amber-300">
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 text-xs text-amber-700 dark:text-amber-300">
                       <strong className="font-semibold">Ghi chú của khách:</strong> {order.note}
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2 text-xs text-zinc-400 pt-1">
-                    <MapPin className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
+                    <MapPin className="w-3.5 h-3.5 shrink-0" />
                     <span className="truncate">{order.delivery_address}</span>
                   </div>
                 </div>
 
                 {/* Footer: Total & Action Button */}
-                <div className="pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+                <div className="pt-3 border-t border-border/60 flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs text-zinc-400 block">Tổng tiền thu khách</span>
-                    <span className="text-lg font-extrabold text-white font-mono">
+                    <span className="text-xs text-muted-foreground block">Tổng tiền thu khách</span>
+                    <span className="text-lg font-extrabold text-foreground font-mono tabular-nums">
                       {formatCurrency(order.total_amount)}
                     </span>
                   </div>
@@ -503,7 +503,7 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
                       <button
                         onClick={() => handleUpdateStatus(order.id, 'COOKING')}
                         disabled={isUpdating}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-semibold text-xs transition-all shadow-lg shadow-orange-500/20 cursor-pointer disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition-all shadow-md cursor-pointer disabled:opacity-50"
                       >
                         {isUpdating ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -518,7 +518,7 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
                       <button
                         onClick={() => handleUpdateStatus(order.id, 'READY_FOR_PICKUP')}
                         disabled={isUpdating}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold text-xs transition-all shadow-lg shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs transition-all shadow-md cursor-pointer disabled:opacity-50"
                       >
                         {isUpdating ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -530,7 +530,7 @@ export function KitchenOrdersTab({ restaurantId, showToast, menuItems }: Kitchen
                     )}
 
                     {isReady && (
-                      <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium">
+                      <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-medium">
                         <Bike className="w-3.5 h-3.5 animate-bounce" />
                         <span>Đang tìm tài xế giao hàng...</span>
                       </div>

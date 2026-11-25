@@ -2,20 +2,17 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  RotateCcw,
-  Zap,
-  Tag,
-  Star,
-  Sparkles,
-} from 'lucide-react';
-import { HomeHeader } from '@/features/home/components/home-header';
+import { RotateCcw, Zap, Tag, Star, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { HeroSection } from '@/features/home/components/hero-section/hero-section';
+import { CategoryStrip } from '@/features/home/components/category-strip/category-strip';
 import { BannerCarousel } from '@/features/home/components/banner-carousel';
-import { CategoryGrid } from '@/features/home/components/category-grid';
 import { RestaurantFeedSection } from '@/features/home/components/restaurant-feed-section';
 import { AllRestaurantsInfinite } from '@/features/home/components/all-restaurants-infinite';
 import { NotificationDrawer } from '@/features/home/components/notification-drawer';
+import { LocationModal } from '@/features/home/components/location-modal';
 import { BottomNavigationBar } from '@/features/home/components/bottom-navigation-bar';
+import { CustomerLayout } from '@/components/layout/customer-layout/customer-layout';
 import {
   BannerSkeleton,
   CategoryGridSkeleton,
@@ -41,6 +38,7 @@ import {
 
 export default function HomePage() {
   const router = useRouter();
+  const tHome = useTranslations('home');
   const { currentLocation, syncUserAddresses } = useLocationStore();
   const { isAuthenticated } = useAuthStore();
   const { addItem, clearCart } = useCartStore();
@@ -50,8 +48,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
-  // 1. Tải danh sách nhà hàng và dữ liệu khởi tạo
   useEffect(() => {
     let isMounted = true;
 
@@ -109,7 +107,6 @@ export default function HomePage() {
     };
   }, [isAuthenticated, syncUserAddresses]);
 
-  // 2. Tính toán khoảng cách (km) và ETA (phút) dựa trên tọa độ hiện tại
   const enrichedRestaurants = useMemo(() => {
     return enrichRestaurantsWithLocation(
       restaurants,
@@ -118,7 +115,6 @@ export default function HomePage() {
     );
   }, [restaurants, currentLocation.lat, currentLocation.lng]);
 
-  // 3. Phân bổ các danh sách đề xuất (Feeds)
   const nearYouRestaurants = useMemo(() => {
     return filterNearYouRestaurants(enrichedRestaurants, 3.5, 25);
   }, [enrichedRestaurants]);
@@ -135,7 +131,6 @@ export default function HomePage() {
     return filterRestaurantsByCategory(enrichedRestaurants, selectedCategory);
   }, [enrichedRestaurants, selectedCategory]);
 
-  // Lọc các quán người dùng đã từng đặt (Order Again)
   const orderAgainRestaurants = useMemo(() => {
     if (!isAuthenticated || pastOrders.length === 0) return [];
 
@@ -146,7 +141,6 @@ export default function HomePage() {
     return enrichedRestaurants.filter((r) => orderedRestaurantIds.has(r.id));
   }, [isAuthenticated, pastOrders, enrichedRestaurants]);
 
-  // Tìm đơn hàng đang hoạt động (active order) để hiển thị ping trên Bottom Nav
   const activeOrder = useMemo(() => {
     return pastOrders.find(
       (o) =>
@@ -157,7 +151,6 @@ export default function HomePage() {
     );
   }, [pastOrders]);
 
-  // Xử lý khi bấm nút "Đặt lại" trên đơn cũ
   const handleOrderAgain = useCallback(
     (restaurant: EnrichedRestaurantItem) => {
       const pastOrder = pastOrders.find((o) => o.restaurant_id === restaurant.id);
@@ -185,40 +178,39 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 selection:text-orange-300 transition-colors">
-      {/* 1. Header & Điều hướng trung tâm */}
-      <HomeHeader
-        onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
-        hasUnreadNotifications={true}
-      />
+    <CustomerLayout>
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 pb-24 md:pb-14">
+        {/* Hero Section */}
+        <HeroSection
+          onOpenLocationModal={() => setIsLocationModalOpen(true)}
+          totalRestaurantsCount={restaurants.length}
+        />
 
-      {/* 2. Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 space-y-7 pb-24 md:pb-14">
         {loading ? (
-          <div className="space-y-7">
-            <BannerSkeleton />
+          <div className="space-y-8">
             <CategoryGridSkeleton />
+            <BannerSkeleton />
             <RestaurantFeedSkeleton title="Gần bạn nhất" />
             <RestaurantFeedSkeleton title="Đang có khuyến mãi" />
             <RestaurantGridSkeleton />
           </div>
         ) : (
           <>
-            {/* 3. Banner Carousel */}
-            <BannerCarousel />
-
-            {/* 4. Food Categories Grid */}
-            <CategoryGrid
+            {/* Horizontal Category Pill Strip */}
+            <CategoryStrip
               selectedCategoryId={selectedCategory}
               onSelectCategory={(id) => setSelectedCategory(id)}
             />
 
+            {/* Promo Banner Carousel */}
+            <BannerCarousel />
+
             {/* In-place Category Active Filter Banner */}
             {selectedCategory !== 'ALL' && (
-              <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-primary/30">
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-primary/8 border border-primary/25">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-xs font-medium text-foreground">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-xs sm:text-sm font-medium text-foreground">
                     Đang lọc món theo danh mục:{' '}
                     <strong className="text-primary uppercase">{selectedCategory}</strong>
                   </span>
@@ -226,18 +218,18 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('ALL')}
-                  className="text-xs font-medium text-primary hover:underline cursor-pointer"
+                  className="text-xs font-bold text-primary hover:underline cursor-pointer"
                 >
                   Xóa bộ lọc
                 </button>
               </div>
             )}
 
-            {/* 5. Khối 1: Đặt Lại Lần Nữa (Chỉ hiện khi đã đăng nhập & có đơn cũ) */}
+            {/* 1. Đặt Lại Lần Nữa */}
             {orderAgainRestaurants.length > 0 && (
               <RestaurantFeedSection
-                title="Đặt lại lần nữa"
-                subtitle="Những quán quen và món ngon bạn đã từng thưởng thức"
+                title={tHome('orderAgainTitle')}
+                subtitle={tHome('orderAgainSubtitle')}
                 icon={RotateCcw}
                 badge="QUÁN QUEN"
                 restaurants={orderAgainRestaurants}
@@ -246,37 +238,37 @@ export default function HomePage() {
               />
             )}
 
-            {/* 6. Khối 2: Gần Bạn Nhất (Bán kính <= 3.5km, ETA <= 25 phút) */}
+            {/* 2. Gần Bạn Nhất */}
             <RestaurantFeedSection
-              title="Gần bạn nhất"
-              subtitle="Cự ly dưới 3.5km • Giao nhanh thần tốc trong 20 phút"
+              title={tHome('nearYouTitle')}
+              subtitle={tHome('nearYouSubtitle')}
               icon={Zap}
               badge="GIAO NHANH"
               restaurants={nearYouRestaurants}
               viewAllHref="/menu?sort=distance"
             />
 
-            {/* 7. Khối 3: Đang Có Khuyến Mãi (Freeship & Flash Sale) */}
+            {/* 3. Đang Có Khuyến Mãi */}
             <RestaurantFeedSection
-              title="Đang có khuyến mãi"
-              subtitle="Freeship đơn từ 0Đ và ưu đãi độc quyền hôm nay"
+              title={tHome('promoTitle')}
+              subtitle={tHome('promoSubtitle')}
               icon={Tag}
               badge="HOT PROMO"
               restaurants={promoRestaurants}
               viewAllHref="/menu?promo=true"
             />
 
-            {/* 8. Khối 4: Quán Ngon Nổi Bật (Rating >= 4.5) */}
+            {/* 4. Quán Ngon Nổi Bật */}
             <RestaurantFeedSection
-              title="Quán ngon nổi bật"
-              subtitle="Được cộng đồng ẩm thực đánh giá cao nhất từ 4.5 sao"
+              title={tHome('topRatedTitle')}
+              subtitle={tHome('topRatedSubtitle')}
               icon={Star}
               badge="TOP RATED"
               restaurants={topRatedRestaurants}
               viewAllHref="/menu?sort=rating"
             />
 
-            {/* 9. Khối Tổng Hợp: Infinite Scroll Grid */}
+            {/* 5. Tất Cả Quán Ngon (Infinite Scroll Grid) */}
             <AllRestaurantsInfinite
               restaurants={categoryFilteredRestaurants}
               selectedCategoryName={selectedCategory}
@@ -285,18 +277,21 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* 10. Drawer Thông Báo Khuyến Mãi & Trạng Thái Đơn */}
+      <LocationModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+      />
+
       <NotificationDrawer
         isOpen={isNotificationDrawerOpen}
         onClose={() => setIsNotificationDrawerOpen(false)}
       />
 
-      {/* 11. Thanh Điều Hướng Dưới Cùng (Mobile) */}
       <BottomNavigationBar
         onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
         hasUnreadNotifications={true}
         activeOrderId={activeOrder?.id || null}
       />
-    </div>
+    </CustomerLayout>
   );
 }

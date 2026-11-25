@@ -51,10 +51,10 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => 
     <div className={`flex gap-3 text-sm ${isBot ? 'items-start' : 'items-start flex-row-reverse'}`}>
       {/* Avatar */}
       <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-medium shadow-md ${
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-medium shadow-sm ${
           isBot
-            ? 'bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-orange-500/20'
-            : 'bg-zinc-800 text-zinc-300 border border-white/10'
+            ? 'bg-primary text-primary-foreground shadow-primary/20'
+            : 'bg-muted text-foreground border border-border'
         }`}
       >
         {isBot ? <Sparkles className="h-4 w-4" /> : <User className="h-4 w-4" />}
@@ -65,28 +65,28 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => 
         <div
           className={`relative rounded-2xl px-4 py-3 leading-relaxed whitespace-pre-wrap break-words ${
             isBot
-              ? 'bg-zinc-900 border border-zinc-800 text-zinc-100 shadow-sm'
-              : 'bg-orange-600 text-white rounded-br-none shadow-md shadow-orange-600/10'
+              ? 'bg-card border border-border text-foreground shadow-sm'
+              : 'bg-primary text-primary-foreground rounded-br-none shadow-sm'
           }`}
         >
           {message.content ? (
             message.content
           ) : message.isStreaming ? (
             <div className="flex items-center gap-1.5 py-1">
-              <span className="h-2 w-2 rounded-full bg-orange-400 animate-bounce [animation-delay:-0.3s]" />
-              <span className="h-2 w-2 rounded-full bg-orange-400 animate-bounce [animation-delay:-0.15s]" />
-              <span className="h-2 w-2 rounded-full bg-orange-400 animate-bounce" />
+              <span className="h-2 w-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+              <span className="h-2 w-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+              <span className="h-2 w-2 rounded-full bg-primary animate-bounce" />
             </div>
           ) : (
-            <span className="text-zinc-400 italic">Nội dung trống</span>
+            <span className="text-muted-foreground italic">Nội dung trống</span>
           )}
         </div>
 
         {/* Bot Metadata & Feedback Bar */}
         {isBot && !message.isStreaming && message.content && (
-          <div className="mt-1.5 flex items-center gap-2 px-1 text-xs text-zinc-400">
+          <div className="mt-1.5 flex items-center gap-2 px-1 text-xs text-muted-foreground">
             {message.intent && INTENT_LABELS[message.intent] && (
-              <span className="rounded-md bg-zinc-800/80 px-2 py-0.5 text-[11px] font-medium text-orange-400 border border-zinc-700/50">
+              <span className="rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary border border-primary/20">
                 {INTENT_LABELS[message.intent]}
               </span>
             )}
@@ -97,8 +97,8 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => 
                 type="button"
                 onClick={() => handleFeedback(1)}
                 disabled={submittingRating !== null}
-                className={`p-1 rounded-md transition-colors hover:bg-zinc-800 ${
-                  userRating === 1 ? 'text-orange-400 bg-zinc-800' : 'text-zinc-500 hover:text-zinc-300'
+                className={`p-1 rounded-md transition-colors hover:bg-muted ${
+                  userRating === 1 ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground'
                 }`}
                 title="Hữu ích"
               >
@@ -108,8 +108,8 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => 
                 type="button"
                 onClick={() => handleFeedback(-1)}
                 disabled={submittingRating !== null}
-                className={`p-1 rounded-md transition-colors hover:bg-zinc-800 ${
-                  userRating === -1 ? 'text-red-400 bg-zinc-800' : 'text-zinc-500 hover:text-zinc-300'
+                className={`p-1 rounded-md transition-colors hover:bg-muted ${
+                  userRating === -1 ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:text-foreground'
                 }`}
                 title="Chưa tốt"
               >

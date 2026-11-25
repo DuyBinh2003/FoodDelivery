@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function PartnerRestaurantPage() {
   return (
-    <div className="min-h-screen bg-black text-white pb-16">
+    <div className="min-h-screen bg-background text-foreground pb-16">
       <PartnerDashboard />
     </div>
   );

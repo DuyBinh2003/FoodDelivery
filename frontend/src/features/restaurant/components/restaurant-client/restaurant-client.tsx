@@ -192,56 +192,48 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-36">
-      {/* 1. Sticky Top Navigation Bar */}
-      <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border px-4 sm:px-6 py-3 transition-all duration-200">
+      {/* 1. Sub-navigation Bar */}
+      <div className="bg-card/70 border-b border-border px-4 sm:px-6 py-3 transition-all duration-200">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/menu"
-              className="inline-flex items-center gap-1.5 py-1.5 px-3 -ml-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-xs sm:text-sm font-medium"
+              className="inline-flex items-center gap-1.5 py-1.5 px-3 -ml-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors text-xs sm:text-sm font-semibold"
               aria-label="Quay lại thực đơn"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Khám phá</span>
             </Link>
 
             <div className="h-4 w-[1px] bg-border hidden sm:block" />
 
             <div className="min-w-0">
-              <h1 className="text-sm sm:text-base md:text-lg font-bold text-foreground truncate flex items-center gap-1.5">
+              <h2 className="font-heading text-sm sm:text-base font-bold text-foreground truncate flex items-center gap-1.5">
                 {restaurant.name}
                 {restaurant.verification_status === 'VERIFIED' && (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 inline" />
+                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0 inline" />
                 )}
-              </h1>
+              </h2>
             </div>
           </div>
 
-          {/* Right Status / Mini Cart Indicator */}
           <div className="flex items-center gap-3">
             {cartTotalItems > 0 && isCurrentRestaurantInCart && (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/12 border border-primary/25 text-primary text-xs font-bold">
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>{cartTotalItems} món trong giỏ</span>
               </div>
             )}
 
-            <Badge
-              variant="outline"
-              className={
-                restaurant.is_active
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-medium'
-                  : 'bg-muted text-muted-foreground border-border text-xs'
-              }
-            >
+            <Badge variant={restaurant.is_active ? 'success' : 'secondary'}>
               {restaurant.is_active ? 'Đang mở cửa' : 'Tạm đóng'}
             </Badge>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {/* 2. Restaurant Identity & Dynamic Delivery Header */}
         <RestaurantHeader restaurant={restaurant} />
 
@@ -257,12 +249,12 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm món ăn trong thực đơn của quán..."
-              className="pl-10 pr-9 bg-card border-border text-foreground placeholder:text-muted-foreground/60 rounded-xl focus:border-primary/50 focus:ring-primary/20 h-11 text-sm"
+              className="pl-10 pr-9 bg-card border-border text-foreground placeholder:text-muted-foreground rounded-xl focus:border-primary focus:ring-primary/25 h-11 text-sm"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors cursor-pointer"
                 aria-label="Xóa tìm kiếm"
               >
                 <X className="w-3.5 h-3.5" />
@@ -277,7 +269,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
 
         {/* 4. Sticky Category Pill Tabs with Scroll Spy */}
         {categories.length > 0 && (
-          <div className="sticky top-[57px] z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-background/90 backdrop-blur-md border-b border-border mb-8">
+          <div className="sticky top-16 z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-background/95 backdrop-blur-md border-b border-border mb-8">
             <div 
               ref={categoryScrollRef}
               className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 no-scrollbar scroll-smooth"
@@ -286,7 +278,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
                 id="tab-btn-all"
                 type="button"
                 onClick={() => scrollToCategory('all')}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                   activeCategory === 'all'
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'bg-card text-muted-foreground hover:text-foreground hover:bg-secondary border border-border'
@@ -301,7 +293,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
                   key={cat.id}
                   type="button"
                   onClick={() => scrollToCategory(cat.id)}
-                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                  className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                     activeCategory === cat.id
                       ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'bg-card text-muted-foreground hover:text-foreground hover:bg-secondary border border-border'

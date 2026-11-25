@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { Star, Clock, Navigation, Tag, RotateCcw } from 'lucide-react';
 import type { EnrichedRestaurantItem } from '../utils/home-feed.utils';
 import { formatDistanceDisplay, formatEtaDisplay } from '../utils/home-feed.utils';
@@ -30,63 +31,68 @@ export function RestaurantCard({
   const isGrid = layout === 'grid';
 
   return (
-    <div
-      className={`group relative rounded-xl bg-card border border-border hover:border-white/20 overflow-hidden transition-all duration-200 ${
-        isGrid ? 'w-full flex flex-col' : 'w-60 sm:w-68 shrink-0 flex flex-col'
+    <motion.div
+      whileHover={{ y: -4, scale: 1.015 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className={`group relative rounded-2xl bg-card border border-border hover:border-primary/40 hover:shadow-lg hover:shadow-primary/8 overflow-hidden transition-colors duration-200 ${
+        isGrid ? 'w-full flex flex-col' : 'w-64 sm:w-72 shrink-0 flex flex-col'
       }`}
     >
       {/* Thumbnail area with overlays */}
-      <Link href={`/restaurant/${restaurant.id}`} className="relative block w-full h-34 sm:h-38 overflow-hidden bg-zinc-900">
+      <Link
+        href={`/restaurant/${restaurant.id}`}
+        className="relative block w-full h-40 sm:h-44 overflow-hidden bg-muted"
+      >
         <Image
           src={imageUrl}
           alt={restaurant.name}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
           loading="lazy"
           unoptimized={imageUrl.startsWith('http://localhost:4566')}
-          className="object-cover group-hover:scale-103 transition-transform duration-300"
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
 
         {/* Promo / Discount Label */}
         {(restaurant.is_freeship || restaurant.discount_label) && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary text-primary-foreground text-[10px] font-semibold tracking-tight shadow-xs">
-            <Tag className="w-2.5 h-2.5" />
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tracking-tight shadow-sm">
+            <Tag className="w-3 h-3" />
             <span>{restaurant.discount_label || 'FREESHIP 0Đ'}</span>
           </div>
         )}
 
         {/* Rating Badge */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-amber-400 text-[11px] font-medium border border-white/10">
+        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-amber-300 text-xs font-bold border border-white/15">
           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
           <span>{displayRating}</span>
         </div>
 
-        {/* ETA & Distance Pill */}
-        <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-zinc-300 text-[11px] font-medium border border-white/10">
+        {/* ETA Pill */}
+        <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-semibold border border-white/15">
           <Clock className="w-3 h-3 text-emerald-400" />
           <span>{formatEtaDisplay(restaurant.eta_minutes)}</span>
         </div>
       </Link>
 
       {/* Content */}
-      <div className="p-3 flex-1 flex flex-col justify-between">
+      <div className="p-3.5 flex-1 flex flex-col justify-between">
         <div>
           <Link href={`/restaurant/${restaurant.id}`}>
-            <h4 className="font-medium text-foreground text-xs sm:text-sm line-clamp-1 group-hover:text-primary transition-colors">
+            <h4 className="font-heading font-bold text-foreground text-sm sm:text-base line-clamp-1 group-hover:text-primary transition-colors">
               {restaurant.name}
             </h4>
           </Link>
 
-          <p className="text-muted-foreground text-xs line-clamp-1 mt-0.5">
-            {restaurant.address || 'Quận 1, TP. Hồ Chí Minh'}
+          <p className="text-muted-foreground text-xs line-clamp-1 mt-1">
+            {restaurant.address || 'Chưa cập nhật địa chỉ'}
           </p>
         </div>
 
         {/* Bottom meta & action */}
-        <div className="mt-2.5 pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-1 text-zinc-300 font-normal text-[11px]">
-            <Navigation className="w-3 h-3 text-primary/80" />
+        <div className="mt-3 pt-2.5 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 text-foreground/80 font-medium text-xs">
+            <Navigation className="w-3.5 h-3.5 text-primary" />
             <span>{formatDistanceDisplay(restaurant.distance_km)}</span>
           </div>
 
@@ -94,18 +100,18 @@ export function RestaurantCard({
             <button
               type="button"
               onClick={() => onOrderAgain && onOrderAgain(restaurant)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-medium text-xs transition-colors cursor-pointer active:scale-95 border border-primary/20"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/12 hover:bg-primary text-primary hover:text-primary-foreground font-semibold text-xs transition-colors cursor-pointer active:scale-95 border border-primary/25"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Đặt lại</span>
             </button>
           ) : (
-            <span className="text-[11px] text-zinc-500">
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
               {restaurant.categories?.[0]?.name || 'Ẩm thực'}
             </span>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -41,13 +41,13 @@ export function AddressCard({
     <div
       onClick={() => selectable && onSelect && onSelect(address)}
       className={`group relative p-4 rounded-xl border transition-all duration-200 ${
-        selectable ? 'cursor-pointer hover:border-orange-500/60' : ''
+        selectable ? 'cursor-pointer hover:border-primary/60' : ''
       } ${
         isSelected
-          ? 'bg-orange-500/10 border-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.15)] ring-1 ring-orange-500'
+          ? 'bg-primary/10 border-primary shadow-sm ring-1 ring-primary'
           : address.is_default
-          ? 'bg-zinc-900/80 border-emerald-500/40 hover:border-emerald-500/60'
-          : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-700'
+          ? 'bg-card border-primary/40 hover:border-primary/60'
+          : 'bg-card border-border hover:border-primary/30'
       }`}
     >
       {/* Top Header: Label & Default Badge */}
@@ -60,7 +60,7 @@ export function AddressCard({
             {labelInfo.text}
           </span>
           {address.is_default && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
               <Check className="w-3 h-3" />
               Mặc định
             </span>
@@ -76,7 +76,7 @@ export function AddressCard({
                 e.stopPropagation();
                 onSetDefault(address.id);
               }}
-              className="text-xs text-zinc-400 hover:text-emerald-400 px-2 py-1 rounded hover:bg-emerald-500/10 transition-colors"
+              className="text-xs text-muted-foreground hover:text-primary px-2 py-1 rounded hover:bg-primary/10 transition-colors"
             >
               Đặt mặc định
             </button>
@@ -90,7 +90,7 @@ export function AddressCard({
                 e.stopPropagation();
                 onEdit(address);
               }}
-              className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
             >
               <Edit3 className="w-3.5 h-3.5" />
             </button>
@@ -104,7 +104,7 @@ export function AddressCard({
                 e.stopPropagation();
                 onDelete(address.id);
               }}
-              className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -113,28 +113,28 @@ export function AddressCard({
       </div>
 
       {/* Recipient Details */}
-      <div className="flex items-center gap-3 text-sm text-zinc-200 font-medium mb-1.5">
+      <div className="flex items-center gap-3 text-sm text-foreground font-medium mb-1.5">
         <span className="flex items-center gap-1.5">
-          <User className="w-3.5 h-3.5 text-zinc-400" />
+          <User className="w-3.5 h-3.5 text-muted-foreground" />
           {address.recipient_name}
         </span>
-        <span className="text-zinc-500">|</span>
-        <span className="flex items-center gap-1.5 text-zinc-400 text-xs">
+        <span className="text-border">|</span>
+        <span className="flex items-center gap-1.5 text-muted-foreground text-xs">
           <Phone className="w-3 h-3" />
           {address.recipient_phone}
         </span>
       </div>
 
       {/* Street & Full Address */}
-      <div className="flex items-start gap-2 text-xs text-zinc-400 leading-relaxed mb-2">
-        <MapPin className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
-        <span className="text-zinc-300 font-normal">{address.full_address}</span>
+      <div className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed mb-2">
+        <MapPin className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+        <span className="text-foreground/90 font-normal">{address.full_address}</span>
       </div>
 
       {/* Delivery Notes */}
       {address.delivery_notes && (
-        <div className="mt-2 pt-2 border-t border-zinc-800/80 text-[11px] text-zinc-400 italic">
-          <span className="text-zinc-500 not-italic font-medium">Ghi chú: </span>
+        <div className="mt-2 pt-2 border-t border-border/70 text-[11px] text-muted-foreground italic">
+          <span className="text-muted-foreground/80 not-italic font-medium">Ghi chú: </span>
           {address.delivery_notes}
         </div>
       )}

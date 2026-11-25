@@ -118,9 +118,9 @@ export default function AddressBookPage() {
 
   if (!_hasHydrated || (isLoading && addresses.length === 0)) {
     return (
-      <div className="min-h-screen pt-24 pb-16 bg-zinc-950 text-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-zinc-400">
-          <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      <div className="min-h-screen pt-16 pb-16 bg-background text-foreground flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
           <p className="text-sm">Đang tải sổ địa chỉ...</p>
         </div>
       </div>
@@ -128,28 +128,30 @@ export default function AddressBookPage() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-20 bg-zinc-950 text-white">
+    <div className="min-h-screen pt-8 pb-20 bg-background text-foreground">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Navigation Breadcrumb */}
         <div className="mb-6 flex items-center justify-between">
           <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-xs text-zinc-400 hover:text-white transition-colors"
+            href="/profile"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
-            Quay lại trang chủ
+            Quay lại hồ sơ
           </Link>
         </div>
 
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-zinc-900/90 to-zinc-900/50 border border-zinc-800 shadow-xl backdrop-blur-md mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 rounded-2xl bg-card border border-border shadow-xs mb-8">
           <div className="flex items-center gap-3.5">
-            <div className="p-3 bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-500/30 text-orange-400 rounded-2xl shadow-inner">
+            <div className="p-3 bg-primary/12 border border-primary/25 text-primary rounded-2xl">
               <MapPin className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">Sổ địa chỉ của tôi</h1>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <h1 className="font-heading text-xl font-extrabold text-foreground tracking-tight">
+                Sổ địa chỉ của tôi
+              </h1>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Quản lý các địa điểm giao nhận thường dùng và định vị tọa độ chuẩn xác
               </p>
             </div>
@@ -158,7 +160,7 @@ export default function AddressBookPage() {
           <button
             type="button"
             onClick={handleOpenAddModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-medium shadow-lg shadow-orange-500/25 active:scale-95 transition-all"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-primary-foreground text-xs font-bold shadow-sm active:scale-95 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Thêm địa chỉ mới
@@ -167,18 +169,20 @@ export default function AddressBookPage() {
 
         {/* Address Cards List */}
         {addresses.length === 0 ? (
-          <div className="text-center py-16 px-6 rounded-2xl bg-zinc-900/40 border border-zinc-800/80">
-            <div className="w-16 h-16 rounded-full bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center mx-auto mb-4 text-zinc-500">
+          <div className="text-center py-16 px-6 rounded-2xl bg-card border border-border">
+            <div className="w-16 h-16 rounded-full bg-secondary border border-border flex items-center justify-center mx-auto mb-4 text-primary">
               <MapPin className="w-8 h-8" />
             </div>
-            <h3 className="text-base font-semibold text-white">Bạn chưa lưu địa chỉ nào</h3>
-            <p className="text-xs text-zinc-400 max-w-md mx-auto mt-1.5 mb-6">
+            <h3 className="font-heading text-base font-bold text-foreground">
+              Bạn chưa lưu địa chỉ nào
+            </h3>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto mt-1.5 mb-6">
               Lưu lại địa chỉ nhà riêng, công ty để đặt món nhanh chóng hơn và được tính toán lộ trình giao hàng tối ưu nhất.
             </p>
             <button
               type="button"
               onClick={handleOpenAddModal}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium transition-all shadow-lg shadow-orange-500/20"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-primary-foreground text-xs font-bold transition-all shadow-sm cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Thêm địa chỉ đầu tiên

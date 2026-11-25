@@ -143,17 +143,17 @@ export const VoucherSelectionDrawer: React.FC<VoucherSelectionDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-lg h-full bg-neutral-900 border-l border-neutral-800 flex flex-col shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-lg h-full bg-card text-card-foreground border-l border-border flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="p-4 border-b border-neutral-800 flex items-center justify-between">
+        <div className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Tag className="w-5 h-5 text-primary" />
-            <h3 className="font-bold text-lg text-neutral-100">Chọn Mã Giảm Giá</h3>
+            <h3 className="font-bold text-lg text-foreground">Chọn Mã Giảm Giá</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -169,17 +169,17 @@ export const VoucherSelectionDrawer: React.FC<VoucherSelectionDrawerProps> = ({
                 placeholder="Nhập mã ưu đãi hoặc đối tác..."
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-                className="flex-1 px-3.5 py-2 rounded-lg bg-neutral-950 border border-neutral-800 text-neutral-100 text-sm focus:outline-none focus:border-primary font-mono"
+                className="flex-1 px-3.5 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:border-primary font-mono"
               />
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold text-xs transition-colors shrink-0"
+                className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground font-semibold text-xs transition-colors shrink-0 border border-border cursor-pointer"
               >
                 Áp Dụng
               </button>
             </div>
             {manualCodeError && (
-              <p className="text-xs text-red-400 flex items-center gap-1">
+              <p className="text-xs text-destructive flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5" />
                 {manualCodeError}
               </p>
@@ -196,7 +196,7 @@ export const VoucherSelectionDrawer: React.FC<VoucherSelectionDrawerProps> = ({
 
           {/* Vouchers Grouped by Categories */}
           <div className="space-y-4 pt-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
               Mã Giảm Giá Khả Dụng (Áp dụng tối đa 1 mã mỗi loại)
             </h4>
@@ -204,11 +204,11 @@ export const VoucherSelectionDrawer: React.FC<VoucherSelectionDrawerProps> = ({
             {loading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-28 rounded-xl bg-neutral-800/40 animate-pulse border border-neutral-800" />
+                  <div key={i} className="h-28 rounded-xl bg-muted animate-pulse border border-border" />
                 ))}
               </div>
             ) : walletVouchers.length === 0 ? (
-              <div className="text-center py-8 text-neutral-500 text-sm">
+              <div className="text-center py-8 text-muted-foreground text-sm">
                 Bạn chưa có mã giảm giá nào trong ví. Hãy ghé Kho Voucher để lưu thêm mã hot!
               </div>
             ) : (
@@ -239,8 +239,8 @@ export const VoucherSelectionDrawer: React.FC<VoucherSelectionDrawerProps> = ({
 
           {/* Ineligible Vouchers Section */}
           {comboResult && comboResult.ineligible_vouchers.length > 0 && (
-            <div className="pt-4 border-t border-neutral-800 space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+            <div className="pt-4 border-t border-border space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Mã Chưa Đủ Điều Kiện Áp Dụng ({comboResult.ineligible_vouchers.length})
               </h4>
               <div className="space-y-2.5">
@@ -264,14 +264,14 @@ export const VoucherSelectionDrawer: React.FC<VoucherSelectionDrawerProps> = ({
         </div>
 
         {/* Footer Confirmation Bar */}
-        <div className="p-4 border-t border-neutral-800 bg-neutral-950 flex items-center justify-between gap-3">
+        <div className="p-4 border-t border-border bg-card flex items-center justify-between gap-3">
           <div className="text-xs">
-            <span className="text-neutral-400">Đã chọn: </span>
-            <span className="font-bold text-neutral-100">{selectedIds.length} ưu đãi</span>
+            <span className="text-muted-foreground">Đã chọn: </span>
+            <span className="font-bold text-foreground">{selectedIds.length} ưu đãi</span>
           </div>
           <button
             onClick={handleConfirm}
-            className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all"
+            className="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all cursor-pointer"
           >
             Đồng Ý & Áp Dụng
           </button>

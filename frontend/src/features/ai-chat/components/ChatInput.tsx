@@ -80,25 +80,25 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="border-t border-zinc-800 bg-zinc-950 p-3">
+    <div className="border-t border-border bg-card p-3">
       {/* Geolocation Tag if active */}
       {location && (
-        <div className="mb-2 flex items-center justify-between rounded-lg bg-orange-950/40 border border-orange-500/30 px-2.5 py-1 text-xs text-orange-300">
+        <div className="mb-2 flex items-center justify-between rounded-lg bg-primary/10 border border-primary/25 px-2.5 py-1 text-xs text-primary">
           <div className="flex items-center gap-1.5 truncate">
-            <MapPin className="h-3.5 w-3.5 text-orange-400" />
+            <MapPin className="h-3.5 w-3.5" />
             <span className="truncate">Vị trí: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
           </div>
           <button
             type="button"
             onClick={() => setLocation(undefined)}
-            className="text-[11px] font-medium text-orange-400 hover:text-white"
+            className="text-[11px] font-medium text-primary hover:underline"
           >
             Hủy
           </button>
         </div>
       )}
 
-      <div className="relative flex items-end gap-2 rounded-2xl border border-zinc-800 bg-zinc-900/90 p-1.5 focus-within:border-orange-500/50 focus-within:ring-1 focus-within:ring-orange-500/20">
+      <div className="relative flex items-end gap-2 rounded-2xl border border-border bg-background p-1.5 focus-within:border-primary/60 focus-within:ring-1 focus-within:ring-primary/20">
         <textarea
           ref={textareaRef}
           value={text}
@@ -108,7 +108,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           rows={1}
           maxLength={2000}
           disabled={isStreaming}
-          className="max-h-28 min-h-[38px] w-full resize-none bg-transparent px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+          className="max-h-28 min-h-[38px] w-full resize-none bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
         />
 
         <div className="flex items-center gap-1 pb-1 pr-1">
@@ -118,13 +118,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             onClick={handleToggleLocation}
             disabled={isStreaming || isLocating}
             title={location ? 'Tắt vị trí' : 'Sử dụng vị trí hiện tại'}
-            className={`p-2 rounded-xl transition-colors ${
-              location
-                ? 'bg-orange-500/20 text-orange-400'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-            }`}
+            className={`p-2 rounded-xl transition-colors ${location
+                ? 'bg-primary/15 text-primary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
           >
-            <MapPin className={`h-4 w-4 ${isLocating ? 'animate-pulse text-orange-400' : ''}`} />
+            <MapPin className={`h-4 w-4 ${isLocating ? 'animate-pulse text-primary' : ''}`} />
           </button>
 
           {/* Send or Stop Button */}
@@ -142,7 +141,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               type="button"
               onClick={handleSend}
               disabled={!text.trim()}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-600 text-white transition-all hover:bg-orange-500 disabled:opacity-40 disabled:hover:bg-orange-600 shadow-md shadow-orange-600/20"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-40 disabled:hover:bg-primary shadow-md shadow-primary/20"
               title="Gửi tin nhắn (Enter)"
             >
               <SendHorizontal className="h-4 w-4" />
