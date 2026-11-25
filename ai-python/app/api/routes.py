@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import asyncio
 from typing import Any, AsyncGenerator
@@ -39,7 +40,7 @@ async def generate_rag_sse_stream(req: RagQueryRequest) -> AsyncGenerator[str, N
         "rewritten_question": None,
         "rewrite_count": 0,
         "generation": "",
-        "model_used": "gemini-1.5-pro",
+        "model_used": os.getenv("GEMINI_MODEL_QUALITY", "gemini-3.5-flash"),
         "tokens_used": 0,
         "sources_used": [],
         "langsmith_run_id": None,

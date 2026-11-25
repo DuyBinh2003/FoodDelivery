@@ -232,13 +232,8 @@ services:
     container_name: fd_ai_python
     ports:
       - "8000:8000"
+    env_file: ./ai-python/.env
     environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - TAVILY_API_KEY=${TAVILY_API_KEY}
-      - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
-      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
-      - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT:-food-delivery-chatbox}
       - POSTGRES_URI=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - ORDER_SERVICE_URL=http://order-service:3004
@@ -263,6 +258,9 @@ services:
       - "3008:3008"
     env_file: ./backend/.env
     environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
       - AI_SERVICE_PORT=3008
       - LANGGRAPH_SERVICE_URL=http://ai-python:8000
     depends_on:

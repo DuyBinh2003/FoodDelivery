@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import structlog
 from typing import Any
@@ -50,14 +51,14 @@ async def generate_node(state: GraphState) -> dict[str, Any]:
 
     full_prompt = f"{system_instruction}\n\nCâu hỏi hiện tại của người dùng: {question}"
 
-    model_used = "gemini-1.5-pro"
+    model_used = os.getenv("GEMINI_MODEL_QUALITY", "gemini-3.5-flash")
     generation_text = ""
 
     # Primary: Gemini Pro
     try:
         llm = LLMFactory.get_quality()
         response = await llm.ainvoke(full_prompt)
-        generation_text = str(response.content)
+        generation_text = LLMFactory.extract_text(response.content)
     except Exception as gemini_err:
         logger.warn("gemini_pro_failed_trying_fallback", error=str(gemini_err))
         # Fallback: OpenAI GPT-4o
@@ -66,7 +67,7 @@ async def generate_node(state: GraphState) -> dict[str, Any]:
             try:
                 model_used = "gpt-4o"
                 response = await fallback_llm.ainvoke(full_prompt)
-                generation_text = str(response.content)
+                generation_text = LLMFactory.extract_text(response.content)
             except Exception as openai_err:
                 logger.error("openai_fallback_also_failed", error=str(openai_err))
                 generation_text = (

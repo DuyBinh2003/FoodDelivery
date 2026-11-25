@@ -82,7 +82,7 @@ export class RestaurantsController {
     @Inject(UpdateOperatingHoursUseCase) private readonly updateOperatingHoursUseCase: UpdateOperatingHoursUseCase,
     @Inject(CheckOperatingStatusUseCase) private readonly checkOperatingStatusUseCase: CheckOperatingStatusUseCase,
     @Inject(S3StorageService) private readonly s3StorageService: S3StorageService,
-  ) {}
+  ) { }
 
   // --- Partner (Merchant) Endpoints ---
 
@@ -189,7 +189,7 @@ export class RestaurantsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT_OWNER)
   create(@Body() createRestaurantDto: CreateRestaurantDto) {
     return this.createRestaurantUseCase.execute(createRestaurantDto);
   }
@@ -206,9 +206,9 @@ export class RestaurantsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT_OWNER)
   update(
-    @Param('id', ParseUUIDPipe) id: string, 
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateRestaurantDto: UpdateRestaurantDto
   ) {
     return this.updateRestaurantUseCase.execute({ restaurantId: id, dto: updateRestaurantDto });
@@ -225,7 +225,7 @@ export class RestaurantsController {
 
   @Post(':id/menu-items')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT_OWNER)
   addMenuItem(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() createMenuItemDto: CreateMenuItemDto
@@ -240,7 +240,7 @@ export class RestaurantsController {
 
   @Patch(':id/menu-items/:itemId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT_OWNER)
   updateMenuItem(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('itemId', ParseUUIDPipe) itemId: string,
@@ -251,7 +251,7 @@ export class RestaurantsController {
 
   @Delete(':id/menu-items/:itemId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT_OWNER)
   removeMenuItem(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('itemId', ParseUUIDPipe) itemId: string

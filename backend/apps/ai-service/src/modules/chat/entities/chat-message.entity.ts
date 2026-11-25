@@ -6,9 +6,10 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  type Relation,
 } from 'typeorm';
-import { ChatSessionEntity } from '@/modules/chat/entities/chat-session.entity.js';
-import { ChatFeedbackEntity } from '@/modules/chat/entities/chat-feedback.entity.js';
+import type { ChatSessionEntity } from '@/modules/chat/entities/chat-session.entity.js';
+import type { ChatFeedbackEntity } from '@/modules/chat/entities/chat-feedback.entity.js';
 
 @Entity({ name: 't_chat_messages', schema: 'schema_ai' })
 export class ChatMessageEntity {
@@ -48,10 +49,10 @@ export class ChatMessageEntity {
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
-  @ManyToOne(() => ChatSessionEntity, (session) => session.messages, { onDelete: 'CASCADE' })
+  @ManyToOne('ChatSessionEntity', 'messages', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'session_id' })
-  session?: ChatSessionEntity;
+  session?: Relation<ChatSessionEntity>;
 
-  @OneToMany(() => ChatFeedbackEntity, (feedback) => feedback.message)
-  feedbacks?: ChatFeedbackEntity[];
+  @OneToMany('ChatFeedbackEntity', 'message')
+  feedbacks?: Relation<ChatFeedbackEntity>[];
 }

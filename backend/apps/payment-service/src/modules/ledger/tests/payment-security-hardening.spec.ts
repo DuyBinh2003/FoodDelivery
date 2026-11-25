@@ -12,7 +12,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import * as crypto from 'node:crypto';
 import { PaymentGatewayService } from '@/modules/ledger/services/payment-gateway.service.js';
-import { PaymentGatewayController } from '@/modules/ledger/payment-gateway.controller.ts';
+import { PaymentGatewayController } from '@/modules/ledger/payment-gateway.controller.js';
 import type { ProcessGatewayWebhookUseCase } from '@/modules/ledger/usecases/process-gateway-webhook.usecase.js';
 import type { ConfigService } from '@nestjs/config';
 

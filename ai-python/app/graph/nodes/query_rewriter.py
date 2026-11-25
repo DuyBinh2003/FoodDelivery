@@ -23,8 +23,9 @@ async def rewrite_query_node(state: GraphState) -> dict[str, Any]:
             chat_history=formatted_history,
         )
         response = await llm.ainvoke(prompt)
-        if isinstance(response.content, str) and response.content.strip():
-            rewritten = response.content.strip()
+        text = LLMFactory.extract_text(response.content)
+        if text.strip():
+            rewritten = text.strip()
     except Exception as e:
         logger.warn("query_rewrite_failed", error=str(e), question=question)
 

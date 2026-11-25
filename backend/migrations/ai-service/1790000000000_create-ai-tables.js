@@ -9,6 +9,8 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
+  pgm.sql('SET search_path TO schema_ai, public;');
+
   // 1. m_chat_sessions
   pgm.sql(`
     CREATE TABLE IF NOT EXISTS schema_ai.m_chat_sessions (
@@ -48,7 +50,7 @@ export const up = (pgm) => {
       source_type  VARCHAR(30) NOT NULL,
       source_ref   VARCHAR(100),
       content      TEXT NOT NULL,
-      embedding    vector(768),
+      embedding    public.vector(768),
       metadata     JSONB,
       created_at   TIMESTAMPTZ DEFAULT NOW(),
       updated_at   TIMESTAMPTZ DEFAULT NOW()
@@ -56,7 +58,7 @@ export const up = (pgm) => {
 
     CREATE INDEX IF NOT EXISTS idx_knowledge_embedding
       ON schema_ai.m_knowledge_chunks
-      USING hnsw (embedding vector_cosine_ops)
+      USING hnsw (embedding public.vector_cosine_ops)
       WITH (m = 16, ef_construction = 64);
   `);
 
@@ -78,10 +80,8 @@ export const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 export const down = (pgm) => {
-  pgm.sql(`
-    DROP TABLE IF EXISTS schema_ai.t_chat_feedback CASCADE;
-    DROP TABLE IF EXISTS schema_ai.m_knowledge_chunks CASCADE;
-    DROP TABLE IF EXISTS schema_ai.t_chat_messages CASCADE;
-    DROP TABLE IF EXISTS schema_ai.m_chat_sessions CASCADE;
-  `);
+  pgm.sql('DROP TABLE IF EXISTS schema_ai.t_chat_feedback CASCADE;');
+  pgm.sql('DROP TABLE IF EXISTS schema_ai.m_knowledge_chunks CASCADE;');
+  pgm.sql('DROP TABLE IF EXISTS schema_ai.t_chat_messages CASCADE;');
+  pgm.sql('DROP TABLE IF EXISTS schema_ai.m_chat_sessions CASCADE;');
 };

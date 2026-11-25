@@ -5,8 +5,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  type Relation,
 } from 'typeorm';
-import { ChatMessageEntity } from '@/modules/chat/entities/chat-message.entity.js';
+import type { ChatMessageEntity } from '@/modules/chat/entities/chat-message.entity.js';
 
 @Entity({ name: 'm_chat_sessions', schema: 'schema_ai' })
 export class ChatSessionEntity {
@@ -34,6 +35,6 @@ export class ChatSessionEntity {
   @Column({ name: 'expires_at', type: 'timestamptz', nullable: true })
   expiresAt: Date | null;
 
-  @OneToMany(() => ChatMessageEntity, (message) => message.session)
-  messages?: ChatMessageEntity[];
+  @OneToMany('ChatMessageEntity', 'session')
+  messages?: Relation<ChatMessageEntity>[];
 }

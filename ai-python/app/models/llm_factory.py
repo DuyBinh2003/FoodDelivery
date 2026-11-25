@@ -1,4 +1,5 @@
 import os
+from typing import Any
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_openai import ChatOpenAI
 
@@ -14,10 +15,29 @@ class LLMFactory:
             )
 
     @staticmethod
+    def extract_text(content: Any) -> str:
+        """Helper to extract clean text from LLM response.content across providers."""
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            parts = []
+            for item in content:
+                if isinstance(item, dict) and "text" in item:
+                    parts.append(str(item["text"]))
+                elif hasattr(item, "text"):
+                    parts.append(str(item.text))
+                elif isinstance(item, str):
+                    parts.append(item)
+                else:
+                    parts.append(str(item))
+            return "".join(parts)
+        return str(content)
+
+    @staticmethod
     def get_fast() -> ChatGoogleGenerativeAI:
-        """gemini-1.5-flash: Used for intent classification, grading, rewriting."""
+        """gemini-3.1-flash-lite: Used for intent classification, grading, rewriting."""
         api_key = os.getenv("GEMINI_API_KEY")
-        model = os.getenv("GEMINI_MODEL_FAST", "gemini-1.5-flash")
+        model = os.getenv("GEMINI_MODEL_FAST", "gemini-3.1-flash-lite")
         return ChatGoogleGenerativeAI(
             model=model,
             google_api_key=api_key,
@@ -27,9 +47,9 @@ class LLMFactory:
 
     @staticmethod
     def get_quality() -> ChatGoogleGenerativeAI:
-        """gemini-1.5-pro: Answer generation (primary)."""
+        """gemini-3.5-flash: Answer generation (primary)."""
         api_key = os.getenv("GEMINI_API_KEY")
-        model = os.getenv("GEMINI_MODEL_QUALITY", "gemini-1.5-pro")
+        model = os.getenv("GEMINI_MODEL_QUALITY", "gemini-3.5-flash")
         return ChatGoogleGenerativeAI(
             model=model,
             google_api_key=api_key,
@@ -54,8 +74,9 @@ class LLMFactory:
     def get_embeddings() -> GoogleGenerativeAIEmbeddings:
         """Embedding model for pgvector knowledge chunks."""
         api_key = os.getenv("GEMINI_API_KEY")
-        model = os.getenv("GEMINI_EMBEDDING_MODEL", "models/text-embedding-004")
+        model = os.getenv("GEMINI_EMBEDDING_MODEL", "models/gemini-embedding-001")
         return GoogleGenerativeAIEmbeddings(
             model=model,
             google_api_key=api_key,
+            output_dimensionality=768,
         )

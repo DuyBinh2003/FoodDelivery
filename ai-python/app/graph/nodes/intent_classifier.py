@@ -38,12 +38,11 @@ async def classify_intent_node(state: GraphState) -> dict[str, str]:
         llm = LLMFactory.get_fast()
         prompt = INTENT_CLASSIFIER_PROMPT.format(question=question, user_role=user_role)
         response = await llm.ainvoke(prompt)
-        text = response.content
-        if isinstance(text, str):
-            clean_text = text.replace("```json", "").replace("```", "").strip()
-            data = json.loads(clean_text)
-            intent = data.get("intent", "MENU_RECOMMENDATION")
-            return {"intent": intent}
+        text = LLMFactory.extract_text(response.content)
+        clean_text = text.replace("```json", "").replace("```", "").strip()
+        data = json.loads(clean_text)
+        intent = data.get("intent", "MENU_RECOMMENDATION")
+        return {"intent": intent}
     except Exception as e:
         logger.warn("intent_classification_fallback", error=str(e), question=question)
 

@@ -31,12 +31,11 @@ async def check_hallucination_node(state: GraphState) -> dict[str, Any]:
             generation=generation,
         )
         response = await llm.ainvoke(prompt)
-        text = response.content
-        if isinstance(text, str):
-            clean = text.replace("```json", "").replace("```", "").strip()
-            data = json.loads(clean)
-            is_grounded = bool(data.get("grounded", True))
-            return {"hallucination_detected": not is_grounded}
+        text = LLMFactory.extract_text(response.content)
+        clean = text.replace("```json", "").replace("```", "").strip()
+        data = json.loads(clean)
+        is_grounded = bool(data.get("grounded", True))
+        return {"hallucination_detected": not is_grounded}
     except Exception as e:
         logger.warn("hallucination_check_failed", error=str(e))
 

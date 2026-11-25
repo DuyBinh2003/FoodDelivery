@@ -5,8 +5,9 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  type Relation,
 } from 'typeorm';
-import { ChatMessageEntity } from '@/modules/chat/entities/chat-message.entity.js';
+import type { ChatMessageEntity } from '@/modules/chat/entities/chat-message.entity.js';
 
 @Entity({ name: 't_chat_feedback', schema: 'schema_ai' })
 export class ChatFeedbackEntity {
@@ -25,7 +26,7 @@ export class ChatFeedbackEntity {
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
-  @ManyToOne(() => ChatMessageEntity, (message) => message.feedbacks, { onDelete: 'CASCADE' })
+  @ManyToOne('ChatMessageEntity', 'feedbacks', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'message_id' })
-  message?: ChatMessageEntity;
+  message?: Relation<ChatMessageEntity>;
 }

@@ -37,15 +37,14 @@ async def grade_documents_node(state: GraphState) -> dict[str, Any]:
             documents=formatted_docs,
         )
         response = await llm.ainvoke(prompt)
-        text = response.content
-        if isinstance(text, str):
-            clean = text.replace("```json", "").replace("```", "").strip()
-            data = json.loads(clean)
-            score = float(data.get("score", 0.8))
-            return {
-                "relevance_score": score,
-                "web_search_needed": score < 0.75,
-            }
+        text = LLMFactory.extract_text(response.content)
+        clean = text.replace("```json", "").replace("```", "").strip()
+        data = json.loads(clean)
+        score = float(data.get("score", 0.8))
+        return {
+            "relevance_score": score,
+            "web_search_needed": score < 0.75,
+        }
     except Exception as e:
         logger.warn("grade_documents_failed", error=str(e))
 
