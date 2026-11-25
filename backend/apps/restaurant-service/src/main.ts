@@ -2,10 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from '@/app.module.js';
 import { GlobalExceptionFilter } from '@/common/filters/index.js';
+import { configureAppCors, resolveServicePort } from '@/common/bootstrap/index.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  configureAppCors(app);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
@@ -13,7 +14,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(3003);
-  console.log('restaurant-service is running on: http://localhost:3003');
+  const port = resolveServicePort('RESTAURANT_SERVICE_PORT', 4003);
+  await app.listen(port);
+  console.log(`restaurant-service is running on: http://localhost:${port}`);
 }
 bootstrap();

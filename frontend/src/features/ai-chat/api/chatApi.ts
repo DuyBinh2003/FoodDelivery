@@ -1,4 +1,5 @@
 import { apiClient, getClientAuthToken } from '@/lib/api-client';
+import { resolveServiceUrl } from '@/lib/api-url';
 import { getRequiredEnv } from '@/lib/env';
 import type {
   ChatMessage,
@@ -45,13 +46,17 @@ export const chatApi = {
     onError: (errMessage: string) => void,
     signal?: AbortSignal,
   ): Promise<void> => {
-    // Resolve base url via fail-fast getRequiredEnv
-    const baseUrl = getRequiredEnv('NEXT_PUBLIC_AI_SERVICE_URL');
+    // Route through API Gateway when configured; otherwise fail-fast on AI service URL
+    const gatewayUrl = process.env.NEXT_PUBLIC_API_GATEWAY_URL?.trim();
+    const endpointUrl = gatewayUrl
+      ? (() => {
+          const resolved = resolveServiceUrl('/ai/chat');
+          return `${resolved.baseUrl}${resolved.path}`;
+        })()
+      : `${getRequiredEnv('NEXT_PUBLIC_AI_SERVICE_URL').replace(/\/$/, '')}/ai/chat`;
 
     // Get auth token via standardized helper
     const token = getClientAuthToken();
-
-    const endpointUrl = `${baseUrl.replace(/\/$/, '')}/ai/chat`;
 
     const response = await fetch(endpointUrl, {
       method: 'POST',

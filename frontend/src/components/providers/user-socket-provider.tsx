@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
-import { getRequiredEnv } from '@/lib/env';
+import { resolveSocketConnectionConfig } from '@/lib/ws-config';
 
 interface RegistrationResultEvent {
   id: string;
@@ -21,9 +21,10 @@ export function UserSocketProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!user?.id) return;
 
-    const wsUrl = getRequiredEnv('NEXT_PUBLIC_USER_WS_URL');
+    const { url: wsUrl, path: wsPath } = resolveSocketConnectionConfig('user');
 
     const socket = io(wsUrl, {
+      path: wsPath,
       query: { userId: user.id },
       auth: { userId: user.id },
       transports: ['websocket', 'polling'],

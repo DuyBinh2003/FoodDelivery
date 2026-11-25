@@ -18,17 +18,19 @@ graph TD
     end
 
     subgraph "Entry Point"
-        GW["🛡️ NGINX API Gateway\n(Port 3000)\nRate Limiting + WS Proxy"]
+        GW["🛡️ NGINX Unified Reverse Proxy\n(Port 8080)\nSame-Origin + CORS + Rate Limit + WS"]
     end
 
-    subgraph "Microservices Layer"
-        US["👤 User Service\n(NestJS, Port 3001)\nAuth + Registration + Loyalty"]
-        AS["👑 Admin Service\n(NestJS, Port 3002)\nApprovals + Config + Metrics"]
-        RS["🏪 Restaurant Service\n(NestJS, Port 3003)\nMenu + Store Management"]
-        OS["📦 Order Service\n(NestJS, Port 3004)\nOrder State Machine + SQS Buffer"]
-        DS["🛵 Delivery Service\n(NestJS, Port 3005)\nDispatch + GPS Tracking + OSRM"]
-        SS["🔍 Search Service\n(NestJS, Port 3006)\nElasticsearch Integration"]
-        PS["💳 Payment Service\n(NestJS, Port 3007)\nDouble-Entry Ledger + Wallets"]
+    subgraph "Frontend & Microservices Layer"
+        FE["🌐 Next.js Frontend\n(Port 3000)\nSSR + App Router + /api/health"]
+        US["👤 User Service\n(NestJS, Port 4001)\nAuth + Registration + Loyalty"]
+        AS["👑 Admin Service\n(NestJS, Port 4002)\nApprovals + Disputes + Config"]
+        RS["🏪 Restaurant Service\n(NestJS, Port 4003)\nMenu + Store Management"]
+        OS["📦 Order Service\n(NestJS, Port 4004)\nOrder State Machine + Vouchers"]
+        DS["🛵 Delivery Service\n(NestJS, Port 4005)\nDispatch + GPS Tracking + OSRM"]
+        SS["🔍 Search Service\n(NestJS, Port 4006)\nElasticsearch Integration"]
+        PS["💳 Payment Service\n(NestJS, Port 4007)\nDouble-Entry Ledger + Wallets"]
+        AI["🤖 AI Service & Core\n(NestJS :5001 / Python :5002)\nSSE Chatbox + LangGraph CRAG"]
     end
 
     subgraph "Messaging Layer (AWS / LocalStack)"
@@ -45,16 +47,18 @@ graph TD
     end
 
     %% Client -> Gateway
-    CA & DA & RP & AD --> GW
+    CA & DA & RP & AD -->|"Same-Origin :8080"| GW
 
-    %% Gateway -> Services
-    GW -->|"/users/*, /auth/*"| US
-    GW -->|"/admin/*"| AS
-    GW -->|"/restaurants/*"| RS
-    GW -->|"/orders/*"| OS
-    GW -->|"/delivery/*, /socket.io/* (WS)"| DS
-    GW -->|"/search/*"| SS
-    GW -->|"/wallets/*, /payment/*, /ledger/*"| PS
+    %% Gateway -> Frontend & Services
+    GW -->|"/* , /_next/* , /api/health , /api/routing"| FE
+    GW -->|"/api/users|auth|loyalty , /ws/user/socket.io"| US
+    GW -->|"/api/admin|disputes , /ws/admin/socket.io"| AS
+    GW -->|"/api/restaurants/*"| RS
+    GW -->|"/api/orders|vouchers/*"| OS
+    GW -->|"/api/delivery/* , /ws/delivery/socket.io"| DS
+    GW -->|"/api/search/*"| SS
+    GW -->|"/api/wallets|payment|ledger/*"| PS
+    GW -->|"/api/ai/* (SSE)"| AI
 
     %% Services -> DB (Schema Isolated)
     US -->|"schema_user"| DB
@@ -89,13 +93,17 @@ graph TD
 
 | Service | Port | Trách nhiệm | Database Schema | Publisher | Consumer |
 | :--- | :---: | :--- | :--- | :--- | :--- |
-| **User Service** | 3001 | Đăng ký, đăng nhập, JWT auth, profile, loyalty points | `schema_user` | `RegistrationCreated` | — |
-| **Admin Service** | 3002 | Xét duyệt hồ sơ, cấu hình hệ thống, metrics dashboard | `public` | — | `admin-registration-queue` |
-| **Restaurant Service** | 3003 | Quản lý nhà hàng, menu, options, giờ hoạt động | `schema_restaurant` | `RestaurantUpdated` | — |
-| **Order Service** | 3004 | Tạo đơn, state machine trạng thái, SQS buffer | `schema_order` | `OrderCreated` | — |
-| **Delivery Service** | 3005 | Dispatch tài xế, GPS realtime, OSRM routing, WebSocket | `schema_delivery` | `DriverAssigned` | `food-delivery-orders` |
-| **Search Service** | 3006 | Full-text search, geo-search nhà hàng/món ăn | — (Elasticsearch) | — | `restaurant-updates` |
-| **Payment Service** | 3007 | Sổ cái kép (Double-Entry Ledger), ví 4 chủ thể, COD | `schema_payment` | — | — |
+| **NGINX Unified Gateway** | 8080 | Reverse Proxy, Same-Origin `/api/*` & `/ws/*`, CORS, Rate Limit | — | — | — |
+| **Next.js Frontend** | 3000 | Customer, Driver, Merchant, Admin UI + `/api/health`, `/api/routing` | — | — | — |
+| **User Service** | 4001 | Đăng ký, đăng nhập, JWT auth, profile, loyalty points | `schema_user` | `RegistrationCreated` | — |
+| **Admin Service** | 4002 | Xét duyệt hồ sơ, khiếu nại (disputes), cấu hình hệ thống | `public` | — | `admin-registration-queue` |
+| **Restaurant Service** | 4003 | Quản lý nhà hàng, menu, options, giờ hoạt động | `schema_restaurant` | `RestaurantUpdated` | — |
+| **Order Service** | 4004 | Tạo đơn, vouchers, state machine trạng thái, SQS buffer | `schema_order` | `OrderCreated` | — |
+| **Delivery Service** | 4005 | Dispatch tài xế, GPS realtime, OSRM routing, WebSocket | `schema_delivery` | `DriverAssigned` | `food-delivery-orders` |
+| **Search Service** | 4006 | Full-text search, geo-search nhà hàng/món ăn | — (Elasticsearch) | — | `restaurant-updates` |
+| **Payment Service** | 4007 | Sổ cái kép (Double-Entry Ledger), ví 4 chủ thể, COD | `schema_payment` | — | — |
+| **AI Service (NestJS)** | 5001 | Chatbox Orchestrator, SSE streaming, Session DB | `schema_ai` | — | — |
+| **AI Python (LangGraph)** | 5002 | CRAG Pipeline, pgvector + Elasticsearch RAG | `schema_ai` | — | — |
 
 ---
 
@@ -157,11 +165,11 @@ interface BaseEvent<T> {
 
 WebSocket được dùng cho các tính năng cần push ngay lập tức tới Client mà không cần Client phải request:
 
-| Gateway | Service | Event phát ra | Receiver |
-| :--- | :--- | :--- | :--- |
-| `AdminGateway` (namespace `/admin`) | Admin Service | `new_registration` | Admin Dashboard |
-| `OrderGateway` (namespace `/orders`) | Order Service | `order_status_updated` | Customer App |
-| `DriverGateway` (namespace `/drivers`) | Driver Service | `driver_location_updated` | Customer App |
+| Gateway | Service & Port | Path & Namespace | Event phát ra | Receiver |
+| :--- | :--- | :--- | :--- | :--- |
+| `UserGateway` | User Service (:4001) | `/ws/user/socket.io` (ns `/user`) | `registration_result` | Customer / Partner |
+| `AdminGateway` | Admin Service (:4002) | `/ws/admin/socket.io` (ns `/admin`) | `new_registration` | Admin Dashboard |
+| `TrackingGateway` | Delivery Service (:4005) | `/ws/delivery/socket.io` (ns `/delivery`) | `driver:trip_offer`, `driver_location_updated` | Driver & Customer App |
 
 **Flow:** SQS Consumer (nhận message từ Queue) → emit WebSocket event → Frontend invalidate React Query cache và hiện Toast.
 

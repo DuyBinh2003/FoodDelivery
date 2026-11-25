@@ -1,78 +1,9 @@
-import { getRequiredEnv } from './env';
+import { resolveServiceUrl } from './api-url';
 import { extractTraceId } from './trace-utils';
 
 const DEFAULT_TIMEOUT_MS = process.env.NEXT_PUBLIC_API_TIMEOUT
   ? Number(process.env.NEXT_PUBLIC_API_TIMEOUT)
   : 10000;
-
-function resolveServiceUrl(endpoint: string): { baseUrl: string; path: string } {
-  // If full URL is passed
-  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
-    const urlObj = new URL(endpoint);
-    return { baseUrl: urlObj.origin, path: `${urlObj.pathname}${urlObj.search}` };
-  }
-
-  // If a unified API gateway URL is defined
-  const gatewayUrl = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
-  if (gatewayUrl) {
-    return {
-      baseUrl: gatewayUrl.replace(/\/$/, ''),
-      path: endpoint.startsWith('/') ? endpoint : `/${endpoint}`,
-    };
-  }
-
-  // Normalize path and remove leading slash
-  const rawPath = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-  const isApiPrefix = rawPath.startsWith('api/');
-  const pathWithoutApi = isApiPrefix ? rawPath.slice(4) : rawPath;
-  const firstSegment = pathWithoutApi.split('/')[0];
-
-  let baseUrl = '';
-
-  switch (firstSegment) {
-    case 'users':
-    case 'auth':
-    case 'loyalty':
-      baseUrl = getRequiredEnv('NEXT_PUBLIC_USER_SERVICE_URL');
-      break;
-    case 'admin':
-      baseUrl = getRequiredEnv('NEXT_PUBLIC_ADMIN_SERVICE_URL');
-      break;
-    case 'restaurants':
-      baseUrl = getRequiredEnv('NEXT_PUBLIC_RESTAURANT_SERVICE_URL');
-      break;
-    case 'orders':
-    case 'vouchers':
-      baseUrl = getRequiredEnv('NEXT_PUBLIC_ORDER_SERVICE_URL');
-      break;
-    case 'delivery':
-      baseUrl = getRequiredEnv('NEXT_PUBLIC_DELIVERY_SERVICE_URL');
-      break;
-    case 'search':
-      baseUrl = getRequiredEnv('NEXT_PUBLIC_SEARCH_SERVICE_URL');
-      break;
-    case 'wallets':
-    case 'payment':
-    case 'ledger':
-      baseUrl = getRequiredEnv('NEXT_PUBLIC_PAYMENT_SERVICE_URL');
-      break;
-    case 'ai':
-      baseUrl = getRequiredEnv('NEXT_PUBLIC_AI_SERVICE_URL');
-      break;
-    default:
-      if (typeof window !== 'undefined') {
-        baseUrl = window.location.origin;
-      } else {
-        baseUrl = getRequiredEnv('NEXT_PUBLIC_BACKEND_URL');
-      }
-      break;
-  }
-
-  return {
-    baseUrl: baseUrl.replace(/\/$/, ''),
-    path: `/${pathWithoutApi}`,
-  };
-}
 
 interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
   params?: Record<string, string | undefined>;

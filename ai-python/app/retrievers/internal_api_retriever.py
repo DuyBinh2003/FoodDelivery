@@ -7,8 +7,8 @@ logger = structlog.get_logger(__name__)
 
 class InternalApiRetriever:
     def __init__(self) -> None:
-        self.order_service_url = os.getenv("ORDER_SERVICE_URL", "http://localhost:3004")
-        self.user_service_url = os.getenv("USER_SERVICE_URL", "http://localhost:3001")
+        self.order_service_url = os.getenv("ORDER_SERVICE_URL", "http://localhost:4004")
+        self.user_service_url = os.getenv("USER_SERVICE_URL", "http://localhost:4001")
 
     async def fetch_user_orders(self, user_id: str, query: str) -> list[dict[str, Any]]:
         results: list[dict[str, Any]] = []

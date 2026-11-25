@@ -76,8 +76,8 @@ export class CreateOrderReviewUseCase {
   }
 
   private async syncRestaurantRating(restaurantId: string, newRating: number): Promise<void> {
-    const restaurantServiceUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
-    const searchServiceUrl = process.env.SEARCH_SERVICE_URL || 'http://localhost:3006';
+    const restaurantServiceUrl = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:4003';
+    const searchServiceUrl = process.env.SEARCH_SERVICE_URL || 'http://localhost:4006';
 
     // 1. Sync to restaurant-service
     try {

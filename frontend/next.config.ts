@@ -75,12 +75,32 @@ const nextConfig: NextConfig = {
         destination: `${requireEnv('NEXT_PUBLIC_USER_SERVICE_URL')}/auth/:path*`,
       },
       {
+        source: '/api/loyalty/:path*',
+        destination: `${requireEnv('NEXT_PUBLIC_USER_SERVICE_URL')}/loyalty/:path*`,
+      },
+      {
         source: '/api/admin/:path*',
         destination: `${requireEnv('NEXT_PUBLIC_ADMIN_SERVICE_URL')}/admin/:path*`,
       },
       {
+        source: '/api/disputes/:path*',
+        destination: `${requireEnv('NEXT_PUBLIC_ADMIN_SERVICE_URL')}/disputes/:path*`,
+      },
+      {
         source: '/api/delivery/:path*',
         destination: `${requireEnv('NEXT_PUBLIC_DELIVERY_SERVICE_URL')}/delivery/:path*`,
+      },
+      {
+        source: '/api/wallets/:path*',
+        destination: `${requireEnv('NEXT_PUBLIC_PAYMENT_SERVICE_URL')}/wallets/:path*`,
+      },
+      {
+        source: '/api/payment/:path*',
+        destination: `${requireEnv('NEXT_PUBLIC_PAYMENT_SERVICE_URL')}/payment/:path*`,
+      },
+      {
+        source: '/api/ledger/:path*',
+        destination: `${requireEnv('NEXT_PUBLIC_PAYMENT_SERVICE_URL')}/ledger/:path*`,
       },
       {
         source: '/api/ai/:path*',

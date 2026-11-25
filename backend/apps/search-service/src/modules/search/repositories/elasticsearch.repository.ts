@@ -213,7 +213,7 @@ export class ElasticsearchRepository implements OnModuleInit {
 
   async syncAllRestaurants(): Promise<{ synced: number; error?: string }> {
     try {
-      const url = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+      const url = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:4003';
       const res = await fetch(`${url}/restaurants`);
       if (!res.ok) return { synced: 0, error: `Restaurant service returned status ${res.status}` };
       const restaurants = (await res.json()) as Array<Record<string, unknown>>;

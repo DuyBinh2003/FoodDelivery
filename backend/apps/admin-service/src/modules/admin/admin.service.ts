@@ -39,7 +39,7 @@ export class AdminService {
   private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
   private readonly orderUrl = process.env.ORDER_SERVICE_URL!;
   private readonly paymentUrl = process.env.PAYMENT_SERVICE_URL!;
-  private readonly deliveryUrl = process.env.DELIVERY_SERVICE_URL || 'http://localhost:3005';
+  private readonly deliveryUrl = process.env.DELIVERY_SERVICE_URL || 'http://localhost:4005';
   
   constructor(
     @InjectRepository(SystemConfig)

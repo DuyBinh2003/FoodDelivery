@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { getRequiredEnv } from '@/lib/env';
+import { resolveSocketConnectionConfig } from '@/lib/ws-config';
 import type { DriverLocationUpdate } from '@/features/orders/types';
 import type { SocketConnectionStatus } from '@/components/ui/connection-status-pill';
 
@@ -38,14 +38,18 @@ export function useDriverTracking({
     }
 
     let wsUrl: string;
+    let wsPath: string;
     try {
-      wsUrl = getRequiredEnv('NEXT_PUBLIC_DELIVERY_WS_URL');
+      const wsConfig = resolveSocketConnectionConfig('delivery');
+      wsUrl = wsConfig.url;
+      wsPath = wsConfig.path;
     } catch (err) {
       console.warn('[useDriverTracking] Could not get delivery WS URL:', err);
       return;
     }
 
     const socket = io(wsUrl, {
+      path: wsPath,
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,

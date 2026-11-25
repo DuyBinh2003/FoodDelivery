@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { apiClient } from '@/lib/api-client';
+import { resolveSocketConnectionConfig } from '@/lib/ws-config';
 import type { TripOfferData } from '@/features/driver/components/driver-dashboard/incoming-trip-modal';
 
 interface UseDriverDispatchParams {
@@ -24,8 +26,7 @@ export function useDriverDispatch({
   const socketRef = useRef<Socket | null>(null);
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const wsUrl =
-    process.env.NEXT_PUBLIC_DELIVERY_WS_URL || 'http://localhost:3005/delivery';
+  const { url: wsUrl, path: wsPath } = resolveSocketConnectionConfig('delivery');
 
   // 1. Quản lý kết nối Socket.IO
   useEffect(() => {
@@ -38,6 +39,7 @@ export function useDriverDispatch({
     }
 
     const socket = io(wsUrl, {
+      path: wsPath,
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
       reconnectionDelay: 2000,
@@ -71,7 +73,7 @@ export function useDriverDispatch({
       setIsConnected(false);
       setIncomingOffer(null);
     };
-  }, [driverId, isOnline, wsUrl]);
+  }, [driverId, isOnline, wsUrl, wsPath]);
 
   // 2. Định kỳ đồng bộ vị trí GPS vào Redis Geo khi đang ONLINE
   useEffect(() => {
@@ -85,15 +87,13 @@ export function useDriverDispatch({
 
     const syncLocation = async () => {
       try {
-        const deliveryApiUrl = process.env.NEXT_PUBLIC_DELIVERY_API_URL || 'http://localhost:3005';
-        await fetch(`${deliveryApiUrl}/delivery/driver/location`, {
+        await apiClient('/delivery/driver/location', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: {
             driver_id: driverId,
             lat,
             lng,
-          }),
+          },
         }).catch(() => {
           // Bỏ qua lỗi kết nối tạm thời
         });
@@ -132,21 +132,15 @@ export function useDriverDispatch({
             },
           );
         } else {
-          // Fallback REST call
-          const deliveryApiUrl = process.env.NEXT_PUBLIC_DELIVERY_API_URL || 'http://localhost:3005';
-          fetch(`${deliveryApiUrl}/delivery/orders/${orderId}/accept`, {
+          // Fallback REST call via unified API Gateway / apiClient
+          apiClient(`/delivery/orders/${orderId}/accept`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ driver_id: driverId }),
+            body: { driver_id: driverId },
           })
-            .then((res) => {
-              if (res.ok) {
-                setIncomingOffer(null);
-                if (onTripAccepted) onTripAccepted(orderId);
-                resolve(true);
-              } else {
-                resolve(false);
-              }
+            .then(() => {
+              setIncomingOffer(null);
+              if (onTripAccepted) onTripAccepted(orderId);
+              resolve(true);
             })
             .catch(() => resolve(false));
         }
@@ -167,11 +161,9 @@ export function useDriverDispatch({
         return true;
       }
 
-      const deliveryApiUrl = process.env.NEXT_PUBLIC_DELIVERY_API_URL || 'http://localhost:3005';
-      await fetch(`${deliveryApiUrl}/delivery/orders/${orderId}/reject`, {
+      await apiClient(`/delivery/orders/${orderId}/reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driver_id: driverId, reason }),
+        body: { driver_id: driverId, reason },
       }).catch(() => {
         // Ignore
       });

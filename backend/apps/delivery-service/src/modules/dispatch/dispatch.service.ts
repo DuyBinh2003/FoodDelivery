@@ -246,7 +246,7 @@ export class DispatchService {
 
     // Thông báo cho order-service
     try {
-      const orderUrl = this.configService.get<string>('services.orderUrl') || 'http://localhost:3004';
+      const orderUrl = this.configService.get<string>('services.orderUrl') || 'http://localhost:4004';
       await fetch(`${orderUrl}/orders/${orderId}/driver-claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

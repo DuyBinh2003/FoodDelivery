@@ -57,7 +57,8 @@ export class PaymentGatewayService {
     const createDate = this.formatDateToYMDHMS(new Date());
     const vnpAmount = dto.amount * 100; // VNPay quy định nhân 100
 
-    const returnUrl = dto.returnUrl || 'http://localhost:3000/payment/webhooks/vnpay-return';
+    const gatewayBaseUrl = (process.env.PUBLIC_GATEWAY_URL || 'http://localhost:8080/api').replace(/\/$/, '');
+    const returnUrl = dto.returnUrl || `${gatewayBaseUrl}/payment/webhooks/vnpay-return`;
     const orderInfo = dto.orderInfo || (dto.walletAccountId ? `Thanh toán nạp tiền ví ${dto.walletAccountId}` : `Thanh toán đơn hàng ${dto.orderId || txnRef}`);
 
     const vnpParams: Record<string, string> = {
@@ -98,8 +99,9 @@ export class PaymentGatewayService {
   private generateMoMoUrl(dto: CreateGatewayPaymentUrlDto, txnRef: string): PaymentUrlResult {
     const requestId = `REQ_${Date.now()}`;
     const orderInfo = dto.orderInfo || (dto.walletAccountId ? `Thanh toán nạp ví ${dto.walletAccountId}` : `Thanh toán đơn hàng ${dto.orderId || txnRef}`);
-    const redirectUrl = dto.returnUrl || 'http://localhost:3000/payment/webhooks/momo-return';
-    const ipnUrl = 'http://localhost:3000/payment/webhooks/momo';
+    const gatewayBaseUrl = (process.env.PUBLIC_GATEWAY_URL || 'http://localhost:8080/api').replace(/\/$/, '');
+    const redirectUrl = dto.returnUrl || `${gatewayBaseUrl}/payment/webhooks/momo-return`;
+    const ipnUrl = `${gatewayBaseUrl}/payment/webhooks/momo`;
     const extraData = Buffer.from(JSON.stringify({ walletAccountId: dto.walletAccountId, orderId: dto.orderId })).toString('base64');
     const requestType = 'captureWallet';
 

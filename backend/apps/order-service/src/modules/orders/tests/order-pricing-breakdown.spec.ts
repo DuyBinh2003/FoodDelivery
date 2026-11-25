@@ -36,6 +36,7 @@ describe('Order Pricing Breakdown & Settlement', () => {
       publishEvent: ReturnType<typeof vi.fn>;
     };
     let mockConfigService: {
+      get?: ReturnType<typeof vi.fn>;
       getOrThrow: ReturnType<typeof vi.fn>;
     };
 
@@ -109,6 +110,7 @@ describe('Order Pricing Breakdown & Settlement', () => {
       getDriverInflightOrders: ReturnType<typeof vi.fn>;
     };
     let mockConfigService: {
+      get?: ReturnType<typeof vi.fn>;
       getOrThrow: ReturnType<typeof vi.fn>;
     };
 

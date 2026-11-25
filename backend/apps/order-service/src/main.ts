@@ -3,10 +3,11 @@ import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AppModule } from '@/app.module.js';
 import { GlobalExceptionFilter } from '@/common/filters/index.js';
+import { configureAppCors, resolveServicePort } from '@/common/bootstrap/index.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  configureAppCors(app);
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   app.useGlobalPipes(
@@ -22,8 +23,9 @@ async function bootstrap() {
     new ClassSerializerInterceptor(app.get(Reflector)),
   );
 
-  await app.listen(3004);
-  console.log('order-service is running on: http://localhost:3004');
+  const port = resolveServicePort('ORDER_SERVICE_PORT', 4004);
+  await app.listen(port);
+  console.log(`order-service is running on: http://localhost:${port}`);
 }
 bootstrap();
 

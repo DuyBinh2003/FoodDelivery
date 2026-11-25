@@ -22,8 +22,8 @@ USER appuser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s \
-    CMD curl -f http://localhost:8000/internal/rag/health || exit 1
+    CMD curl -f http://localhost:5002/internal/rag/health || exit 1
 
-EXPOSE 8000
+EXPOSE 5002
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5002", "--workers", "2"]

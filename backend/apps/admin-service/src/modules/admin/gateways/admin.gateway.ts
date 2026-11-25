@@ -1,7 +1,12 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { getWsCorsOptions } from '@/common/bootstrap/index.js';
 
-@WebSocketGateway({ namespace: 'admin', cors: { origin: '*' } })
+@WebSocketGateway({
+  namespace: 'admin',
+  path: '/ws/admin/socket.io',
+  cors: getWsCorsOptions(),
+})
 export class AdminGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;

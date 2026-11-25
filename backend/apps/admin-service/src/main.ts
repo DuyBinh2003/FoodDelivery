@@ -2,10 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from '@/app.module.js';
 import { GlobalExceptionFilter } from '@/common/filters/index.js';
+import { configureAppCors, resolveServicePort } from '@/common/bootstrap/index.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  configureAppCors(app);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
@@ -13,7 +14,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(3002);
-  console.log('admin-service is running on: http://localhost:3002');
+  const port = resolveServicePort('ADMIN_SERVICE_PORT', 4002);
+  await app.listen(port);
+  console.log(`admin-service is running on: http://localhost:${port}`);
 }
 bootstrap();

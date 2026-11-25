@@ -15,12 +15,12 @@ import { MetricsService } from '@/common/metrics/index.js';
 import { UpdateDriverLocationDto } from '@/modules/tracking/dto/update-location.dto.js';
 import type { DriverLocationData } from '@/modules/tracking/repositories/driver-location.redis.repository.js';
 import type { DispatchService, TripOfferPayload } from '@/modules/dispatch/dispatch.service.js';
+import { getWsCorsOptions } from '@/common/bootstrap/index.js';
 
 @WebSocketGateway({
   namespace: 'delivery',
-  cors: {
-    origin: '*',
-  },
+  path: '/ws/delivery/socket.io',
+  cors: getWsCorsOptions(),
 })
 export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer()

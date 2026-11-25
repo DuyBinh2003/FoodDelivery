@@ -1,0 +1,12 @@
+services:
+  api-gateway-local:
+    image: nginx:alpine
+    container_name: fd_api_gateway_local
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./gateway:/etc/nginx/gateway:ro
+      - ./gateway/nginx.local.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped

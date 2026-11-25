@@ -3,6 +3,7 @@ import type { ServerOptions } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
 import { Logger, type INestApplication } from '@nestjs/common';
+import { getWsCorsOptions } from '@/common/bootstrap/index.js';
 
 export interface RedisClientLike {
   connect(): Promise<unknown>;
@@ -59,9 +60,7 @@ export class RedisIoAdapter extends IoAdapter {
       maxHttpBufferSize: options?.maxHttpBufferSize ?? 1e6, // 1MB payload ceiling to prevent DoS
       transports: options?.transports ?? ['websocket', 'polling'],
       cors: {
-        origin: '*',
-        methods: ['GET', 'POST'],
-        credentials: true,
+        ...getWsCorsOptions(),
         ...(typeof options?.cors === 'object' && options?.cors !== null ? options.cors : {}),
       },
     };

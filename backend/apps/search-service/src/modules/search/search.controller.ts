@@ -77,7 +77,7 @@ export class SearchController {
   @Get('discover/restaurants')
   async discoverRestaurants(@Query(new ValidationPipe({ transform: true })) query: Record<string, string>) {
     const q = new URLSearchParams(query).toString();
-    const url = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:3003';
+    const url = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:4003';
     const res = await fetch(`${url}/restaurants?${q}`);
     return res.json();
   }

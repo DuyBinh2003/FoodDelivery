@@ -12,9 +12,10 @@
         // ============================================================
         {
             "label": "Dev: Start All",
-            "detail": "Bật infrastructure Docker + Backend + Frontend cùng lúc",
+            "detail": "Bật infrastructure Docker + NGINX Gateway + Backend + Frontend cùng lúc",
             "dependsOn": [
                 "Dev: Infra Up",
+                "Dev: Gateway Up",
                 "Dev: Backend",
                 "Dev: Frontend"
             ],
@@ -26,10 +27,21 @@
             "problemMatcher": []
         },
         {
-            "label": "Dev: Infra Up",
-            "detail": "Khởi động Infrastructure (PostgreSQL, Redis, ES, LocalStack)",
+            "label": "Dev: Gateway Up",
+            "detail": "Khởi động NGINX Unified Gateway local tại cổng 8080 (bọc Frontend :3000 & Backend :4001-5002)",
             "type": "shell",
-            "command": "docker compose -f docker-compose.yml up -d db redis elasticsearch localstack",
+            "command": "docker compose -f docker-compose.local-gateway.yml up -d",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Dev: Infra Up",
+            "detail": "Khởi động Infrastructure (PostgreSQL, Redis, ES, LocalStack) và chờ healthy",
+            "type": "shell",
+            "command": "docker compose -f docker-compose.yml up -d --wait db redis elasticsearch localstack",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"

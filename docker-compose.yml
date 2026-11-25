@@ -46,7 +46,7 @@ services:
     restart: unless-stopped
 
   # ==========================================
-  # AWS LOCAL SIMULATION (SNS + SQS)
+  # AWS LOCAL SIMULATION (SNS + SQS + S3)
   # ==========================================
   localstack:
     image: localstack/localstack
@@ -56,7 +56,7 @@ services:
     environment:
       - SERVICES=sqs,sns,s3
       - DEFAULT_REGION=ap-southeast-1
-      - EXTRA_CORS_ALLOWED_ORIGINS=https://app.localstack.cloud,http://localhost:3000,http://localhost:3001
+      - EXTRA_CORS_ALLOWED_ORIGINS=https://app.localstack.cloud,http://localhost:8080,http://localhost:3000,http://localhost:3100
       - EXTRA_CORS_ALLOWED_HEADERS=*
       - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
     volumes:
@@ -66,16 +66,74 @@ services:
     restart: unless-stopped
 
   # ==========================================
-  # API GATEWAY
+  # FRONTEND APP (Behind Unified NGINX :8080)
+  # ==========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_GATEWAY_URL: /api
+        NEXT_PUBLIC_INTERNAL_API_GATEWAY_URL: http://api-gateway:8080/api
+        NEXT_PUBLIC_API_URL: http://localhost:8080/api
+        NEXT_PUBLIC_BACKEND_URL: http://localhost:8080
+        NEXT_PUBLIC_USER_SERVICE_URL: http://user-service:4001
+        NEXT_PUBLIC_ADMIN_SERVICE_URL: http://admin-service:4002
+        NEXT_PUBLIC_RESTAURANT_SERVICE_URL: http://restaurant-service:4003
+        NEXT_PUBLIC_ORDER_SERVICE_URL: http://order-service:4004
+        NEXT_PUBLIC_DELIVERY_SERVICE_URL: http://delivery-service:4005
+        NEXT_PUBLIC_SEARCH_SERVICE_URL: http://search-service:4006
+        NEXT_PUBLIC_PAYMENT_SERVICE_URL: http://payment-service:4007
+        NEXT_PUBLIC_AI_SERVICE_URL: http://ai-service:5001
+        NEXT_PUBLIC_ADMIN_WS_URL: /admin
+        NEXT_PUBLIC_ADMIN_WS_PATH: /ws/admin/socket.io
+        NEXT_PUBLIC_USER_WS_URL: /user
+        NEXT_PUBLIC_USER_WS_PATH: /ws/user/socket.io
+        NEXT_PUBLIC_DELIVERY_WS_URL: /delivery
+        NEXT_PUBLIC_DELIVERY_WS_PATH: /ws/delivery/socket.io
+        NEXT_PUBLIC_S3_ASSETS_URL: http://localhost:4566/food-delivery-assets
+    container_name: fd_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - INTERNAL_API_GATEWAY_URL=http://api-gateway:8080/api
+      - NEXT_PUBLIC_API_GATEWAY_URL=/api
+      - NEXT_PUBLIC_INTERNAL_API_GATEWAY_URL=http://api-gateway:8080/api
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
+      - NEXT_PUBLIC_USER_SERVICE_URL=http://user-service:4001
+      - NEXT_PUBLIC_ADMIN_SERVICE_URL=http://admin-service:4002
+      - NEXT_PUBLIC_RESTAURANT_SERVICE_URL=http://restaurant-service:4003
+      - NEXT_PUBLIC_ORDER_SERVICE_URL=http://order-service:4004
+      - NEXT_PUBLIC_DELIVERY_SERVICE_URL=http://delivery-service:4005
+      - NEXT_PUBLIC_SEARCH_SERVICE_URL=http://search-service:4006
+      - NEXT_PUBLIC_PAYMENT_SERVICE_URL=http://payment-service:4007
+      - NEXT_PUBLIC_AI_SERVICE_URL=http://ai-service:5001
+    depends_on:
+      user-service:
+        condition: service_started
+      restaurant-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+      search-service:
+        condition: service_started
+    restart: unless-stopped
+
+  # ==========================================
+  # UNIFIED NGINX GATEWAY (Public Entry :8080)
   # ==========================================
   api-gateway:
     image: nginx:alpine
     container_name: fd_api_gateway
     ports:
-      - "3000:3000"
+      - "8080:8080"
     volumes:
+      - ./gateway:/etc/nginx/gateway:ro
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
+      frontend:
+        condition: service_started
       user-service:
         condition: service_started
       admin-service:
@@ -95,7 +153,7 @@ services:
     restart: unless-stopped
 
   # ==========================================
-  # MICROSERVICES
+  # CORE MICROSERVICES (Port Band 4001-4099)
   # ==========================================
   user-service:
     build:
@@ -105,8 +163,18 @@ services:
         APP_NAME: user-service
     container_name: fd_user_service
     ports:
-      - "3001:3001"
+      - "4001:4001"
     env_file: ./backend/.env
+    environment:
+      - PORT=4001
+      - USER_SERVICE_PORT=4001
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+      - SQS_ENDPOINT=http://localstack:4566
+      - SNS_ENDPOINT=http://localstack:4566
+      - S3_ENDPOINT=http://localstack:4566
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000,http://localhost:3100
     depends_on:
       db:
         condition: service_healthy
@@ -122,13 +190,22 @@ services:
         APP_NAME: admin-service
     container_name: fd_admin_service
     ports:
-      - "3002:3002"
+      - "4002:4002"
     env_file: ./backend/.env
     environment:
-      - USER_SERVICE_URL=http://user-service:3001
-      - RESTAURANT_SERVICE_URL=http://restaurant-service:3003
-      - ORDER_SERVICE_URL=http://order-service:3004
-      - DELIVERY_SERVICE_URL=http://delivery-service:3005
+      - PORT=4002
+      - ADMIN_SERVICE_PORT=4002
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+      - SQS_ENDPOINT=http://localstack:4566
+      - SNS_ENDPOINT=http://localstack:4566
+      - USER_SERVICE_URL=http://user-service:4001
+      - RESTAURANT_SERVICE_URL=http://restaurant-service:4003
+      - ORDER_SERVICE_URL=http://order-service:4004
+      - DELIVERY_SERVICE_URL=http://delivery-service:4005
+      - PAYMENT_SERVICE_URL=http://payment-service:4007
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000,http://localhost:3100
     depends_on:
       db:
         condition: service_healthy
@@ -144,8 +221,17 @@ services:
         APP_NAME: restaurant-service
     container_name: fd_restaurant_service
     ports:
-      - "3003:3003"
+      - "4003:4003"
     env_file: ./backend/.env
+    environment:
+      - PORT=4003
+      - RESTAURANT_SERVICE_PORT=4003
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
+      - S3_ENDPOINT=http://localstack:4566
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000,http://localhost:3100
     depends_on:
       db:
         condition: service_healthy
@@ -161,10 +247,21 @@ services:
         APP_NAME: order-service
     container_name: fd_order_service
     ports:
-      - "3004:3004"
+      - "4004:4004"
     env_file: ./backend/.env
     environment:
-      - RESTAURANT_SERVICE_URL=http://restaurant-service:3003
+      - PORT=4004
+      - ORDER_SERVICE_PORT=4004
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+      - SQS_ENDPOINT=http://localstack:4566
+      - SNS_ENDPOINT=http://localstack:4566
+      - USER_SERVICE_URL=http://user-service:4001
+      - RESTAURANT_SERVICE_URL=http://restaurant-service:4003
+      - SEARCH_SERVICE_URL=http://search-service:4006
+      - PAYMENT_SERVICE_URL=http://payment-service:4007
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000,http://localhost:3100
     depends_on:
       db:
         condition: service_healthy
@@ -180,10 +277,18 @@ services:
         APP_NAME: delivery-service
     container_name: fd_delivery_service
     ports:
-      - "3005:3005"
+      - "4005:4005"
     env_file: ./backend/.env
     environment:
-      - ORDER_SERVICE_URL=http://order-service:3004
+      - PORT=4005
+      - DELIVERY_SERVICE_PORT=4005
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+      - SQS_ENDPOINT=http://localstack:4566
+      - SNS_ENDPOINT=http://localstack:4566
+      - S3_ENDPOINT=http://localstack:4566
+      - ORDER_SERVICE_URL=http://order-service:4004
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000,http://localhost:3100
     depends_on:
       localstack:
         condition: service_started
@@ -197,10 +302,15 @@ services:
         APP_NAME: search-service
     container_name: fd_search_service
     ports:
-      - "3006:3006"
+      - "4006:4006"
     env_file: ./backend/.env
     environment:
-      - RESTAURANT_SERVICE_URL=http://restaurant-service:3003
+      - PORT=4006
+      - SEARCH_SERVICE_PORT=4006
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
+      - RESTAURANT_SERVICE_URL=http://restaurant-service:4003
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000,http://localhost:3100
     depends_on:
       db:
         condition: service_healthy
@@ -216,8 +326,16 @@ services:
         APP_NAME: payment-service
     container_name: fd_payment_service
     ports:
-      - "3007:3007"
+      - "4007:4007"
     env_file: ./backend/.env
+    environment:
+      - PORT=4007
+      - PAYMENT_SERVICE_PORT=4007
+      - PUBLIC_GATEWAY_URL=http://localhost:8080/api
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000,http://localhost:3100
     depends_on:
       db:
         condition: service_healthy
@@ -225,19 +343,24 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  # ==========================================
+  # AI MICROSERVICES (Port Band 5001-5099)
+  # ==========================================
   ai-python:
     build:
       context: ./ai-python
       dockerfile: Dockerfile
     container_name: fd_ai_python
     ports:
-      - "8000:8000"
+      - "5002:5002"
     env_file: ./ai-python/.env
     environment:
+      - AI_PYTHON_PORT=5002
       - POSTGRES_URI=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
       - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - ORDER_SERVICE_URL=http://order-service:3004
-      - USER_SERVICE_URL=http://user-service:3001
+      - ORDER_SERVICE_URL=http://order-service:4004
+      - USER_SERVICE_URL=http://user-service:4001
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000,http://ai-service:5001
     depends_on:
       db:
         condition: service_healthy
@@ -255,14 +378,16 @@ services:
         APP_NAME: ai-service
     container_name: fd_ai_service
     ports:
-      - "3008:3008"
+      - "5001:5001"
     env_file: ./backend/.env
     environment:
+      - PORT=5001
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/food_delivery
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
-      - AI_SERVICE_PORT=3008
-      - LANGGRAPH_SERVICE_URL=http://ai-python:8000
+      - AI_SERVICE_PORT=5001
+      - LANGGRAPH_SERVICE_URL=http://ai-python:5002
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000,http://localhost:3100
     depends_on:
       db:
         condition: service_healthy
