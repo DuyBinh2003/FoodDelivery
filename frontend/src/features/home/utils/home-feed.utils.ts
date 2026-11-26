@@ -1,7 +1,26 @@
 /**
  * @file home-feed.utils.ts
- * @description Pure utility functions for calculating restaurant distances, ETAs, and filtering personalized feeds.
+ * @description Pure utility functions for calculating restaurant distances, ETAs, filtering personalized feeds, and resolving media.
  */
+
+const CATEGORY_SLUG_ALIASES: Record<string, string[]> = {
+  com: ['Cơm Tấm', 'Cơm'],
+  'com-tam': ['Cơm Tấm'],
+  'pho-bun': ['Phở', 'Bún Bò'],
+  pho: ['Phở'],
+  'bun-bo': ['Bún Bò'],
+  'tra-sua': ['Trà Sữa'],
+  'ga-ran': ['Gà Rán & Burger'],
+  'ga-ran-burger': ['Gà Rán & Burger'],
+  'banh-mi': ['Bánh Mì'],
+  'pizza-mi-y': ['Pizza & Mì Ý'],
+  'mon-chay': ['Món Chay'],
+  'ca-phe': ['Cà Phê & Bánh'],
+  'ca-phe-banh': ['Cà Phê & Bánh'],
+  'an-vat': ['Giải khát', 'Trà Sữa'],
+  'giai-khat': ['Giải khát'],
+};
+
 /**
  * Tính khoảng cách đường chim bay giữa 2 tọa độ GPS (WGS84) theo công thức Haversine.
  */
@@ -37,7 +56,7 @@ export function calculateDistanceKm(
     return 0;
   }
 
-  const R = 6371; // Bán kính Trái Đất (km)
+  const R = 6371;
   const dLat = ((nLat2 - nLat1) * Math.PI) / 180;
   const dLon = ((nLon2 - nLon1) * Math.PI) / 180;
   const a =
@@ -52,6 +71,12 @@ export function calculateDistanceKm(
   return Math.round(d * 10) / 10;
 }
 
+export interface HomeCategoryItem {
+  id: string;
+  name: string;
+  icon_url?: string | null;
+}
+
 export interface HomeRestaurantItem {
   id: string;
   name: string;
@@ -59,12 +84,16 @@ export interface HomeRestaurantItem {
   lat?: number | string | null;
   lon?: number | string | null;
   rating?: number | string | null;
-  categories?: { id: string; name: string; icon_url?: string | null }[];
+  categories?: HomeCategoryItem[];
   tags?: string[];
   is_active?: boolean;
+  banner_url?: string | null;
   image_url?: string | null;
   discount_label?: string | null;
   is_freeship?: boolean;
+  has_promo?: boolean;
+  max_discount_percent?: number;
+  promo_item_count?: number;
   order_count?: number;
 }
 
@@ -73,14 +102,106 @@ export interface EnrichedRestaurantItem extends HomeRestaurantItem {
   eta_minutes: number;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface PaginatedRestaurantsResponse {
+  items: HomeRestaurantItem[];
+  pagination: PaginationMeta;
+}
+
+export interface FeaturedDishOptionChoice {
+  id: string;
+  name: string;
+  price: number;
+  is_default?: boolean;
+}
+
+export interface FeaturedDishOptionGroup {
+  id: string;
+  name: string;
+  required: boolean;
+  min_choices?: number;
+  max_choices?: number;
+  choices: FeaturedDishOptionChoice[];
+}
+
+export interface FeaturedDishItem {
+  id: string;
+  restaurant_id: string;
+  restaurant_name: string;
+  restaurant_banner_url?: string;
+  restaurant_rating?: number;
+  category_id?: string;
+  category?: { id: string; name: string; icon_url?: string };
+  name: string;
+  description?: string;
+  image_url?: string;
+  price: number;
+  original_price?: number;
+  discount_percent?: number;
+  options?: FeaturedDishOptionGroup[];
+  is_available: boolean;
+  tags?: Array<{ id: string; name: string }>;
+}
+
+export interface PaginatedFeaturedDishesResponse {
+  items: FeaturedDishItem[];
+  pagination: PaginationMeta;
+}
+
 /**
- * Tính thời gian giao hàng dự kiến (ETA) dựa trên cự ly km:
- * - 10 phút chuẩn bị món ăn tại quán
- * - Tốc độ di chuyển trung bình trong đô thị 25 km/h (~2.4 phút/km)
- * - Tối thiểu 12 phút, tối đa 90 phút.
+ * Ưu tiên ảnh banner_url thật từ DB/S3, fallback sang image_url nếu có, không dùng URL giả ngoài hệ thống.
+ */
+export function resolveRestaurantImageSrc(
+  restaurant: Pick<HomeRestaurantItem, 'banner_url' | 'image_url'> | null | undefined,
+): string | null {
+  if (!restaurant) return null;
+  const banner = typeof restaurant.banner_url === 'string' ? restaurant.banner_url.trim() : '';
+  if (banner) return banner;
+  const img = typeof restaurant.image_url === 'string' ? restaurant.image_url.trim() : '';
+  return img || null;
+}
+
+/**
+ * Gộp danh sách không trùng lặp ID (bảo toàn thứ tự xuất hiện ban đầu).
+ */
+export function dedupeById<T extends { id: string }>(
+  existing: T[],
+  incoming: T[],
+): T[] {
+  if (!Array.isArray(existing) && !Array.isArray(incoming)) return [];
+  const base = Array.isArray(existing) ? existing : [];
+  const next = Array.isArray(incoming) ? incoming : [];
+
+  const seen = new Set<string>();
+  const result: T[] = [];
+
+  for (const item of base) {
+    if (item?.id && !seen.has(item.id)) {
+      seen.add(item.id);
+      result.push(item);
+    }
+  }
+  for (const item of next) {
+    if (item?.id && !seen.has(item.id)) {
+      seen.add(item.id);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
+/**
+ * Tính thời gian giao hàng dự kiến (ETA) dựa trên cự ly km.
  */
 export function calculateRestaurantEtaMinutes(distanceKm: number): number {
-  if (isNaN(distanceKm) || distanceKm <= 0) {
+  if (Number.isNaN(distanceKm) || distanceKm <= 0) {
     return 15;
   }
   const travelMinutes = (distanceKm / 25) * 60;
@@ -118,9 +239,6 @@ export function enrichRestaurantsWithLocation(
 
 /**
  * Khối 1: Lọc quán "Gần bạn nhất" (Near You / Fast Delivery)
- * - Bán kính <= maxRadiusKm (mặc định 3.0 km)
- * - ETA <= maxEtaMinutes (mặc định 25 phút)
- * - Sắp xếp theo cự ly tăng dần.
  */
 export function filterNearYouRestaurants(
   restaurants: EnrichedRestaurantItem[],
@@ -130,13 +248,18 @@ export function filterNearYouRestaurants(
   if (!Array.isArray(restaurants)) return [];
 
   return restaurants
-    .filter((r) => r.is_active !== false && r.distance_km > 0 && r.distance_km <= maxRadiusKm && r.eta_minutes <= maxEtaMinutes)
+    .filter(
+      (r) =>
+        r.is_active !== false &&
+        r.distance_km > 0 &&
+        r.distance_km <= maxRadiusKm &&
+        r.eta_minutes <= maxEtaMinutes,
+    )
     .sort((a, b) => a.distance_km - b.distance_km);
 }
 
 /**
- * Khối 2: Lọc quán "Đang có khuyến mãi" (Promo / Flash Sale)
- * - Quán có cờ freeship hoặc có nhãn giảm giá (discount_label)
+ * Khối 2: Lọc quán "Đang có khuyến mãi" dựa trên dữ liệu ưu đãi thật (món giảm giá / campaign / freeship)
  */
 export function filterPromoRestaurants(
   restaurants: EnrichedRestaurantItem[],
@@ -144,14 +267,17 @@ export function filterPromoRestaurants(
   if (!Array.isArray(restaurants)) return [];
 
   return restaurants.filter(
-    (r) => r.is_active !== false && (r.is_freeship === true || (typeof r.discount_label === 'string' && r.discount_label.trim().length > 0)),
+    (r) =>
+      r.is_active !== false &&
+      (r.has_promo === true ||
+        (typeof r.max_discount_percent === 'number' && r.max_discount_percent > 0) ||
+        r.is_freeship === true ||
+        (typeof r.discount_label === 'string' && r.discount_label.trim().length > 0)),
   );
 }
 
 /**
  * Khối 3: Lọc quán "Quán ngon nổi bật" (Top Rated / Trending)
- * - Rating >= minRating (mặc định 4.5 sao)
- * - Sắp xếp theo rating giảm dần.
  */
 export function filterTopRatedRestaurants(
   restaurants: EnrichedRestaurantItem[],
@@ -165,7 +291,7 @@ export function filterTopRatedRestaurants(
 }
 
 /**
- * Lọc quán ăn theo danh mục (Category filter).
+ * Lọc quán ăn theo danh mục (hỗ trợ cả UUID danh mục DB, tên danh mục, và slug kế thừa).
  */
 export function filterRestaurantsByCategory(
   restaurants: EnrichedRestaurantItem[],
@@ -174,11 +300,19 @@ export function filterRestaurantsByCategory(
   if (!Array.isArray(restaurants)) return [];
   if (!selectedCategoryId || selectedCategoryId === 'ALL') return restaurants;
 
+  const targetLower = selectedCategoryId.trim().toLowerCase();
+  const aliasNames = (CATEGORY_SLUG_ALIASES[targetLower] ?? []).map((n) => n.toLowerCase());
+
   return restaurants.filter((r) => {
     if (!r.categories || !Array.isArray(r.categories)) return false;
-    return r.categories.some(
-      (c) => c.id === selectedCategoryId || c.name.toLowerCase() === selectedCategoryId.toLowerCase(),
-    );
+    return r.categories.some((c) => {
+      const catNameLower = c.name.trim().toLowerCase();
+      return (
+        c.id === selectedCategoryId ||
+        catNameLower === targetLower ||
+        aliasNames.includes(catNameLower)
+      );
+    });
   });
 }
 
@@ -186,7 +320,7 @@ export function filterRestaurantsByCategory(
  * Định dạng cự ly hiển thị km hoặc m.
  */
 export function formatDistanceDisplay(distanceKm: number): string {
-  if (isNaN(distanceKm) || distanceKm <= 0) return '0 m';
+  if (Number.isNaN(distanceKm) || distanceKm <= 0) return '0 m';
   if (distanceKm < 1) {
     return `${Math.round(distanceKm * 1000)}m`;
   }
@@ -197,6 +331,6 @@ export function formatDistanceDisplay(distanceKm: number): string {
  * Định dạng thời gian giao hàng ETA.
  */
 export function formatEtaDisplay(etaMinutes: number): string {
-  if (isNaN(etaMinutes) || etaMinutes <= 0) return '15-20 phút';
+  if (Number.isNaN(etaMinutes) || etaMinutes <= 0) return '15-20 phút';
   return `${etaMinutes} phút`;
 }

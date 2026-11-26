@@ -85,14 +85,18 @@ export class RestaurantsInternalController {
     @Query('restaurantIds') restaurantIds?: string,
     @Query('q') q?: string,
     @Query('tags') tags?: string,
+    @Query('categories') categories?: string,
   ): Promise<MenuItem[]> {
     if (!restaurantIds) return [];
     const ids = restaurantIds.split(',').map((id) => id.trim()).filter(Boolean);
     if (ids.length === 0) return [];
 
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
     const qb = this.menuRepo
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.tags', 'tag')
+      .leftJoinAndSelect('item.category', 'cat')
       .where('item.restaurant_id IN (:...ids)', { ids })
       .andWhere('item.is_deleted = false')
       .andWhere('item.is_available = true');
@@ -101,10 +105,35 @@ export class RestaurantsInternalController {
       qb.andWhere('item.name ILIKE :q', { q: `%${q}%` });
     }
 
+    if (categories) {
+      const catList = categories.split(',').map((c) => c.trim()).filter(Boolean);
+      const catUuids = catList.filter((c) => uuidRegex.test(c));
+      const catNames = catList.filter((c) => !uuidRegex.test(c)).map((c) => c.toLowerCase());
+      if (catUuids.length > 0 && catNames.length > 0) {
+        qb.andWhere('(item.category_id IN (:...catUuids) OR LOWER(cat.name) IN (:...catNames))', {
+          catUuids,
+          catNames,
+        });
+      } else if (catUuids.length > 0) {
+        qb.andWhere('item.category_id IN (:...catUuids)', { catUuids });
+      } else if (catNames.length > 0) {
+        qb.andWhere('LOWER(cat.name) IN (:...catNames)', { catNames });
+      }
+    }
+
     if (tags) {
       const tagList = tags.split(',').map((t) => t.trim()).filter(Boolean);
-      if (tagList.length > 0) {
-        qb.andWhere('tag.name IN (:...tagList)', { tagList });
+      const tagUuids = tagList.filter((t) => uuidRegex.test(t));
+      const tagNames = tagList.filter((t) => !uuidRegex.test(t));
+      if (tagUuids.length > 0 && tagNames.length > 0) {
+        qb.andWhere('(tag.id IN (:...tagUuids) OR tag.name IN (:...tagNames))', {
+          tagUuids,
+          tagNames,
+        });
+      } else if (tagUuids.length > 0) {
+        qb.andWhere('tag.id IN (:...tagUuids)', { tagUuids });
+      } else if (tagNames.length > 0) {
+        qb.andWhere('tag.name IN (:...tagNames)', { tagNames });
       }
     }
 

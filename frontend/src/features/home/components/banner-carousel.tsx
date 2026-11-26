@@ -24,7 +24,7 @@ const DEFAULT_BANNER_SLIDES: BannerSlide[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80',
     ctaText: 'Khám phá ngay',
-    link: '/menu?promo=freeship',
+    link: '/menu?promo=discount',
   },
   {
     id: 'banner-tea-party',
@@ -34,7 +34,7 @@ const DEFAULT_BANNER_SLIDES: BannerSlide[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=1200&q=80',
     ctaText: 'Xem menu trà',
-    link: '/menu?category=tra-sua',
+    link: '/menu?category=Tr%C3%A0%20S%E1%BB%AFa',
   },
   {
     id: 'banner-vietnamese',
@@ -44,7 +44,7 @@ const DEFAULT_BANNER_SLIDES: BannerSlide[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=1200&q=80',
     ctaText: 'Đặt món ngay',
-    link: '/menu?category=com',
+    link: '/menu?category=C%C6%A1m%20T%E1%BA%A5m',
   },
 ];
 

@@ -7,13 +7,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { FoodCardProps } from './types';
+import type { FoodCardProps } from '@/features/menu/components/food-card/types';
+import { normalizeMenuItemTags } from '@/features/search/utils/menu-catalog.utils';
 
 export default function FoodCard({
   item,
   index,
   mode = 'menu',
   isRestaurantClosed = false,
+  priority = false,
   onSelect,
 }: FoodCardProps) {
   const gradients = [
@@ -28,20 +30,30 @@ export default function FoodCard({
   const isSoldOut = !item.is_available;
   const isDisabled = isSoldOut || isRestaurantClosed;
 
-  const hasDiscount = Boolean(item.original_price && Number(item.original_price) > Number(item.price));
+  const hasDiscount = Boolean(
+    item.original_price && Number(item.original_price) > Number(item.price),
+  );
   const discountPercent =
-    hasDiscount && item.original_price
-      ? Math.round(((Number(item.original_price) - Number(item.price)) / Number(item.original_price)) * 100)
-      : 0;
+    item.discount_percent && item.discount_percent > 0
+      ? item.discount_percent
+      : hasDiscount && item.original_price
+        ? Math.round(
+            ((Number(item.original_price) - Number(item.price)) / Number(item.original_price)) *
+              100,
+          )
+        : 0;
+
+  const normalizedTags = normalizeMenuItemTags(item.tags);
 
   const cardContent = (
     <Card
-      className={`group flex flex-col p-0 gap-0 rounded-2xl overflow-hidden bg-card border border-border transition-all duration-300 ease-out select-none ${isDisabled
+      className={`group flex flex-col p-0 gap-0 rounded-2xl overflow-hidden bg-card border border-border transition-all duration-300 ease-out select-none ${
+        isDisabled
           ? 'opacity-65 cursor-not-allowed'
           : 'hover:border-primary/45 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 cursor-pointer'
-        }`}
+      }`}
     >
-      {/* Image banner */}
+      {/* Image banner with explicit lazy loading */}
       <div className="relative h-44 w-full overflow-hidden bg-muted">
         {item.image_url ? (
           <Image
@@ -49,8 +61,12 @@ export default function FoodCard({
             alt={item.name}
             fill
             unoptimized
-            className={`object-cover transition-transform duration-500 ease-out ${isDisabled ? 'grayscale contrast-75 brightness-75' : 'group-hover:scale-105'
-              }`}
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
+            className={`object-cover transition-transform duration-500 ease-out ${
+              isDisabled ? 'grayscale contrast-75 brightness-75' : 'group-hover:scale-105'
+            }`}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           />
         ) : (
@@ -64,7 +80,7 @@ export default function FoodCard({
           <Badge className="bg-black/75 backdrop-blur-md text-white font-bold border-none px-3 py-1 text-xs shadow-md">
             {formatCurrency(item.price)}
           </Badge>
-          {hasDiscount && (
+          {hasDiscount && discountPercent > 0 && (
             <Badge className="bg-destructive text-white font-extrabold text-[10px] px-2 py-0.5 border-none shadow-sm">
               -{discountPercent}%
             </Badge>
@@ -76,7 +92,7 @@ export default function FoodCard({
           <div className="absolute top-3 left-3 z-10">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-black/70 backdrop-blur-md text-white border border-white/15">
               <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
-              Tùy chọn
+              Tùy chọn ({item.options.length})
             </span>
           </div>
         )}
@@ -116,7 +132,7 @@ export default function FoodCard({
           </p>
         ) : (
           <p className="text-xs text-muted-foreground italic mt-1.5 line-clamp-1">
-            Món ngon chuẩn bị tươi mới mỗi ngày
+            Chưa có mô tả chi tiết
           </p>
         )}
 
@@ -127,9 +143,9 @@ export default function FoodCard({
           </p>
         )}
 
-        {item.tags && item.tags.length > 0 && (
+        {normalizedTags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {item.tags.slice(0, 3).map((tag) => (
+            {normalizedTags.slice(0, 3).map((tag) => (
               <span
                 key={tag.id}
                 className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground border border-border"
@@ -137,9 +153,9 @@ export default function FoodCard({
                 #{tag.name}
               </span>
             ))}
-            {item.tags.length > 3 && (
+            {normalizedTags.length > 3 && (
               <span className="text-[10px] text-muted-foreground font-medium px-1 py-0.5">
-                +{item.tags.length - 3}
+                +{normalizedTags.length - 3}
               </span>
             )}
           </div>
@@ -150,10 +166,11 @@ export default function FoodCard({
         <button
           type="button"
           disabled={isDisabled}
-          className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border font-semibold transition-all duration-200 ${isDisabled
+          className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border font-semibold transition-all duration-200 ${
+            isDisabled
               ? 'bg-muted text-muted-foreground border-border cursor-not-allowed'
               : 'bg-primary/10 text-primary border-primary/25 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary cursor-pointer active:scale-98'
-            }`}
+          }`}
         >
           <span className="text-xs sm:text-sm">
             {isSoldOut

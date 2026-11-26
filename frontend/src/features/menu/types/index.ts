@@ -32,8 +32,11 @@ export interface MenuItem {
   name: string;
   price: number;
   original_price?: number;
+  discount_percent?: number;
   is_available: boolean;
   restaurant_name?: string;
+  restaurant_banner_url?: string;
+  restaurant_rating?: number;
   image_url?: string;
   description?: string;
   category?: MenuItemCategory;
@@ -54,6 +57,7 @@ export interface Restaurant {
   is_active: boolean;
   rating?: number;
   rating_count?: number;
+  total_reviews?: number;
   verification_status?: string;
   lat?: number;
   lon?: number;
@@ -62,5 +66,7 @@ export interface Restaurant {
   banner_url?: string;
   discount_label?: string;
   is_freeship?: boolean;
+  has_promo?: boolean;
+  max_discount_percent?: number;
   categories?: RestaurantCategory[];
 }

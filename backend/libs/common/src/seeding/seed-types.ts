@@ -594,12 +594,17 @@ export interface SeedChatFeedbackRecord {
 export interface EsRestaurantDoc {
   id: string;
   name: string;
+  address?: string;
+  banner_url?: string;
   location: { lat: number; lon: number };
   rating: number;
   total_reviews: number;
   is_active: boolean;
   categories: string[];
+  category_ids: string[];
   tags: string[];
+  has_promo: boolean;
+  max_discount_percent: number;
   suggest: string[];
 }
 
@@ -607,11 +612,20 @@ export interface EsMenuItemDoc {
   id: string;
   restaurant_id: string;
   restaurant_name: string;
+  restaurant_banner_url?: string;
+  restaurant_address?: string;
+  restaurant_total_reviews: number;
+  category_id: string;
+  category_name: string;
   name: string;
   description: string;
+  image_url?: string;
   price: number;
+  original_price?: number | null;
+  options: Record<string, unknown>[];
   is_available: boolean;
   tags: string[];
+  tag_ids: string[];
   location: { lat: number; lon: number };
   rating: number;
   suggest: string[];

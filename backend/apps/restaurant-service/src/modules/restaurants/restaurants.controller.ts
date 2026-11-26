@@ -8,12 +8,14 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
   ParseUUIDPipe,
   Inject,
   UseGuards,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard.js';
@@ -32,9 +34,15 @@ import { UpdatePartnerMenuItemDto } from '@/modules/restaurants/dto/update-partn
 import { UpdateRestaurantStatusDto } from '@/modules/restaurants/dto/update-restaurant-status.dto.js';
 import { UpdateRestaurantProfileDto } from '@/modules/restaurants/dto/update-restaurant-profile.dto.js';
 import { UpdateOperatingHoursDto } from '@/modules/restaurants/dto/update-operating-hours.dto.js';
+import {
+  GetRestaurantsQueryDto,
+  GetFeaturedDishesQueryDto,
+} from '@/modules/restaurants/dto/get-restaurants-query.dto.js';
 
 import { CreateRestaurantUseCase } from '@/modules/restaurants/usecases/create-restaurant.usecase.js';
 import { GetRestaurantsUseCase } from '@/modules/restaurants/usecases/get-restaurants.usecase.js';
+import { GetPaginatedRestaurantsUseCase } from '@/modules/restaurants/usecases/get-paginated-restaurants.usecase.js';
+import { GetFeaturedDishesUseCase } from '@/modules/restaurants/usecases/get-featured-dishes.usecase.js';
 import { GetRestaurantUseCase } from '@/modules/restaurants/usecases/get-restaurant.usecase.js';
 import { UpdateRestaurantUseCase } from '@/modules/restaurants/usecases/update-restaurant.usecase.js';
 import { DeleteRestaurantUseCase } from '@/modules/restaurants/usecases/delete-restaurant.usecase.js';
@@ -82,6 +90,8 @@ export class RestaurantsController {
     @Inject(UpdateOperatingHoursUseCase) private readonly updateOperatingHoursUseCase: UpdateOperatingHoursUseCase,
     @Inject(CheckOperatingStatusUseCase) private readonly checkOperatingStatusUseCase: CheckOperatingStatusUseCase,
     @Inject(S3StorageService) private readonly s3StorageService: S3StorageService,
+    @Inject(GetPaginatedRestaurantsUseCase) private readonly getPaginatedRestaurantsUseCase: GetPaginatedRestaurantsUseCase,
+    @Inject(GetFeaturedDishesUseCase) private readonly getFeaturedDishesUseCase: GetFeaturedDishesUseCase,
   ) { }
 
   // --- Partner (Merchant) Endpoints ---
@@ -197,6 +207,20 @@ export class RestaurantsController {
   @Get()
   findAll() {
     return this.getRestaurantsUseCase.execute();
+  }
+
+  @Get('paginated')
+  findPaginated(
+    @Query(new ValidationPipe({ transform: true, whitelist: true })) query: GetRestaurantsQueryDto,
+  ) {
+    return this.getPaginatedRestaurantsUseCase.execute(query);
+  }
+
+  @Get('featured-dishes')
+  findFeaturedDishes(
+    @Query(new ValidationPipe({ transform: true, whitelist: true })) query: GetFeaturedDishesQueryDto,
+  ) {
+    return this.getFeaturedDishesUseCase.execute(query);
   }
 
   @Get(':id')

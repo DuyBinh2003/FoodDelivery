@@ -55,21 +55,55 @@ export function generateSeedBundle(options: GenerateSeedBundleOptions): SeedBund
     reviewCountByRest.set(rev.restaurant_id, (reviewCountByRest.get(rev.restaurant_id) ?? 0) + 1);
   }
 
+  const categoryNameById = new Map(master.categories.map((c) => [c.id, c.name]));
+  const categoryIdsByRest = new Map<string, string[]>();
+  for (const rc of master.restaurantCategories) {
+    const existing = categoryIdsByRest.get(rc.restaurant_id) ?? [];
+    existing.push(rc.category_id);
+    categoryIdsByRest.set(rc.restaurant_id, existing);
+  }
+
+  const tagIdsByMenuItem = new Map<string, string[]>();
+  for (const mt of master.menuItemTags) {
+    const existing = tagIdsByMenuItem.get(mt.menu_item_id) ?? [];
+    existing.push(mt.tag_id);
+    tagIdsByMenuItem.set(mt.menu_item_id, existing);
+  }
+
+  const maxDiscountByRest = new Map<string, number>();
+  for (const m of master.menuItems) {
+    if (m.is_available && m.original_price !== null && m.original_price > m.price && m.original_price > 0) {
+      const pct = Math.round(((m.original_price - m.price) * 100) / m.original_price);
+      const prev = maxDiscountByRest.get(m.restaurant_id) ?? 0;
+      if (pct > prev) {
+        maxDiscountByRest.set(m.restaurant_id, pct);
+      }
+    }
+  }
+
   const restById = new Map(master.restaurants.map((r) => [r.id, r]));
 
   const esRestaurants: EsRestaurantDoc[] = master.restaurants
     .filter((r) => r.is_active)
-    .map((r) => ({
-      id: r.id,
-      name: r.name,
-      location: { lat: r.lat, lon: r.lon },
-      rating: r.rating,
-      total_reviews: (reviewCountByRest.get(r.id) ?? 0) + 15,
-      is_active: r.is_active,
-      categories: r.category_names,
-      tags: ['Giao Siêu Tốc', 'Đối Tác'],
-      suggest: [r.name],
-    }));
+    .map((r) => {
+      const maxDiscount = maxDiscountByRest.get(r.id) ?? 0;
+      return {
+        id: r.id,
+        name: r.name,
+        address: r.address,
+        banner_url: r.banner_url,
+        location: { lat: r.lat, lon: r.lon },
+        rating: r.rating,
+        total_reviews: (reviewCountByRest.get(r.id) ?? 0) + 15,
+        is_active: r.is_active,
+        categories: r.category_names,
+        category_ids: categoryIdsByRest.get(r.id) ?? [],
+        tags: ['Giao Siêu Tốc', 'Đối Tác'],
+        has_promo: maxDiscount > 0,
+        max_discount_percent: maxDiscount,
+        suggest: [r.name],
+      };
+    });
 
   const esMenuItems: EsMenuItemDoc[] = master.menuItems
     .filter((m) => {
@@ -78,15 +112,25 @@ export function generateSeedBundle(options: GenerateSeedBundleOptions): SeedBund
     })
     .map((m) => {
       const parent = restById.get(m.restaurant_id)!;
+      const totalReviews = (reviewCountByRest.get(parent.id) ?? 0) + 15;
       return {
         id: m.id,
         restaurant_id: m.restaurant_id,
         restaurant_name: parent.name,
+        restaurant_banner_url: parent.banner_url,
+        restaurant_address: parent.address,
+        restaurant_total_reviews: totalReviews,
+        category_id: m.category_id,
+        category_name: categoryNameById.get(m.category_id) ?? parent.primary_category_name,
         name: m.name,
         description: m.description,
+        image_url: m.image_url,
         price: m.price,
+        original_price: m.original_price,
+        options: m.options,
         is_available: m.is_available,
         tags: m.tag_names,
+        tag_ids: tagIdsByMenuItem.get(m.id) ?? [],
         location: { lat: parent.lat, lon: parent.lon },
         rating: parent.rating,
         suggest: [m.name],

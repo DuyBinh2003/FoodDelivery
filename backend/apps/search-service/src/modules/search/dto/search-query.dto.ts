@@ -1,4 +1,14 @@
-import { IsOptional, IsString, IsNumber, IsBoolean, IsArray, IsIn, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsArray,
+  IsIn,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class SuggestSearchDto {
@@ -44,9 +54,17 @@ export class SearchRestaurantsDto {
   rating?: number;
 
   @IsOptional()
+  @IsString()
+  category?: string;
+
+  @IsOptional()
   @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []))
   @IsArray()
   categories?: string[];
+
+  @IsOptional()
+  @IsString()
+  tag?: string;
 
   @IsOptional()
   @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []))
@@ -72,4 +90,22 @@ export class SearchRestaurantsDto {
   @IsString()
   @IsIn(['relevance', 'distance', 'rating'])
   sort_by?: 'relevance' | 'distance' | 'rating';
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['freeship', 'discount', 'true'])
+  promo?: 'freeship' | 'discount' | 'true';
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  limit?: number;
 }

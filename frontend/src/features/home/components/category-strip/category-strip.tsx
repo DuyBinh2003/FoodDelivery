@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   UtensilsCrossed,
@@ -11,56 +12,53 @@ import {
   Cookie,
   Flame,
   Sandwich,
+  Pizza,
+  Leaf,
   ChevronRight,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { CategoryStripProps } from './types';
+import type { CategoryStripProps } from '@/features/home/components/category-strip/types';
+import type { HomeCategoryItem } from '@/features/home/utils/home-feed.utils';
 
-interface CategoryPillDef {
-  id: string;
-  name: string;
-  iconName: string;
-  badge?: string;
+function renderCategoryIcon(category: HomeCategoryItem) {
+  if (category.id === 'ALL') {
+    return <UtensilsCrossed className="w-4 h-4" />;
+  }
+  if (category.icon_url && category.icon_url.startsWith('http')) {
+    return (
+      <Image
+        src={category.icon_url}
+        alt={category.name}
+        width={18}
+        height={18}
+        unoptimized
+        className="w-4 h-4 rounded-full object-cover"
+      />
+    );
+  }
+  const lower = category.name.toLowerCase();
+  if (lower.includes('phở') || lower.includes('bún')) return <Soup className="w-4 h-4" />;
+  if (lower.includes('trà') || lower.includes('cà phê') || lower.includes('giải khát')) {
+    return <Coffee className="w-4 h-4" />;
+  }
+  if (lower.includes('gà') || lower.includes('burger')) return <Drumstick className="w-4 h-4" />;
+  if (lower.includes('bánh mì')) return <Sandwich className="w-4 h-4" />;
+  if (lower.includes('pizza') || lower.includes('mì ý')) return <Pizza className="w-4 h-4" />;
+  if (lower.includes('chay')) return <Leaf className="w-4 h-4" />;
+  if (lower.includes('cơm')) return <Flame className="w-4 h-4" />;
+  if (lower.includes('vặt') || lower.includes('bánh')) return <Cookie className="w-4 h-4" />;
+  return <UtensilsCrossed className="w-4 h-4" />;
 }
-
-const DEFAULT_CATEGORIES: CategoryPillDef[] = [
-  { id: 'ALL', name: 'Tất cả', iconName: 'all' },
-  { id: 'com', name: 'Cơm', iconName: 'rice' },
-  { id: 'pho-bun', name: 'Phở & Bún', iconName: 'soup' },
-  { id: 'tra-sua', name: 'Trà sữa', iconName: 'tea', badge: 'HOT' },
-  { id: 'ga-ran', name: 'Gà rán', iconName: 'chicken' },
-  { id: 'banh-mi', name: 'Bánh mì', iconName: 'sandwich' },
-  { id: 'an-vat', name: 'Ăn vặt', iconName: 'snack' },
-  { id: 'ca-phe', name: 'Cà phê', iconName: 'coffee' },
-];
 
 export function CategoryStrip({
   selectedCategoryId,
   onSelectCategory,
+  categories = [],
 }: CategoryStripProps) {
   const tHome = useTranslations('home');
   const tCommon = useTranslations('common');
 
-  const renderIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'soup':
-        return <Soup className="w-4 h-4" />;
-      case 'tea':
-      case 'coffee':
-        return <Coffee className="w-4 h-4" />;
-      case 'chicken':
-        return <Drumstick className="w-4 h-4" />;
-      case 'sandwich':
-        return <Sandwich className="w-4 h-4" />;
-      case 'snack':
-        return <Cookie className="w-4 h-4" />;
-      case 'rice':
-        return <Flame className="w-4 h-4" />;
-      case 'all':
-      default:
-        return <UtensilsCrossed className="w-4 h-4" />;
-    }
-  };
+  const stripItems: HomeCategoryItem[] = [{ id: 'ALL', name: 'Tất cả' }, ...categories];
 
   return (
     <section className="space-y-3">
@@ -77,9 +75,9 @@ export function CategoryStrip({
         </Link>
       </div>
 
-      {/* Horizontal Scrollable Pill Strip */}
+      {/* Horizontal Scrollable Pill Strip synced with real DB categories */}
       <div className="flex items-center gap-2.5 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
-        {DEFAULT_CATEGORIES.map((cat) => {
+        {stripItems.map((cat) => {
           const isSelected = selectedCategoryId === cat.id;
 
           return (
@@ -102,13 +100,8 @@ export function CategoryStrip({
               )}
 
               <span className="relative z-10 flex items-center gap-2">
-                {renderIcon(cat.iconName)}
+                {renderCategoryIcon(cat)}
                 <span>{cat.name}</span>
-                {cat.badge && !isSelected && (
-                  <span className="px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground text-[9px] font-extrabold uppercase">
-                    {cat.badge}
-                  </span>
-                )}
               </span>
             </button>
           );

@@ -5,5 +5,6 @@ export interface FoodCardProps {
   index: number;
   mode?: 'menu' | 'restaurant';
   isRestaurantClosed?: boolean;
+  priority?: boolean;
   onSelect?: (item: MenuItem) => void;
 }

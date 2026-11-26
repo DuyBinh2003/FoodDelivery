@@ -11,61 +11,105 @@ export interface TagItem {
   name: string;
 }
 
+export interface MenuItemOptionChoice {
+  id: string;
+  name: string;
+  price: number;
+  is_default?: boolean;
+}
+
+export interface MenuItemOptionGroup {
+  id: string;
+  name: string;
+  required: boolean;
+  min_choices?: number;
+  max_choices?: number;
+  choices: MenuItemOptionChoice[];
+}
+
 export interface MenuItemData {
   id: string;
   restaurant_id: string;
+  category_id?: string;
+  category?: CategoryItem;
   name: string;
   description?: string;
   image_url?: string;
   price: number;
+  original_price?: number;
+  options?: MenuItemOptionGroup[];
   is_available: boolean;
   tags?: TagItem[];
   created_at?: string;
   updated_at?: string;
 }
 
+export interface PaginatedRestaurantFallbackItem {
+  id: string;
+  name: string;
+  address?: string;
+  banner_url?: string;
+  rating?: number;
+  lat?: number;
+  lon?: number;
+}
+
+export interface PaginatedRestaurantFallbackResponse {
+  items: PaginatedRestaurantFallbackItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
+
 @Injectable()
 export class SearchReadRepository {
   private readonly logger = new Logger(SearchReadRepository.name);
-  private readonly restaurantUrl = process.env.RESTAURANT_SERVICE_URL!;
 
-  constructor() {}
+  private getRestaurantServiceUrl(): string {
+    const raw = process.env.RESTAURANT_SERVICE_URL?.trim();
+    if (!raw) {
+      throw new Error('[ConfigError] RESTAURANT_SERVICE_URL environment variable is required.');
+    }
+    return raw.replace(/\/+$/, '');
+  }
 
   async getCategories(): Promise<CategoryItem[]> {
-    return fetch(`${this.restaurantUrl}/internal/restaurants/categories`)
-      .then(async (r) => {
-        if (!r.ok) {
-          this.logger.warn(`Categories fetch returned status ${r.status}`);
-          return [];
-        }
-        const data = await r.json();
-        return Array.isArray(data) ? (data as CategoryItem[]) : [];
-      })
-      .catch((err) => {
-        this.logger.warn('Failed to fetch categories from restaurant-service:', err);
+    try {
+      const r = await fetch(`${this.getRestaurantServiceUrl()}/internal/restaurants/categories`);
+      if (!r.ok) {
+        this.logger.warn(`Categories fetch returned status ${r.status}`);
         return [];
-      });
+      }
+      const data: unknown = await r.json();
+      return Array.isArray(data) ? (data as CategoryItem[]) : [];
+    } catch (error: unknown) {
+      this.logger.warn('Failed to fetch categories from restaurant-service:', error);
+      return [];
+    }
   }
 
   async getTags(): Promise<TagItem[]> {
-    return fetch(`${this.restaurantUrl}/internal/restaurants/tags`)
-      .then(async (r) => {
-        if (!r.ok) {
-          this.logger.warn(`Tags fetch returned status ${r.status}`);
-          return [];
-        }
-        const data = await r.json();
-        return Array.isArray(data) ? (data as TagItem[]) : [];
-      })
-      .catch((err) => {
-        this.logger.warn('Failed to fetch tags from restaurant-service:', err);
+    try {
+      const r = await fetch(`${this.getRestaurantServiceUrl()}/internal/restaurants/tags`);
+      if (!r.ok) {
+        this.logger.warn(`Tags fetch returned status ${r.status}`);
         return [];
-      });
+      }
+      const data: unknown = await r.json();
+      return Array.isArray(data) ? (data as TagItem[]) : [];
+    } catch (error: unknown) {
+      this.logger.warn('Failed to fetch tags from restaurant-service:', error);
+      return [];
+    }
   }
 
   async getMenuItemsForRestaurants(
     restaurantIds: string[],
-    params: { q?: string; tags?: string[] },
+    params: { q?: string; tags?: string[]; categories?: string[] },
   ): Promise<MenuItemData[]> {
     if (!restaurantIds || restaurantIds.length === 0) {
       return [];
@@ -74,36 +118,92 @@ export class SearchReadRepository {
     q.set('restaurantIds', restaurantIds.join(','));
     if (params.q) q.set('q', params.q);
     if (params.tags && params.tags.length > 0) q.set('tags', params.tags.join(','));
+    if (params.categories && params.categories.length > 0) {
+      q.set('categories', params.categories.join(','));
+    }
 
-    return fetch(`${this.restaurantUrl}/internal/restaurants/menu-items?${q.toString()}`)
-      .then(async (r) => {
-        if (!r.ok) {
-          this.logger.warn(`Menu items fetch returned status ${r.status}`);
-          return [];
-        }
-        const data = await r.json();
-        return Array.isArray(data) ? (data as MenuItemData[]) : [];
-      })
-      .catch((err) => {
-        this.logger.warn('Failed to fetch menu items from restaurant-service:', err);
+    try {
+      const r = await fetch(
+        `${this.getRestaurantServiceUrl()}/internal/restaurants/menu-items?${q.toString()}`,
+      );
+      if (!r.ok) {
+        this.logger.warn(`Menu items fetch returned status ${r.status}`);
         return [];
-      });
+      }
+      const data: unknown = await r.json();
+      return Array.isArray(data) ? (data as MenuItemData[]) : [];
+    } catch (error: unknown) {
+      this.logger.warn('Failed to fetch menu items from restaurant-service:', error);
+      return [];
+    }
+  }
+
+  async getPaginatedRestaurantsFallback(params: {
+    page: number;
+    limit: number;
+    categoryId?: string;
+    q?: string;
+    promoOnly?: boolean;
+  }): Promise<PaginatedRestaurantFallbackResponse> {
+    const query = new URLSearchParams();
+    query.set('page', String(params.page));
+    query.set('limit', String(params.limit));
+    if (params.categoryId) query.set('categoryId', params.categoryId);
+    if (params.q) query.set('q', params.q);
+    if (params.promoOnly) query.set('promoOnly', 'true');
+
+    try {
+      const r = await fetch(
+        `${this.getRestaurantServiceUrl()}/restaurants/paginated?${query.toString()}`,
+      );
+      if (!r.ok) {
+        this.logger.warn(`Fallback paginated restaurants returned status ${r.status}`);
+        return {
+          items: [],
+          pagination: {
+            page: params.page,
+            limit: params.limit,
+            total: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+        };
+      }
+      const data = (await r.json()) as PaginatedRestaurantFallbackResponse;
+      return data;
+    } catch (error: unknown) {
+      this.logger.warn('Failed to fetch paginated restaurants fallback:', error);
+      return {
+        items: [],
+        pagination: {
+          page: params.page,
+          limit: params.limit,
+          total: 0,
+          totalPages: 0,
+          hasMore: false,
+        },
+      };
+    }
   }
 
   async getFreeshipDistanceThreshold(): Promise<number> {
-    return fetch(`${this.restaurantUrl}/internal/restaurants/configs/freeship`)
-      .then(async (r) => {
-        if (!r.ok) {
-          this.logger.warn(`Freeship threshold fetch returned status ${r.status}`);
-          return 2;
-        }
-        const data = await r.json();
-        const num = Number(data);
-        return isNaN(num) ? 2 : num;
-      })
-      .catch((err) => {
-        this.logger.warn('Failed to fetch freeship distance threshold from restaurant-service:', err);
+    try {
+      const r = await fetch(
+        `${this.getRestaurantServiceUrl()}/internal/restaurants/configs/freeship`,
+      );
+      if (!r.ok) {
+        this.logger.warn(`Freeship threshold fetch returned status ${r.status}`);
         return 2;
-      });
+      }
+      const data: unknown = await r.json();
+      const num = Number(data);
+      return Number.isNaN(num) ? 2 : num;
+    } catch (error: unknown) {
+      this.logger.warn(
+        'Failed to fetch freeship distance threshold from restaurant-service:',
+        error,
+      );
+      return 2;
+    }
   }
 }

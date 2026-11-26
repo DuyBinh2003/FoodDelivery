@@ -6,6 +6,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import { normalizePaginatedMenuResponse } from '../utils/menu-catalog.utils.ts';
 
 interface FallbackCatalogItem {
   id: string;
@@ -117,6 +118,22 @@ describe('Frontend Search Circuit Breaker Degradation Suite (#85)', () => {
       assert.strictEqual(result.items.length, 3);
       assert.strictEqual(result.items[0].name, 'Phở Bò Tái Nạm (Món Thịnh Hành)');
       assert.strictEqual(shouldRenderDegradationBanner(result), true);
+    });
+
+    it('🔴 [Error Flow] normalizePaginatedMenuResponse xử lý an toàn object Circuit Breaker OPEN từ /search/menu', () => {
+      const normalized = normalizePaginatedMenuResponse({
+        items: mockFallbackItems,
+        total: 3,
+        isFallback: true,
+        circuitStatus: 'OPEN',
+        message: 'Hệ thống tìm kiếm tức thời đang được tối ưu.',
+      });
+
+      assert.strictEqual(normalized.isFallback, true);
+      assert.strictEqual(normalized.circuitStatus, 'OPEN');
+      assert.strictEqual(normalized.sections.length, 3);
+      assert.strictEqual(normalized.pagination.totalDishes, 3);
+      assert.strictEqual(normalized.pagination.hasMore, false);
     });
   });
 });

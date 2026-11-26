@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LayoutGrid } from 'lucide-react';
+import { resolveCategoryMatch } from '@/features/search/utils/menu-catalog.utils';
 
 export interface Category {
   id: string;
@@ -17,21 +18,29 @@ interface CategoryFilterProps {
 export const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeCategoryId = searchParams.get('category');
+  const activeCategoryParam = searchParams.get('category');
 
   const handleSelect = (categoryId: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    if (!categoryId || activeCategoryId === categoryId) {
+    const isCurrentlySelected = categoryId
+      ? resolveCategoryMatch(
+          activeCategoryParam,
+          categories.find((c) => c.id === categoryId) ?? { id: categoryId, name: '' },
+        )
+      : false;
+
+    if (!categoryId || isCurrentlySelected) {
       params.delete('category');
     } else {
       params.set('category', categoryId);
     }
 
-    router.push(`?${params.toString()}`, { scroll: false });
+    const qs = params.toString();
+    router.push(qs ? `?${qs}` : '/menu', { scroll: false });
   };
 
-  const isAllActive = !activeCategoryId;
+  const isAllActive = !activeCategoryParam;
 
   return (
     <div className="w-full">
@@ -50,7 +59,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories }) =>
         </button>
 
         {categories.map((cat) => {
-          const isActive = activeCategoryId === cat.id;
+          const isActive = resolveCategoryMatch(activeCategoryParam, cat);
           return (
             <button
               key={cat.id}

@@ -1,13 +1,14 @@
 import { Suspense } from 'react';
-import Link from 'next/link';
-import { Sparkles, RotateCcw, SearchX } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { CartClearer } from '@/features/cart';
 import { SearchFilters } from '@/features/search/components/SearchFilters';
-import { MenuToolbar } from '@/features/search/components/MenuToolbar';
-import FoodList from '@/features/menu/components/food-list/food-list';
-import { getCategories, getTags, getMenuItems } from '@/features/search/api';
+import { MenuCatalogFeed } from '@/features/menu/components/menu-catalog-feed/menu-catalog-feed';
+import {
+  getCategories,
+  getTags,
+  getPaginatedMenuItems,
+} from '@/features/search/api';
 import { CustomerLayout } from '@/components/layout/customer-layout/customer-layout';
-import type { MenuSection } from '@/features/search/types';
 
 export default async function MenuPage({
   searchParams,
@@ -49,7 +50,7 @@ export default async function MenuPage({
           </div>
         </section>
 
-        {/* Main Content Area */}
+        {/* Main Content Area with SSR Page 1 + Client Infinite Lazy Load */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
           <Suspense fallback={<MenuSkeleton />}>
             <MenuSearchResults searchParams={resolvedSearchParams} />
@@ -65,64 +66,49 @@ async function MenuSearchResults({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const menuData = await getMenuItems(searchParams);
+  const sortBy =
+    searchParams.sort === 'distance'
+      ? ('distance' as const)
+      : searchParams.sort === 'rating'
+        ? ('rating' as const)
+        : undefined;
 
-  if (menuData.length === 0) {
-    return (
-      <div className="py-20 px-4 text-center max-w-md mx-auto flex flex-col items-center">
-        <div className="w-20 h-20 rounded-3xl bg-card border border-border flex items-center justify-center text-muted-foreground mb-5 shadow-sm">
-          <SearchX className="w-10 h-10" />
-        </div>
-        <h3 className="font-heading text-xl font-bold text-foreground mb-2">
-          Không tìm thấy món ăn nào
-        </h3>
-        <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-          Rất tiếc, chúng tôi không tìm thấy kết quả phù hợp với tiêu chí tìm kiếm của bạn. Hãy thử đổi từ khóa hoặc khám phá lại toàn bộ menu.
-        </p>
-        <Link
-          href="/menu"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-primary-foreground font-semibold text-sm shadow-sm transition-all duration-200"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Khám phá lại thực đơn
-        </Link>
-      </div>
-    );
-  }
+  const initialResult = await getPaginatedMenuItems({
+    q: searchParams.q,
+    category: searchParams.category,
+    tag: searchParams.tag,
+    promo: searchParams.promo,
+    radius: searchParams.radius,
+    open_only: searchParams.open_only === 'true',
+    sort_by: sortBy,
+    page: 1,
+    limit: 8,
+  });
 
-  const totalItems = menuData.reduce((acc, section) => acc + section.items.length, 0);
-  const totalRestaurants = menuData.length;
-
-  const sort = searchParams.sort;
-  const sortedMenuData: MenuSection[] = menuData.map((section) => {
-    const itemsCopy = [...section.items];
-    if (sort === 'price_asc') {
-      itemsCopy.sort((a, b) => Number(a.price) - Number(b.price));
-    } else if (sort === 'price_desc') {
-      itemsCopy.sort((a, b) => Number(b.price) - Number(a.price));
-    } else if (sort === 'name_asc') {
-      itemsCopy.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
-    }
-    return {
-      ...section,
-      items: itemsCopy,
-    };
+  const filterKey = JSON.stringify({
+    q: searchParams.q ?? '',
+    category: searchParams.category ?? '',
+    tag: searchParams.tag ?? '',
+    promo: searchParams.promo ?? '',
+    sort: searchParams.sort ?? '',
+    radius: searchParams.radius ?? '',
+    open_only: searchParams.open_only ?? '',
   });
 
   return (
-    <div className="space-y-8">
-      <MenuToolbar totalItems={totalItems} totalRestaurants={totalRestaurants} />
-
-      <div className="space-y-10">
-        {sortedMenuData.map((section) => (
-          <FoodList
-            key={section.restaurant}
-            items={section.items}
-            restaurantName={section.restaurant}
-          />
-        ))}
-      </div>
-    </div>
+    <MenuCatalogFeed
+      initialResult={initialResult}
+      filterKey={filterKey}
+      queryParams={{
+        q: searchParams.q,
+        category: searchParams.category,
+        tag: searchParams.tag,
+        promo: searchParams.promo,
+        sort: searchParams.sort,
+        radius: searchParams.radius,
+        open_only: searchParams.open_only === 'true',
+      }}
+    />
   );
 }
 

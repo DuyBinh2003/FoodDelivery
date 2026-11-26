@@ -4,9 +4,13 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Star, Clock, Navigation, Tag, RotateCcw } from 'lucide-react';
-import type { EnrichedRestaurantItem } from '../utils/home-feed.utils';
-import { formatDistanceDisplay, formatEtaDisplay } from '../utils/home-feed.utils';
+import { Star, Clock, Navigation, Tag, RotateCcw, Store } from 'lucide-react';
+import {
+  formatDistanceDisplay,
+  formatEtaDisplay,
+  resolveRestaurantImageSrc,
+  type EnrichedRestaurantItem,
+} from '@/features/home/utils/home-feed.utils';
 
 interface RestaurantCardProps {
   restaurant: EnrichedRestaurantItem;
@@ -21,12 +25,20 @@ export function RestaurantCard({
   showOrderAgainButton = false,
   onOrderAgain,
 }: RestaurantCardProps) {
-  const ratingNum = Number(restaurant.rating || 4.5);
-  const displayRating = !isNaN(ratingNum) && ratingNum > 0 ? ratingNum.toFixed(1) : '4.5';
+  const ratingNum = Number(restaurant.rating ?? 0);
+  const displayRating = !Number.isNaN(ratingNum) && ratingNum > 0 ? ratingNum.toFixed(1) : 'Mới';
 
-  const defaultThumbnail =
-    'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80';
-  const imageUrl = restaurant.image_url || defaultThumbnail;
+  const imageUrl = resolveRestaurantImageSrc(restaurant);
+  const maxDiscount = Number(restaurant.max_discount_percent ?? 0);
+  const promoBadgeText = restaurant.discount_label
+    ? restaurant.discount_label
+    : maxDiscount > 0
+      ? `GIẢM TỚI ${maxDiscount}%`
+      : restaurant.is_freeship
+        ? 'FREESHIP 0Đ'
+        : restaurant.has_promo
+          ? 'ƯU ĐÃI'
+          : null;
 
   const isGrid = layout === 'grid';
 
@@ -43,26 +55,36 @@ export function RestaurantCard({
         href={`/restaurant/${restaurant.id}`}
         className="relative block w-full h-40 sm:h-44 overflow-hidden bg-muted"
       >
-        <Image
-          src={imageUrl}
-          alt={restaurant.name}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
-          loading="lazy"
-          unoptimized={imageUrl.startsWith('http://localhost:4566')}
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={restaurant.name}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+            loading="lazy"
+            decoding="async"
+            unoptimized={imageUrl.includes('localhost:4566') || imageUrl.endsWith('.svg')}
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-muted flex flex-col items-center justify-center gap-2 text-primary/50">
+            <Store className="w-10 h-10" />
+            <span className="text-[11px] font-semibold px-3 text-center line-clamp-1">
+              {restaurant.name}
+            </span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
 
-        {/* Promo / Discount Label */}
-        {(restaurant.is_freeship || restaurant.discount_label) && (
+        {/* Real Promo / Discount Label */}
+        {promoBadgeText && (
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tracking-tight shadow-sm">
             <Tag className="w-3 h-3" />
-            <span>{restaurant.discount_label || 'FREESHIP 0Đ'}</span>
+            <span>{promoBadgeText}</span>
           </div>
         )}
 
-        {/* Rating Badge */}
+        {/* Real Rating Badge */}
         <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-amber-300 text-xs font-bold border border-white/15">
           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
           <span>{displayRating}</span>
@@ -93,7 +115,11 @@ export function RestaurantCard({
         <div className="mt-3 pt-2.5 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-1 text-foreground/80 font-medium text-xs">
             <Navigation className="w-3.5 h-3.5 text-primary" />
-            <span>{formatDistanceDisplay(restaurant.distance_km)}</span>
+            <span>
+              {restaurant.distance_km > 0
+                ? formatDistanceDisplay(restaurant.distance_km)
+                : 'Khu vực TP.HCM'}
+            </span>
           </div>
 
           {showOrderAgainButton ? (

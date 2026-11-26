@@ -11,6 +11,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   calculateRestaurantEtaMinutes,
+  dedupeById,
   enrichRestaurantsWithLocation,
   filterNearYouRestaurants,
   filterPromoRestaurants,
@@ -18,6 +19,7 @@ import {
   filterRestaurantsByCategory,
   formatDistanceDisplay,
   formatEtaDisplay,
+  resolveRestaurantImageSrc,
   type HomeRestaurantItem,
   type EnrichedRestaurantItem,
 } from '../utils/home-feed.utils.ts';
@@ -155,6 +157,33 @@ describe('Home Feed & Personalization Suite (Frontend)', () => {
       assert.strictEqual(formatDistanceDisplay(2.4), '2.4km');
       assert.strictEqual(formatEtaDisplay(18), '18 phút');
     });
+
+    it('7. resolveRestaurantImageSrc & has_promo/dedupeById: Ưu tiên banner_url S3, lọc promo thật & dedup phân trang', () => {
+      const restWithBanner: HomeRestaurantItem = {
+        id: 'r-banner',
+        name: 'Phở Biển',
+        banner_url: 'http://localhost:4566/food-delivery-assets/defaults/banners/restaurant-banner-pho.svg',
+        has_promo: true,
+        max_discount_percent: 25,
+        is_active: true,
+      };
+      assert.strictEqual(
+        resolveRestaurantImageSrc(restWithBanner),
+        'http://localhost:4566/food-delivery-assets/defaults/banners/restaurant-banner-pho.svg',
+      );
+
+      const enriched = enrichRestaurantsWithLocation([restWithBanner], mockUserLat, mockUserLng);
+      assert.strictEqual(filterPromoRestaurants(enriched).length, 1);
+
+      const merged = dedupeById(
+        [{ id: 'r1', name: 'A' }, { id: 'r2', name: 'B' }],
+        [{ id: 'r2', name: 'B-dup' }, { id: 'r3', name: 'C' }],
+      );
+      assert.deepStrictEqual(
+        merged.map((m) => m.id),
+        ['r1', 'r2', 'r3'],
+      );
+    });
   });
 
   // ==========================================
@@ -239,6 +268,7 @@ describe('Home Feed & Personalization Suite (Frontend)', () => {
       assert.strictEqual(formatDistanceDisplay(-5), '0 m');
       assert.strictEqual(formatEtaDisplay(NaN), '15-20 phút');
       assert.strictEqual(formatEtaDisplay(-10), '15-20 phút');
+      assert.strictEqual(resolveRestaurantImageSrc({ banner_url: '   ', image_url: '' }), null);
     });
   });
 });

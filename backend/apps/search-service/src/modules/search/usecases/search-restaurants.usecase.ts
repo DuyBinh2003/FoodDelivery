@@ -16,6 +16,9 @@ export interface SearchRestaurantsQuery {
   freeshipDistanceThreshold?: number;
   open_only?: boolean;
   sort_by?: 'relevance' | 'distance' | 'rating';
+  promo?: 'freeship' | 'discount' | 'true';
+  page?: number;
+  limit?: number;
 }
 
 @Injectable()

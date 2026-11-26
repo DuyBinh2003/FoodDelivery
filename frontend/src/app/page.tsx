@@ -8,6 +8,7 @@ import { HeroSection } from '@/features/home/components/hero-section/hero-sectio
 import { CategoryStrip } from '@/features/home/components/category-strip/category-strip';
 import { BannerCarousel } from '@/features/home/components/banner-carousel';
 import { RestaurantFeedSection } from '@/features/home/components/restaurant-feed-section';
+import { FeaturedDishesSection } from '@/features/home/components/featured-dishes-section';
 import { AllRestaurantsInfinite } from '@/features/home/components/all-restaurants-infinite';
 import { NotificationDrawer } from '@/features/home/components/notification-drawer';
 import { LocationModal } from '@/features/home/components/location-modal';
@@ -27,14 +28,27 @@ import { getOrderHistory } from '@/features/orders/api/order-api';
 import { apiClient } from '@/lib/api-client';
 import type { Order } from '@/features/orders/types';
 import {
+  dedupeById,
   enrichRestaurantsWithLocation,
   filterNearYouRestaurants,
   filterPromoRestaurants,
   filterTopRatedRestaurants,
-  filterRestaurantsByCategory,
-  type HomeRestaurantItem,
   type EnrichedRestaurantItem,
+  type FeaturedDishItem,
+  type HomeCategoryItem,
+  type HomeRestaurantItem,
+  type PaginatedFeaturedDishesResponse,
+  type PaginatedRestaurantsResponse,
+  type PaginationMeta,
 } from '@/features/home/utils/home-feed.utils';
+
+const EMPTY_PAGINATION: PaginationMeta = {
+  page: 1,
+  limit: 12,
+  total: 0,
+  totalPages: 0,
+  hasMore: false,
+};
 
 export default function HomePage() {
   const router = useRouter();
@@ -43,48 +57,106 @@ export default function HomePage() {
   const { isAuthenticated } = useAuthStore();
   const { addItem, clearCart } = useCartStore();
 
-  const [restaurants, setRestaurants] = useState<HomeRestaurantItem[]>([]);
+  const [categories, setCategories] = useState<HomeCategoryItem[]>([]);
+  const [gridRestaurants, setGridRestaurants] = useState<HomeRestaurantItem[]>([]);
+  const [gridPagination, setGridPagination] = useState<PaginationMeta>(EMPTY_PAGINATION);
+  const [promoPool, setPromoPool] = useState<HomeRestaurantItem[]>([]);
+  const [topRatedPool, setTopRatedPool] = useState<HomeRestaurantItem[]>([]);
+  const [featuredDishes, setFeaturedDishes] = useState<FeaturedDishItem[]>([]);
   const [pastOrders, setPastOrders] = useState<Order[]>([]);
+  const [totalAllRestaurants, setTotalAllRestaurants] = useState<number>(0);
+
   const [loading, setLoading] = useState(true);
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
+  // 1. Initial Homepage Discovery Boot (Paginated — never dumps all 150-500 rows at once)
   useEffect(() => {
     let isMounted = true;
 
-    const fetchHomeData = async () => {
+    const fetchInitialHomeData = async () => {
       try {
         setLoading(true);
 
-        const restaurantsPromise = apiClient<HomeRestaurantItem[]>('/restaurants').catch((err) => {
-          console.warn('[HomePage] Failed to fetch restaurants:', err);
-          return [];
+        const categoriesPromise = apiClient<HomeCategoryItem[]>('/restaurants/categories').catch(
+          (err: unknown) => {
+            console.warn('[HomePage] Failed to fetch categories:', err);
+            return [];
+          },
+        );
+
+        const gridPromise = apiClient<PaginatedRestaurantsResponse>('/restaurants/paginated', {
+          params: { page: '1', limit: '12' },
+        }).catch((err: unknown) => {
+          console.warn('[HomePage] Failed to fetch paginated restaurants:', err);
+          return { items: [], pagination: EMPTY_PAGINATION };
+        });
+
+        const promoPromise = apiClient<PaginatedRestaurantsResponse>('/restaurants/paginated', {
+          params: { page: '1', limit: '12', promoOnly: 'true', sortBy: 'discount' },
+        }).catch((err: unknown) => {
+          console.warn('[HomePage] Failed to fetch promo restaurants:', err);
+          return { items: [], pagination: EMPTY_PAGINATION };
+        });
+
+        const topRatedPromise = apiClient<PaginatedRestaurantsResponse>('/restaurants/paginated', {
+          params: { page: '1', limit: '16', sortBy: 'rating' },
+        }).catch((err: unknown) => {
+          console.warn('[HomePage] Failed to fetch top-rated restaurants:', err);
+          return { items: [], pagination: EMPTY_PAGINATION };
+        });
+
+        const featuredDishesPromise = apiClient<PaginatedFeaturedDishesResponse>(
+          '/restaurants/featured-dishes',
+          { params: { page: '1', limit: '8' } },
+        ).catch((err: unknown) => {
+          console.warn('[HomePage] Failed to fetch featured dishes:', err);
+          return { items: [], pagination: EMPTY_PAGINATION };
         });
 
         const addressesPromise = isAuthenticated
-          ? getUserAddresses().catch((err) => {
+          ? getUserAddresses().catch((err: unknown) => {
               console.warn('[HomePage] Failed to fetch user addresses:', err);
               return [];
             })
           : Promise.resolve([]);
 
         const ordersPromise = isAuthenticated
-          ? getOrderHistory().catch((err) => {
+          ? getOrderHistory().catch((err: unknown) => {
               console.warn('[HomePage] Failed to fetch order history:', err);
               return [];
             })
           : Promise.resolve([]);
 
-        const [restaurantsRes, addressesRes, ordersRes] = await Promise.all([
-          restaurantsPromise,
+        const [
+          categoriesRes,
+          gridRes,
+          promoRes,
+          topRatedRes,
+          featuredDishesRes,
+          addressesRes,
+          ordersRes,
+        ] = await Promise.all([
+          categoriesPromise,
+          gridPromise,
+          promoPromise,
+          topRatedPromise,
+          featuredDishesPromise,
           addressesPromise,
           ordersPromise,
         ]);
 
         if (!isMounted) return;
 
-        setRestaurants(restaurantsRes || []);
+        setCategories(Array.isArray(categoriesRes) ? categoriesRes : []);
+        setGridRestaurants(gridRes.items || []);
+        setGridPagination(gridRes.pagination || EMPTY_PAGINATION);
+        setTotalAllRestaurants(gridRes.pagination?.total || gridRes.items?.length || 0);
+        setPromoPool(promoRes.items || []);
+        setTopRatedPool(topRatedRes.items || []);
+        setFeaturedDishes(featuredDishesRes.items || []);
 
         if (addressesRes && addressesRes.length > 0) {
           syncUserAddresses(addressesRes);
@@ -100,46 +172,85 @@ export default function HomePage() {
       }
     };
 
-    fetchHomeData();
+    void fetchInitialHomeData();
 
     return () => {
       isMounted = false;
     };
   }, [isAuthenticated, syncUserAddresses]);
 
-  const enrichedRestaurants = useMemo(() => {
-    return enrichRestaurantsWithLocation(
-      restaurants,
+  const handleSelectCategory = useCallback(async (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setCategoryLoading(true);
+
+    const catParam = categoryId !== 'ALL' ? categoryId : undefined;
+    try {
+      const [gridRes, dishesRes] = await Promise.all([
+        apiClient<PaginatedRestaurantsResponse>('/restaurants/paginated', {
+          params: { page: '1', limit: '12', categoryId: catParam },
+        }),
+        apiClient<PaginatedFeaturedDishesResponse>('/restaurants/featured-dishes', {
+          params: { page: '1', limit: '8', categoryId: catParam },
+        }),
+      ]);
+      setGridRestaurants(gridRes.items || []);
+      setGridPagination(gridRes.pagination || EMPTY_PAGINATION);
+      setFeaturedDishes(dishesRes.items || []);
+    } catch (error: unknown) {
+      console.error('[HomePage] Failed to filter category:', error);
+    } finally {
+      setCategoryLoading(false);
+    }
+  }, []);
+
+  const selectedCategoryName = useMemo(() => {
+    if (selectedCategory === 'ALL') return 'Tất cả';
+    return categories.find((c) => c.id === selectedCategory)?.name ?? selectedCategory;
+  }, [categories, selectedCategory]);
+
+  const enrichedGridPage1 = useMemo(
+    () => enrichRestaurantsWithLocation(gridRestaurants, currentLocation.lat, currentLocation.lng),
+    [gridRestaurants, currentLocation.lat, currentLocation.lng],
+  );
+
+  const enrichedDiscoveryPool = useMemo(() => {
+    const merged = dedupeById(
+      dedupeById(gridRestaurants, topRatedPool),
+      promoPool,
+    );
+    return enrichRestaurantsWithLocation(merged, currentLocation.lat, currentLocation.lng);
+  }, [gridRestaurants, topRatedPool, promoPool, currentLocation.lat, currentLocation.lng]);
+
+  const nearYouRestaurants = useMemo(
+    () => filterNearYouRestaurants(enrichedDiscoveryPool, 3.5, 25),
+    [enrichedDiscoveryPool],
+  );
+
+  const promoRestaurants = useMemo(() => {
+    const enrichedPromo = enrichRestaurantsWithLocation(
+      promoPool,
       currentLocation.lat,
       currentLocation.lng,
     );
-  }, [restaurants, currentLocation.lat, currentLocation.lng]);
-
-  const nearYouRestaurants = useMemo(() => {
-    return filterNearYouRestaurants(enrichedRestaurants, 3.5, 25);
-  }, [enrichedRestaurants]);
-
-  const promoRestaurants = useMemo(() => {
-    return filterPromoRestaurants(enrichedRestaurants);
-  }, [enrichedRestaurants]);
+    return filterPromoRestaurants(enrichedPromo);
+  }, [promoPool, currentLocation.lat, currentLocation.lng]);
 
   const topRatedRestaurants = useMemo(() => {
-    return filterTopRatedRestaurants(enrichedRestaurants, 4.5);
-  }, [enrichedRestaurants]);
-
-  const categoryFilteredRestaurants = useMemo(() => {
-    return filterRestaurantsByCategory(enrichedRestaurants, selectedCategory);
-  }, [enrichedRestaurants, selectedCategory]);
+    const enrichedTop = enrichRestaurantsWithLocation(
+      topRatedPool,
+      currentLocation.lat,
+      currentLocation.lng,
+    );
+    return filterTopRatedRestaurants(enrichedTop, 4.5);
+  }, [topRatedPool, currentLocation.lat, currentLocation.lng]);
 
   const orderAgainRestaurants = useMemo(() => {
     if (!isAuthenticated || pastOrders.length === 0) return [];
-
     const orderedRestaurantIds = new Set(
       pastOrders.map((o) => o.restaurant_id).filter(Boolean),
     );
-
-    return enrichedRestaurants.filter((r) => orderedRestaurantIds.has(r.id));
-  }, [isAuthenticated, pastOrders, enrichedRestaurants]);
+    return enrichedDiscoveryPool.filter((r) => orderedRestaurantIds.has(r.id));
+  }, [isAuthenticated, pastOrders, enrichedDiscoveryPool]);
 
   const activeOrder = useMemo(() => {
     return pastOrders.find(
@@ -183,7 +294,7 @@ export default function HomePage() {
         {/* Hero Section */}
         <HeroSection
           onOpenLocationModal={() => setIsLocationModalOpen(true)}
-          totalRestaurantsCount={restaurants.length}
+          totalRestaurantsCount={totalAllRestaurants}
         />
 
         {loading ? (
@@ -196,10 +307,11 @@ export default function HomePage() {
           </div>
         ) : (
           <>
-            {/* Horizontal Category Pill Strip */}
+            {/* Horizontal Category Pill Strip synced with DB */}
             <CategoryStrip
+              categories={categories}
               selectedCategoryId={selectedCategory}
-              onSelectCategory={(id) => setSelectedCategory(id)}
+              onSelectCategory={(id) => void handleSelectCategory(id)}
             />
 
             {/* Promo Banner Carousel */}
@@ -211,13 +323,13 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" />
                   <span className="text-xs sm:text-sm font-medium text-foreground">
-                    Đang lọc món theo danh mục:{' '}
-                    <strong className="text-primary uppercase">{selectedCategory}</strong>
+                    Đang lọc theo danh mục:{' '}
+                    <strong className="text-primary">{selectedCategoryName}</strong>
                   </span>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setSelectedCategory('ALL')}
+                  onClick={() => void handleSelectCategory('ALL')}
                   className="text-xs font-bold text-primary hover:underline cursor-pointer"
                 >
                   Xóa bộ lọc
@@ -225,7 +337,15 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* 1. Đặt Lại Lần Nữa */}
+            {/* 1. Món Ngon Đang Hot (Featured Dishes Section on Homepage) */}
+            <FeaturedDishesSection
+              dishes={featuredDishes}
+              selectedCategoryId={selectedCategory}
+              selectedCategoryName={selectedCategoryName}
+              loading={categoryLoading}
+            />
+
+            {/* 2. Đặt Lại Lần Nữa */}
             {orderAgainRestaurants.length > 0 && (
               <RestaurantFeedSection
                 title={tHome('orderAgainTitle')}
@@ -238,7 +358,7 @@ export default function HomePage() {
               />
             )}
 
-            {/* 2. Gần Bạn Nhất */}
+            {/* 3. Gần Bạn Nhất */}
             <RestaurantFeedSection
               title={tHome('nearYouTitle')}
               subtitle={tHome('nearYouSubtitle')}
@@ -248,17 +368,17 @@ export default function HomePage() {
               viewAllHref="/menu?sort=distance"
             />
 
-            {/* 3. Đang Có Khuyến Mãi */}
+            {/* 4. Đang Có Khuyến Mãi */}
             <RestaurantFeedSection
               title={tHome('promoTitle')}
               subtitle={tHome('promoSubtitle')}
               icon={Tag}
               badge="HOT PROMO"
               restaurants={promoRestaurants}
-              viewAllHref="/menu?promo=true"
+              viewAllHref="/menu?promo=discount"
             />
 
-            {/* 4. Quán Ngon Nổi Bật */}
+            {/* 5. Quán Ngon Nổi Bật */}
             <RestaurantFeedSection
               title={tHome('topRatedTitle')}
               subtitle={tHome('topRatedSubtitle')}
@@ -268,10 +388,15 @@ export default function HomePage() {
               viewAllHref="/menu?sort=rating"
             />
 
-            {/* 5. Tất Cả Quán Ngon (Infinite Scroll Grid) */}
+            {/* 6. Tất Cả Quán Ngon (True Server-Backed Infinite Scroll Grid) */}
             <AllRestaurantsInfinite
-              restaurants={categoryFilteredRestaurants}
-              selectedCategoryName={selectedCategory}
+              initialRestaurants={enrichedGridPage1}
+              initialPagination={gridPagination}
+              selectedCategoryId={selectedCategory}
+              selectedCategoryName={selectedCategoryName}
+              userLat={currentLocation.lat}
+              userLng={currentLocation.lng}
+              initialLoading={categoryLoading}
             />
           </>
         )}

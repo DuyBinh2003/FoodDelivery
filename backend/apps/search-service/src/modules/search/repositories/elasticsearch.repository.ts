@@ -1,15 +1,53 @@
-import { Inject, Injectable, OnModuleInit, Logger, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  OnModuleInit,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
+import type { estypes } from '@elastic/elasticsearch';
+import type { MenuItemOptionGroup } from '@/modules/search/repositories/search.read.repository.js';
+
+type EsQueryParam = estypes.SearchRequest['query'];
+type EsSortParam = estypes.SearchRequest['sort'];
+type EsIndicesSettings = estypes.IndicesIndexSettings;
+type EsMappingType = estypes.MappingTypeMapping;
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const CATEGORY_SLUG_ALIASES: Record<string, string[]> = {
+  com: ['Cơm Tấm', 'Cơm'],
+  'com-tam': ['Cơm Tấm'],
+  'pho-bun': ['Phở', 'Bún Bò'],
+  pho: ['Phở'],
+  'bun-bo': ['Bún Bò'],
+  'tra-sua': ['Trà Sữa'],
+  'ga-ran': ['Gà Rán & Burger'],
+  'ga-ran-burger': ['Gà Rán & Burger'],
+  'banh-mi': ['Bánh Mì'],
+  'pizza-mi-y': ['Pizza & Mì Ý'],
+  'mon-chay': ['Món Chay'],
+  'ca-phe': ['Cà Phê & Bánh'],
+  'ca-phe-banh': ['Cà Phê & Bánh'],
+  'an-vat': ['Giải khát', 'Trà Sữa'],
+  'giai-khat': ['Giải khát'],
+};
 
 export interface RestaurantDocument {
   id: string;
   name: string;
+  address?: string;
+  banner_url?: string;
   location?: { lat: number; lon: number };
   rating?: number;
   total_reviews?: number;
   is_active?: boolean;
   categories?: string[];
+  category_ids?: string[];
   tags?: string[];
+  has_promo?: boolean;
+  max_discount_percent?: number;
   suggest?: string[];
 }
 
@@ -17,11 +55,20 @@ export interface MenuItemDocument {
   id: string;
   restaurant_id: string;
   restaurant_name: string;
+  restaurant_banner_url?: string;
+  restaurant_address?: string;
+  restaurant_total_reviews?: number;
+  category_id?: string;
+  category_name?: string;
   name: string;
   description?: string;
+  image_url?: string;
   price: number;
+  original_price?: number | null;
+  options?: MenuItemOptionGroup[];
   is_available: boolean;
   tags?: string[];
+  tag_ids?: string[];
   location?: { lat: number; lon: number };
   rating?: number;
   suggest?: string[];
@@ -39,6 +86,23 @@ export interface SearchRestaurantsParams {
   freeshipDistanceThreshold?: number;
   open_only?: boolean;
   sort_by?: 'relevance' | 'distance' | 'rating';
+  promo?: 'freeship' | 'discount' | 'true';
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedMenuItemsEsResult {
+  items: MenuItemDocument[];
+  pageRestaurantIds: string[];
+  restaurantsById: Map<string, RestaurantDocument>;
+  pagination: {
+    page: number;
+    limit: number;
+    totalRestaurants: number;
+    totalDishes: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
 }
 
 export interface SearchSuggestionsResult {
@@ -63,25 +127,25 @@ export class ElasticsearchRepository implements OnModuleInit {
   private readonly logger = new Logger(ElasticsearchRepository.name);
 
   constructor(
-    @Inject(ElasticsearchService) private readonly elasticsearchService: ElasticsearchService
+    @Inject(ElasticsearchService) private readonly elasticsearchService: ElasticsearchService,
   ) {}
 
   async onModuleInit(): Promise<void> {
     try {
       await this.createIndices();
-    } catch (e: unknown) {
-      const err = e as Error;
-      this.logger.warn(`Elasticsearch initial index check failed: ${err.message}. Retrying in 5s...`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Elasticsearch initial index check failed: ${msg}. Retrying in 5s...`);
       setTimeout(() => {
         this.createIndices().catch((retryErr: unknown) => {
-          this.logger.warn(`Retry creating indices failed:`, retryErr);
+          this.logger.warn('Retry creating indices failed:', retryErr);
         });
       }, 5000);
     }
 
     setTimeout(() => {
       this.syncFromRestaurantServiceIfEmpty().catch((syncErr: unknown) => {
-        this.logger.warn(`Background sync from restaurant-service failed:`, syncErr);
+        this.logger.warn('Background sync from restaurant-service failed:', syncErr);
       });
     }, 5000);
   }
@@ -113,29 +177,31 @@ export class ElasticsearchRepository implements OnModuleInit {
       },
     };
 
-    // 1. Index 'restaurants'
     const restaurantIndex = 'restaurants';
     const restExists = await this.elasticsearchService.indices.exists({ index: restaurantIndex });
     if (restExists) {
-      // Check if it has custom vi_analyzer; if not, recreate to upgrade mapping
       try {
-        const settings = await this.elasticsearchService.indices.getSettings({ index: restaurantIndex });
+        const settings = (await this.elasticsearchService.indices.getSettings({
+          index: restaurantIndex,
+        })) as unknown as Record<
+          string,
+          { settings?: { index?: { analysis?: { analyzer?: { vi_analyzer?: unknown } } } } }
+        >;
         const hasViAnalyzer = Boolean(
-          (settings as Record<string, any>)[restaurantIndex]?.settings?.index?.analysis?.analyzer?.vi_analyzer
+          settings[restaurantIndex]?.settings?.index?.analysis?.analyzer?.vi_analyzer,
         );
         if (!hasViAnalyzer) {
           this.logger.log(`Upgrading index "${restaurantIndex}" to include vi_analyzer...`);
           await this.elasticsearchService.indices.delete({ index: restaurantIndex });
           await this.createRestaurantIndex(restaurantIndex, analysisSettings);
         }
-      } catch (err) {
-        this.logger.warn(`Could not verify settings of ${restaurantIndex}:`, err);
+      } catch (error: unknown) {
+        this.logger.warn(`Could not verify settings of ${restaurantIndex}:`, error);
       }
     } else {
       await this.createRestaurantIndex(restaurantIndex, analysisSettings);
     }
 
-    // 2. Index 'menu_items'
     const menuIndex = 'menu_items';
     const menuExists = await this.elasticsearchService.indices.exists({ index: menuIndex });
     if (!menuExists) {
@@ -143,12 +209,15 @@ export class ElasticsearchRepository implements OnModuleInit {
     }
   }
 
-  private async createRestaurantIndex(indexName: string, analysisSettings: Record<string, unknown>): Promise<void> {
+  private async createRestaurantIndex(
+    indexName: string,
+    analysisSettings: Record<string, unknown>,
+  ): Promise<void> {
     await this.elasticsearchService.indices.create({
       index: indexName,
       settings: {
         analysis: analysisSettings,
-      },
+      } as unknown as EsIndicesSettings,
       mappings: {
         properties: {
           id: { type: 'keyword' },
@@ -160,30 +229,49 @@ export class ElasticsearchRepository implements OnModuleInit {
               keyword: { type: 'keyword' },
             },
           },
+          address: { type: 'text', analyzer: 'vi_analyzer' },
+          banner_url: { type: 'keyword', index: false },
           location: { type: 'geo_point' },
           rating: { type: 'float' },
           total_reviews: { type: 'integer' },
           is_active: { type: 'boolean' },
           categories: { type: 'keyword' },
+          category_ids: { type: 'keyword' },
           tags: { type: 'keyword' },
+          has_promo: { type: 'boolean' },
+          max_discount_percent: { type: 'integer' },
           suggest: { type: 'completion' },
         },
-      },
+      } as unknown as EsMappingType,
     });
     this.logger.log(`Index "${indexName}" created with Vietnamese analyzer & suggest mapping.`);
   }
 
-  private async createMenuItemIndex(indexName: string, analysisSettings: Record<string, unknown>): Promise<void> {
+  private async createMenuItemIndex(
+    indexName: string,
+    analysisSettings: Record<string, unknown>,
+  ): Promise<void> {
     await this.elasticsearchService.indices.create({
       index: indexName,
       settings: {
         analysis: analysisSettings,
-      },
+      } as unknown as EsIndicesSettings,
       mappings: {
         properties: {
           id: { type: 'keyword' },
           restaurant_id: { type: 'keyword' },
           restaurant_name: {
+            type: 'text',
+            analyzer: 'vi_analyzer',
+            fields: {
+              keyword: { type: 'keyword' },
+            },
+          },
+          restaurant_banner_url: { type: 'keyword', index: false },
+          restaurant_address: { type: 'text', analyzer: 'vi_analyzer' },
+          restaurant_total_reviews: { type: 'integer' },
+          category_id: { type: 'keyword' },
+          category_name: {
             type: 'text',
             analyzer: 'vi_analyzer',
             fields: {
@@ -199,21 +287,29 @@ export class ElasticsearchRepository implements OnModuleInit {
             },
           },
           description: { type: 'text', analyzer: 'vi_analyzer' },
+          image_url: { type: 'keyword', index: false },
           price: { type: 'double' },
+          original_price: { type: 'double' },
+          options: { type: 'object', enabled: false },
           is_available: { type: 'boolean' },
           tags: { type: 'keyword' },
+          tag_ids: { type: 'keyword' },
           location: { type: 'geo_point' },
           rating: { type: 'float' },
           suggest: { type: 'completion' },
         },
-      },
+      } as unknown as EsMappingType,
     });
     this.logger.log(`Index "${indexName}" created with Vietnamese analyzer & menu properties.`);
   }
 
   async syncAllRestaurants(): Promise<{ synced: number; error?: string }> {
     try {
-      const url = process.env.RESTAURANT_SERVICE_URL || 'http://localhost:4003';
+      const rawUrl = process.env.RESTAURANT_SERVICE_URL?.trim();
+      if (!rawUrl) {
+        throw new Error('[ConfigError] RESTAURANT_SERVICE_URL environment variable is required.');
+      }
+      const url = rawUrl.replace(/\/+$/, '');
       const res = await fetch(`${url}/restaurants`);
       if (!res.ok) return { synced: 0, error: `Restaurant service returned status ${res.status}` };
       const restaurants = (await res.json()) as Array<Record<string, unknown>>;
@@ -228,10 +324,15 @@ export class ElasticsearchRepository implements OnModuleInit {
         const lon = Number(r.lon);
         const rating = Number(r.rating) || 0;
         const name = String(r.name || '');
+        const address = r.address ? String(r.address) : undefined;
+        const bannerUrl = r.banner_url ? String(r.banner_url) : undefined;
+        const totalReviews = Number(r.total_reviews) || 0;
 
-        const categories = Array.isArray(r.categories)
-          ? (r.categories as Array<{ name?: string; id?: string }>).map((c) => c.name || c.id || '')
+        const rawCategories = Array.isArray(r.categories)
+          ? (r.categories as Array<{ name?: string; id?: string }>)
           : [];
+        const categories = rawCategories.map((c) => c.name || c.id || '').filter(Boolean);
+        const categoryIds = rawCategories.map((c) => c.id || '').filter(Boolean);
 
         const tags = Array.isArray(r.tags)
           ? (r.tags as Array<{ name?: string; id?: string }>).map((t) => t.name || t.id || '')
@@ -240,36 +341,65 @@ export class ElasticsearchRepository implements OnModuleInit {
         await this.indexRestaurant({
           id: restId,
           name,
-          location: !isNaN(lat) && !isNaN(lon) ? { lat, lon } : undefined,
+          address,
+          banner_url: bannerUrl,
+          location: !Number.isNaN(lat) && !Number.isNaN(lon) ? { lat, lon } : undefined,
           rating,
+          total_reviews: totalReviews,
           is_active: r.is_active !== false,
           categories,
+          category_ids: categoryIds,
           tags,
+          has_promo: Boolean(r.has_promo),
+          max_discount_percent: Number(r.max_discount_percent) || 0,
           suggest: [name],
         });
         syncedRestaurants++;
 
-        // Fetch and index menu items for this restaurant
         try {
           const menuRes = await fetch(`${url}/restaurants/${restId}/menu-items`);
           if (menuRes.ok) {
             const menuItems = (await menuRes.json()) as Array<Record<string, unknown>>;
             if (Array.isArray(menuItems)) {
               for (const item of menuItems) {
-                const itemTags = Array.isArray(item.tags)
-                  ? (item.tags as Array<{ name?: string; id?: string }>).map((t) => t.name || t.id || '')
+                const rawTags = Array.isArray(item.tags)
+                  ? (item.tags as Array<{ name?: string; id?: string }>)
                   : [];
+                const itemTags = rawTags.map((t) => t.name || t.id || '').filter(Boolean);
+                const itemTagIds = rawTags.map((t) => t.id || '').filter(Boolean);
+                const catObj = item.category as { id?: string; name?: string } | undefined;
+                const categoryId = item.category_id
+                  ? String(item.category_id)
+                  : catObj?.id
+                    ? String(catObj.id)
+                    : undefined;
+                const categoryName = catObj?.name ? String(catObj.name) : undefined;
+                const originalPrice =
+                  item.original_price !== null && item.original_price !== undefined
+                    ? Number(item.original_price)
+                    : null;
 
                 await this.indexMenuItem({
                   id: String(item.id),
                   restaurant_id: restId,
                   restaurant_name: name,
+                  restaurant_banner_url: bannerUrl,
+                  restaurant_address: address,
+                  restaurant_total_reviews: totalReviews,
+                  category_id: categoryId,
+                  category_name: categoryName,
                   name: String(item.name || ''),
                   description: item.description ? String(item.description) : undefined,
+                  image_url: item.image_url ? String(item.image_url) : undefined,
                   price: Number(item.price) || 0,
+                  original_price: originalPrice,
+                  options: Array.isArray(item.options)
+                    ? (item.options as MenuItemOptionGroup[])
+                    : [],
                   is_available: item.is_available !== false,
                   tags: itemTags,
-                  location: !isNaN(lat) && !isNaN(lon) ? { lat, lon } : undefined,
+                  tag_ids: itemTagIds,
+                  location: !Number.isNaN(lat) && !Number.isNaN(lon) ? { lat, lon } : undefined,
                   rating,
                   suggest: [String(item.name || '')],
                 });
@@ -277,17 +407,19 @@ export class ElasticsearchRepository implements OnModuleInit {
               }
             }
           }
-        } catch (menuErr) {
+        } catch (menuErr: unknown) {
           this.logger.warn(`Failed to fetch menu items for restaurant ${restId}:`, menuErr);
         }
       }
 
-      this.logger.log(`Synced ${syncedRestaurants} restaurants and ${syncedMenuItems} menu items to Elasticsearch.`);
+      this.logger.log(
+        `Synced ${syncedRestaurants} restaurants and ${syncedMenuItems} menu items to Elasticsearch.`,
+      );
       return { synced: syncedRestaurants };
-    } catch (e: unknown) {
-      const err = e as Error;
-      this.logger.error(`Error in syncAllRestaurants: ${err.message}`, err.stack);
-      return { synced: 0, error: err.message };
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error in syncAllRestaurants: ${msg}`, error instanceof Error ? error.stack : undefined);
+      return { synced: 0, error: msg };
     }
   }
 
@@ -303,8 +435,8 @@ export class ElasticsearchRepository implements OnModuleInit {
           this.logger.log(`[SearchService] Auto-sync finished: synced ${result.synced} restaurants.`);
         }
       }
-    } catch (err) {
-      this.logger.warn('Failed during syncFromRestaurantServiceIfEmpty:', err);
+    } catch (error: unknown) {
+      this.logger.warn('Failed during syncFromRestaurantServiceIfEmpty:', error);
     }
   }
 
@@ -315,12 +447,17 @@ export class ElasticsearchRepository implements OnModuleInit {
       document: {
         id: restaurant.id,
         name: restaurant.name,
+        address: restaurant.address,
+        banner_url: restaurant.banner_url,
         location: restaurant.location,
         rating: restaurant.rating ?? 0,
         total_reviews: restaurant.total_reviews ?? 0,
         is_active: restaurant.is_active ?? true,
         categories: restaurant.categories ?? [],
+        category_ids: restaurant.category_ids ?? [],
         tags: restaurant.tags ?? [],
+        has_promo: restaurant.has_promo ?? false,
+        max_discount_percent: restaurant.max_discount_percent ?? 0,
         suggest: restaurant.suggest || [restaurant.name],
       },
     });
@@ -334,11 +471,20 @@ export class ElasticsearchRepository implements OnModuleInit {
         id: item.id,
         restaurant_id: item.restaurant_id,
         restaurant_name: item.restaurant_name,
+        restaurant_banner_url: item.restaurant_banner_url,
+        restaurant_address: item.restaurant_address,
+        restaurant_total_reviews: item.restaurant_total_reviews ?? 0,
+        category_id: item.category_id,
+        category_name: item.category_name,
         name: item.name,
         description: item.description,
+        image_url: item.image_url,
         price: item.price,
+        original_price: item.original_price ?? null,
+        options: item.options ?? [],
         is_available: item.is_available,
         tags: item.tags ?? [],
+        tag_ids: item.tag_ids ?? [],
         location: item.location,
         rating: item.rating ?? 0,
         suggest: item.suggest || [item.name],
@@ -355,7 +501,7 @@ export class ElasticsearchRepository implements OnModuleInit {
       });
       this.logger.log(`Updated Elasticsearch rating for restaurant ${id} to ${rating}`);
     } catch (error: unknown) {
-      const err = error as { meta?: { statusCode?: number }; statusCode?: number; message?: string };
+      const err = error as { meta?: { statusCode?: number }; statusCode?: number };
       if (err?.meta?.statusCode === 404 || err?.statusCode === 404) {
         this.logger.debug(`Restaurant ${id} not found in Elasticsearch index to update rating`);
       } else {
@@ -373,7 +519,7 @@ export class ElasticsearchRepository implements OnModuleInit {
       });
       this.logger.log(`[CQRS Projection] Updated menu_item doc ${id}`, data);
     } catch (error: unknown) {
-      const err = error as { meta?: { statusCode?: number }; statusCode?: number; message?: string };
+      const err = error as { meta?: { statusCode?: number }; statusCode?: number };
       if (err?.meta?.statusCode === 404 || err?.statusCode === 404) {
         this.logger.debug(`MenuItem ${id} not found in Elasticsearch index to update projection`);
       } else {
@@ -391,7 +537,7 @@ export class ElasticsearchRepository implements OnModuleInit {
       });
       this.logger.log(`[CQRS Projection] Updated restaurant doc ${id}`, data);
     } catch (error: unknown) {
-      const err = error as { meta?: { statusCode?: number }; statusCode?: number; message?: string };
+      const err = error as { meta?: { statusCode?: number }; statusCode?: number };
       if (err?.meta?.statusCode === 404 || err?.statusCode === 404) {
         this.logger.debug(`Restaurant ${id} not found in Elasticsearch index to update projection`);
       } else {
@@ -407,13 +553,146 @@ export class ElasticsearchRepository implements OnModuleInit {
         id,
       });
     } catch (error: unknown) {
-      const err = error as { meta?: { statusCode?: number }; statusCode?: number; message?: string };
+      const err = error as { meta?: { statusCode?: number }; statusCode?: number };
       if (err?.meta?.statusCode === 404 || err?.statusCode === 404) {
         this.logger.debug(`Restaurant ${id} not found in Elasticsearch index, skipping removal`);
       } else {
         this.logger.warn(`Failed to remove restaurant ${id} from Elasticsearch index:`, error);
       }
     }
+  }
+
+  private buildCategoryShouldClauses(rawCategories: string[]): Array<Record<string, unknown>> {
+    const uuids: string[] = [];
+    const names = new Set<string>();
+
+    for (const raw of rawCategories) {
+      const trimmed = raw.trim();
+      if (!trimmed || trimmed.toUpperCase() === 'ALL') continue;
+      if (UUID_REGEX.test(trimmed)) {
+        uuids.push(trimmed);
+      } else {
+        const lower = trimmed.toLowerCase();
+        const aliasNames = CATEGORY_SLUG_ALIASES[lower];
+        if (aliasNames) {
+          for (const alias of aliasNames) {
+            names.add(alias);
+          }
+        } else {
+          names.add(trimmed);
+        }
+      }
+    }
+
+    const shouldClauses: Array<Record<string, unknown>> = [];
+    if (uuids.length > 0) {
+      shouldClauses.push({ terms: { category_id: uuids } });
+    }
+    if (names.size > 0) {
+      shouldClauses.push({ terms: { 'category_name.keyword': Array.from(names) } });
+    }
+    return shouldClauses;
+  }
+
+  private buildTagShouldClauses(rawTags: string[]): Array<Record<string, unknown>> {
+    const uuids: string[] = [];
+    const names: string[] = [];
+
+    for (const raw of rawTags) {
+      const trimmed = raw.trim();
+      if (!trimmed) continue;
+      if (UUID_REGEX.test(trimmed)) {
+        uuids.push(trimmed);
+      } else {
+        names.push(trimmed);
+      }
+    }
+
+    const shouldClauses: Array<Record<string, unknown>> = [];
+    if (uuids.length > 0) {
+      shouldClauses.push({ terms: { tag_ids: uuids } });
+    }
+    if (names.length > 0) {
+      shouldClauses.push({ terms: { tags: names } });
+    }
+    return shouldClauses;
+  }
+
+  private buildMenuItemQueryParts(params: SearchRestaurantsParams): {
+    mustClauses: Array<Record<string, unknown>>;
+    filterClauses: Array<Record<string, unknown>>;
+  } {
+    const mustClauses: Array<Record<string, unknown>> = [];
+    const filterClauses: Array<Record<string, unknown>> = [];
+
+    filterClauses.push({ term: { is_available: true } });
+
+    if (params.q && params.q.trim()) {
+      mustClauses.push({
+        multi_match: {
+          query: params.q.trim(),
+          fields: ['name^3', 'name.autocomplete^2', 'restaurant_name^2', 'category_name^1.5', 'description'],
+          fuzziness: 'AUTO',
+        },
+      });
+    }
+
+    if (params.categories && params.categories.length > 0) {
+      const catShould = this.buildCategoryShouldClauses(params.categories);
+      if (catShould.length > 0) {
+        filterClauses.push({
+          bool: {
+            should: catShould,
+            minimum_should_match: 1,
+          },
+        });
+      }
+    }
+
+    if (params.tags && params.tags.length > 0) {
+      const tagShould = this.buildTagShouldClauses(params.tags);
+      if (tagShould.length > 0) {
+        filterClauses.push({
+          bool: {
+            should: tagShould,
+            minimum_should_match: 1,
+          },
+        });
+      }
+    }
+
+    if (params.promo === 'discount' || params.promo === 'true') {
+      filterClauses.push({
+        script: {
+          script: {
+            source:
+              "doc['original_price'].size() > 0 && doc['price'].size() > 0 && doc['original_price'].value > doc['price'].value",
+            lang: 'painless',
+          },
+        },
+      });
+    }
+
+    const hasGeo =
+      params.lat !== undefined &&
+      params.lon !== undefined &&
+      !Number.isNaN(params.lat) &&
+      !Number.isNaN(params.lon);
+
+    if (hasGeo) {
+      const radius =
+        params.promo === 'freeship' || params.freeship
+          ? `${params.freeshipDistanceThreshold ?? 2}km`
+          : params.radius || '10km';
+      filterClauses.push({
+        geo_distance: {
+          distance: radius,
+          location: { lat: params.lat, lon: params.lon },
+        },
+      });
+    }
+
+    return { mustClauses, filterClauses };
   }
 
   /**
@@ -447,9 +726,17 @@ export class ElasticsearchRepository implements OnModuleInit {
       }
 
       if (params.categories && params.categories.length > 0) {
-        filterClauses.push({
-          terms: { categories: params.categories },
+        const uuids = params.categories.filter((c) => UUID_REGEX.test(c.trim()));
+        const expandedNames = params.categories.flatMap((c) => {
+          const lower = c.trim().toLowerCase();
+          return CATEGORY_SLUG_ALIASES[lower] ?? [c.trim()];
         });
+        const should: Array<Record<string, unknown>> = [];
+        if (uuids.length > 0) should.push({ terms: { category_ids: uuids } });
+        if (expandedNames.length > 0) should.push({ terms: { categories: expandedNames } });
+        if (should.length > 0) {
+          filterClauses.push({ bool: { should, minimum_should_match: 1 } });
+        }
       }
 
       if (params.tags && params.tags.length > 0) {
@@ -458,11 +745,19 @@ export class ElasticsearchRepository implements OnModuleInit {
         });
       }
 
-      const hasGeo = params.lat !== undefined && params.lon !== undefined && !isNaN(params.lat) && !isNaN(params.lon);
+      if (params.promo === 'discount' || params.promo === 'true') {
+        filterClauses.push({ term: { has_promo: true } });
+      }
+
+      const hasGeo =
+        params.lat !== undefined &&
+        params.lon !== undefined &&
+        !Number.isNaN(params.lat) &&
+        !Number.isNaN(params.lon);
 
       if (hasGeo) {
         let finalRadius = params.radius || '10km';
-        if (params.freeship && params.freeshipDistanceThreshold !== undefined) {
+        if ((params.freeship || params.promo === 'freeship') && params.freeshipDistanceThreshold !== undefined) {
           finalRadius = `${params.freeshipDistanceThreshold}km`;
         }
 
@@ -484,7 +779,6 @@ export class ElasticsearchRepository implements OnModuleInit {
         },
       };
 
-      // Relevance vs Distance vs Rating sorting
       let query: Record<string, unknown> = baseQuery;
       let sort: Array<Record<string, unknown>> | undefined;
 
@@ -511,93 +805,62 @@ export class ElasticsearchRepository implements OnModuleInit {
             },
           });
         }
-      } else {
-        // Multi-Factor Geo-Relevance Ranking via function_score
-        if (hasGeo) {
-          query = {
-            function_score: {
-              query: baseQuery,
-              functions: [
-                {
-                  gauss: {
-                    location: {
-                      origin: { lat: params.lat, lon: params.lon },
-                      scale: '3km',
-                      decay: 0.5,
-                    },
+      } else if (hasGeo) {
+        query = {
+          function_score: {
+            query: baseQuery,
+            functions: [
+              {
+                gauss: {
+                  location: {
+                    origin: { lat: params.lat, lon: params.lon },
+                    scale: '3km',
+                    decay: 0.5,
                   },
-                  weight: 2.0,
                 },
-                {
-                  field_value_factor: {
-                    field: 'rating',
-                    factor: 1.2,
-                    modifier: 'sqrt',
-                    missing: 3.0,
-                  },
-                  weight: 1.5,
+                weight: 2.0,
+              },
+              {
+                field_value_factor: {
+                  field: 'rating',
+                  factor: 1.2,
+                  modifier: 'sqrt',
+                  missing: 3.0,
                 },
-              ],
-              score_mode: 'multiply',
-              boost_mode: 'multiply',
-            },
-          };
-          sort = [{ _score: { order: 'desc' } }];
-        }
+                weight: 1.5,
+              },
+            ],
+            score_mode: 'multiply',
+            boost_mode: 'multiply',
+          },
+        };
+        sort = [{ _score: { order: 'desc' } }];
       }
 
       const searchRes = await this.elasticsearchService.search<RestaurantDocument>({
         index: 'restaurants',
-        query: query as any,
-        sort: sort as any,
+        query: query as unknown as EsQueryParam,
+        sort: sort as unknown as EsSortParam,
         size: 50,
       });
 
       return searchRes.hits.hits.map((hit) => hit._source as RestaurantDocument).filter(Boolean);
-    } catch (e: unknown) {
-      const err = e as Error;
-      this.logger.error(`searchRestaurants failed: ${err.message}`, err.stack);
-      throw new ServiceUnavailableException(`Search query failed: ${err.message}`, { cause: err });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `searchRestaurants failed: ${msg}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new ServiceUnavailableException(`Search query failed: ${msg}`, { cause: error });
     }
   }
 
   /**
-   * Search menu items directly in Elasticsearch
+   * Search menu items directly in Elasticsearch (legacy non-paginated)
    */
   async searchMenuItems(params: SearchRestaurantsParams): Promise<MenuItemDocument[]> {
     try {
-      const mustClauses: Array<Record<string, unknown>> = [];
-      const filterClauses: Array<Record<string, unknown>> = [];
-
-      filterClauses.push({ term: { is_available: true } });
-
-      if (params.q && params.q.trim()) {
-        mustClauses.push({
-          multi_match: {
-            query: params.q.trim(),
-            fields: ['name^3', 'name.autocomplete^2', 'restaurant_name^2', 'description'],
-            fuzziness: 'AUTO',
-          },
-        });
-      }
-
-      if (params.tags && params.tags.length > 0) {
-        filterClauses.push({
-          terms: { tags: params.tags },
-        });
-      }
-
-      const hasGeo = params.lat !== undefined && params.lon !== undefined && !isNaN(params.lat) && !isNaN(params.lon);
-
-      if (hasGeo) {
-        const radius = params.radius || '10km';
-        filterClauses.push({
-          geo_distance: {
-            distance: radius,
-            location: { lat: params.lat, lon: params.lon },
-          },
-        });
-      }
+      const { mustClauses, filterClauses } = this.buildMenuItemQueryParts(params);
 
       const baseQuery = {
         bool: {
@@ -608,15 +871,174 @@ export class ElasticsearchRepository implements OnModuleInit {
 
       const searchRes = await this.elasticsearchService.search<MenuItemDocument>({
         index: 'menu_items',
-        query: baseQuery as any,
-        size: 60,
+        query: baseQuery as unknown as EsQueryParam,
+        size: 120,
       });
 
       return searchRes.hits.hits.map((hit) => hit._source as MenuItemDocument).filter(Boolean);
-    } catch (e: unknown) {
-      const err = e as Error;
-      this.logger.error(`searchMenuItems failed: ${err.message}`, err.stack);
-      throw new ServiceUnavailableException(`Menu search failed: ${err.message}`, { cause: err });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `searchMenuItems failed: ${msg}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new ServiceUnavailableException(`Menu search failed: ${msg}`, { cause: error });
+    }
+  }
+
+  /**
+   * Paginated Section-Aware Search: Collapse by restaurant_id so a restaurant's menu is never split across pages
+   */
+  async searchMenuItemsPaginated(
+    params: SearchRestaurantsParams,
+  ): Promise<PaginatedMenuItemsEsResult> {
+    const page = Math.max(1, Math.floor(Number(params.page) || 1));
+    const limit = Math.min(30, Math.max(1, Math.floor(Number(params.limit) || 8)));
+
+    try {
+      const { mustClauses, filterClauses } = this.buildMenuItemQueryParts(params);
+      const baseQuery = {
+        bool: {
+          must: mustClauses.length > 0 ? mustClauses : [{ match_all: {} }],
+          filter: filterClauses,
+        },
+      };
+
+      const sort: Array<Record<string, unknown>> = [];
+      if (params.sort_by === 'rating') {
+        sort.push({ rating: { order: 'desc' } });
+      } else if (
+        params.sort_by === 'distance' &&
+        params.lat !== undefined &&
+        params.lon !== undefined
+      ) {
+        sort.push({
+          _geo_distance: {
+            location: { lat: params.lat, lon: params.lon },
+            order: 'asc',
+            unit: 'km',
+            ignore_unmapped: true,
+          },
+        });
+      }
+
+      const collapseRes = await this.elasticsearchService.search<MenuItemDocument>({
+        index: 'menu_items',
+        query: baseQuery as unknown as EsQueryParam,
+        collapse: { field: 'restaurant_id' },
+        from: (page - 1) * limit,
+        size: limit,
+        track_total_hits: true,
+        ...(sort.length > 0 ? { sort: sort as unknown as EsSortParam } : {}),
+        aggs: {
+          total_restaurants: {
+            cardinality: { field: 'restaurant_id' },
+          },
+        },
+      });
+
+      const rawTotal = collapseRes.hits.total;
+      const totalDishes =
+        typeof rawTotal === 'number' ? rawTotal : Number(rawTotal?.value ?? 0);
+
+      const pageRestaurantIds: string[] = [];
+      const seenRestIds = new Set<string>();
+      for (const hit of collapseRes.hits.hits) {
+        const restId = hit._source?.restaurant_id;
+        if (restId && !seenRestIds.has(restId)) {
+          seenRestIds.add(restId);
+          pageRestaurantIds.push(restId);
+        }
+      }
+
+      const aggTotalRestaurants = Number(
+        (collapseRes.aggregations?.total_restaurants as { value?: number } | undefined)?.value ??
+          pageRestaurantIds.length,
+      );
+      const totalRestaurants = Math.max(aggTotalRestaurants, pageRestaurantIds.length);
+      const totalPages = totalRestaurants === 0 ? 0 : Math.ceil(totalRestaurants / limit);
+      const hasMore = page * limit < totalRestaurants;
+
+      if (pageRestaurantIds.length === 0) {
+        return {
+          items: [],
+          pageRestaurantIds: [],
+          restaurantsById: new Map(),
+          pagination: {
+            page,
+            limit,
+            totalRestaurants: 0,
+            totalDishes: 0,
+            totalPages: 0,
+            hasMore: false,
+          },
+        };
+      }
+
+      const itemsQuery = {
+        bool: {
+          must: mustClauses.length > 0 ? mustClauses : [{ match_all: {} }],
+          filter: [...filterClauses, { terms: { restaurant_id: pageRestaurantIds } }],
+        },
+      };
+
+      const [itemsRes, restMetaRes] = await Promise.all([
+        this.elasticsearchService.search<MenuItemDocument>({
+          index: 'menu_items',
+          query: itemsQuery as unknown as EsQueryParam,
+          size: 500,
+          track_total_hits: false,
+        }),
+        this.elasticsearchService
+          .search<RestaurantDocument>({
+            index: 'restaurants',
+            query: {
+              terms: { id: pageRestaurantIds },
+            } as unknown as EsQueryParam,
+            size: pageRestaurantIds.length,
+          })
+          .catch((restMetaErr: unknown) => {
+            this.logger.warn('Failed to load restaurant metadata batch from ES:', restMetaErr);
+            return null;
+          }),
+      ]);
+
+      const restaurantsById = new Map<string, RestaurantDocument>();
+      if (restMetaRes) {
+        for (const hit of restMetaRes.hits.hits) {
+          const doc = hit._source;
+          if (doc?.id) {
+            restaurantsById.set(doc.id, doc);
+          }
+        }
+      }
+
+      const items = itemsRes.hits.hits
+        .map((hit) => hit._source as MenuItemDocument)
+        .filter(Boolean);
+
+      return {
+        items,
+        pageRestaurantIds,
+        restaurantsById,
+        pagination: {
+          page,
+          limit,
+          totalRestaurants,
+          totalDishes,
+          totalPages,
+          hasMore,
+        },
+      };
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `searchMenuItemsPaginated failed: ${msg}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new ServiceUnavailableException(`Paginated menu search failed: ${msg}`, {
+        cause: error,
+      });
     }
   }
 
@@ -630,7 +1052,6 @@ export class ElasticsearchRepository implements OnModuleInit {
     }
 
     try {
-      // 1. Query restaurants matching prefix
       const restPromise = this.elasticsearchService.search<RestaurantDocument>({
         index: 'restaurants',
         query: {
@@ -650,7 +1071,6 @@ export class ElasticsearchRepository implements OnModuleInit {
         size: 5,
       });
 
-      // 2. Query dishes matching prefix
       const menuPromise = this.elasticsearchService.search<MenuItemDocument>({
         index: 'menu_items',
         query: {
@@ -708,21 +1128,29 @@ export class ElasticsearchRepository implements OnModuleInit {
         dishes,
         restaurants,
       };
-    } catch (e: unknown) {
-      const err = e as Error;
-      this.logger.warn(`getSuggestions query error: ${err.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`getSuggestions query error: ${msg}`);
       return { keywords: [], dishes: [], restaurants: [] };
     }
   }
 }
 
-function calculateHaversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth's radius in km
+export function calculateHaversineKm(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return Math.round(R * c * 10) / 10;
 }

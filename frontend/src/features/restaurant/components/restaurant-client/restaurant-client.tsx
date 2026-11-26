@@ -45,8 +45,8 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
       .then((res) => {
         if (!ignore) setOperatingStatus(res);
       })
-      .catch(() => {
-        // Fallback: Quán mở cửa nếu không kiểm tra được
+      .catch((error: unknown) => {
+        console.warn('[RestaurantClient] Operating status check failed:', error);
       });
     return () => {
       ignore = true;
@@ -105,9 +105,9 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
     return result;
   }, [filteredItems]);
 
-  // Derive selected item from URL query param or manual click
+  // Derive selected item from URL query param (?item=<id> or ?dish=<id>) or manual click
   const itemFromUrl = useMemo(() => {
-    const itemId = searchParams.get('item');
+    const itemId = searchParams.get('item') || searchParams.get('dish');
     return itemId ? menuItems.find((i) => i.id === itemId) || null : null;
   }, [searchParams, menuItems]);
 
@@ -116,7 +116,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
 
   const handleCloseDialog = () => {
     setManuallySelectedItem(null);
-    if (searchParams.get('item')) {
+    if (searchParams.get('item') || searchParams.get('dish')) {
       router.replace(pathname, { scroll: false });
     }
   };
@@ -348,6 +348,7 @@ export function RestaurantClient({ restaurant, menuItems }: RestaurantClientProp
                       item={item}
                       index={catIdx * 10 + index}
                       mode="restaurant"
+                      priority={catIdx === 0 && index < 4}
                       isRestaurantClosed={!restaurant.is_active}
                       onSelect={handleOpenItem}
                     />

@@ -16,6 +16,8 @@ import { RestaurantWriteRepository } from '@/modules/restaurants/repositories/re
 
 import { CreateRestaurantUseCase } from '@/modules/restaurants/usecases/create-restaurant.usecase.js';
 import { GetRestaurantsUseCase } from '@/modules/restaurants/usecases/get-restaurants.usecase.js';
+import { GetPaginatedRestaurantsUseCase } from '@/modules/restaurants/usecases/get-paginated-restaurants.usecase.js';
+import { GetFeaturedDishesUseCase } from '@/modules/restaurants/usecases/get-featured-dishes.usecase.js';
 import { GetRestaurantUseCase } from '@/modules/restaurants/usecases/get-restaurant.usecase.js';
 import { UpdateRestaurantUseCase } from '@/modules/restaurants/usecases/update-restaurant.usecase.js';
 import { DeleteRestaurantUseCase } from '@/modules/restaurants/usecases/delete-restaurant.usecase.js';
@@ -51,6 +53,8 @@ import { StorageModule } from '@/common/storage/index.js';
     JwtStrategy,
     CreateRestaurantUseCase,
     GetRestaurantsUseCase,
+    GetPaginatedRestaurantsUseCase,
+    GetFeaturedDishesUseCase,
     GetRestaurantUseCase,
     UpdateRestaurantUseCase,
     DeleteRestaurantUseCase,
@@ -76,6 +80,8 @@ import { StorageModule } from '@/common/storage/index.js';
     RestaurantWriteRepository,
     CreateRestaurantUseCase,
     GetRestaurantsUseCase,
+    GetPaginatedRestaurantsUseCase,
+    GetFeaturedDishesUseCase,
     GetRestaurantUseCase,
     UpdateRestaurantUseCase,
     DeleteRestaurantUseCase,

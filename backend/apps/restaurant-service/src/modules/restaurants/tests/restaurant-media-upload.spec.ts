@@ -53,6 +53,8 @@ describe('Restaurant Media Upload Flow', () => {
       {} as any, // updateOperatingHoursUseCase
       {} as any, // checkOperatingStatusUseCase
       mockS3StorageService as unknown as S3StorageService,
+      {} as any, // getPaginatedRestaurantsUseCase
+      {} as any, // getFeaturedDishesUseCase
     );
   });
 

@@ -11,6 +11,13 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import type { MenuSection } from '../types/index.ts';
 import type { MenuItem } from '../../menu/types/index.ts';
+import {
+  formatRestaurantReviewMeta,
+  mergePaginatedMenuSections,
+  normalizeMenuItemTags,
+  normalizePaginatedMenuResponse,
+  resolveCategoryMatch,
+} from '../utils/menu-catalog.utils.ts';
 
 // Helper: Sắp xếp các items trong MenuSection
 export function sortMenuSectionItems(
@@ -185,6 +192,42 @@ describe('Menu Catalog Suite (#86 - Remake /menu UI)', () => {
     it('[Branch: Error] Tìm kiếm từ khóa hoàn toàn không tồn tại trả về mảng rỗng (Empty State)', () => {
       const filtered = filterMenuItemsByKeyword(mockSections, 'mon_khong_ton_tai_xyz');
       assert.strictEqual(filtered.length, 0);
+    });
+
+    it('[Branch: Happy/Edge/Error] Hợp nhất section phân trang không trùng lặp, hiển thị review thật (không fake 4.8) & chuẩn hóa tags', () => {
+      const merged = mergePaginatedMenuSections(
+        [{ restaurant: 'Quán A', restaurant_id: 'r-a', items: [mockMenuItem1] }],
+        [
+          { restaurant: 'Quán A', restaurant_id: 'r-a', items: [mockMenuItem1, mockMenuItem2] },
+          { restaurant: 'Quán B', restaurant_id: 'r-b', items: [mockMenuItem3] },
+        ],
+      );
+      assert.strictEqual(merged.length, 2);
+      assert.strictEqual(merged[0].items.length, 2);
+
+      // Edge: rating=0, totalReviews=0 => Quán mới, không fake 4.8 (100+)
+      assert.deepStrictEqual(formatRestaurantReviewMeta(0, 0), {
+        ratingLabel: 'Quán mới',
+        reviewsLabel: null,
+      });
+      assert.deepStrictEqual(formatRestaurantReviewMeta(4.75, 38), {
+        ratingLabel: '4.8',
+        reviewsLabel: '(38 đánh giá)',
+      });
+
+      assert.strictEqual(
+        resolveCategoryMatch('tra-sua', { id: 'c0-uuid', name: 'Trà Sữa' }),
+        true,
+      );
+      assert.deepStrictEqual(normalizeMenuItemTags(['Bán Chạy', { id: 't1', name: 'Cay' }]), [
+        { id: 'Bán Chạy', name: 'Bán Chạy' },
+        { id: 't1', name: 'Cay' },
+      ]);
+
+      // Error/Fallback: payload rỗng hoặc undefined không crash normalizePaginatedMenuResponse
+      const safeEmpty = normalizePaginatedMenuResponse(undefined, 1, 8);
+      assert.strictEqual(safeEmpty.sections.length, 0);
+      assert.strictEqual(safeEmpty.pagination.hasMore, false);
     });
   });
 });

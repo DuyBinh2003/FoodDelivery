@@ -4,54 +4,91 @@ import type {
   Tag,
   MenuSection,
   MenuSearchParams,
+  PaginatedMenuResponse,
   SearchSuggestionResult,
 } from '@/features/search/types';
+import { normalizePaginatedMenuResponse } from '@/features/search/utils/menu-catalog.utils';
 
 /**
  * Server-side: Fetch danh sách categories.
- * Dùng Next.js revalidate để cache 60 giây.
  */
 export async function getCategories(): Promise<Category[]> {
-  return await apiClient<Category[]>('/api/search/categories', {
-    next: { revalidate: 60 } as NextFetchRequestConfig,
-  });
+  try {
+    return await apiClient<Category[]>('/api/search/categories', {
+      next: { revalidate: 60 } as NextFetchRequestConfig,
+    });
+  } catch (error: unknown) {
+    console.warn('[SearchAPI] Failed to fetch categories from search-service:', error);
+    return [];
+  }
 }
 
 /**
  * Server-side: Fetch danh sách tags.
- * Dùng Next.js revalidate để cache 60 giây.
  */
 export async function getTags(): Promise<Tag[]> {
-  return await apiClient<Tag[]>('/api/search/tags', {
-    next: { revalidate: 60 } as NextFetchRequestConfig,
-  });
+  try {
+    return await apiClient<Tag[]>('/api/search/tags', {
+      next: { revalidate: 60 } as NextFetchRequestConfig,
+    });
+  } catch (error: unknown) {
+    console.warn('[SearchAPI] Failed to fetch tags from search-service:', error);
+    return [];
+  }
+}
+
+function buildSearchQueryParams(
+  searchParams?: MenuSearchParams,
+): Record<string, string | undefined> {
+  return {
+    q: searchParams?.q,
+    category: searchParams?.category,
+    tag: searchParams?.tag,
+    promo: searchParams?.promo,
+    lat: searchParams?.lat !== undefined ? String(searchParams.lat) : undefined,
+    lon: searchParams?.lon !== undefined ? String(searchParams.lon) : undefined,
+    radius: searchParams?.radius,
+    sort_by: searchParams?.sort_by,
+    open_only: searchParams?.open_only ? 'true' : undefined,
+    page: searchParams?.page !== undefined ? String(searchParams.page) : undefined,
+    limit: searchParams?.limit !== undefined ? String(searchParams.limit) : undefined,
+  };
 }
 
 /**
- * Fetch menu items với search/filter params.
- * Không cache (cache: 'no-store') để luôn có dữ liệu mới nhất.
+ * Legacy helper: Fetch menu sections (chuẩn hóa chống crash nếu Circuit Breaker trả object fallback).
  */
 export async function getMenuItems(
   searchParams?: MenuSearchParams,
 ): Promise<MenuSection[]> {
-  return await apiClient<MenuSection[]>('/api/search/menu', {
-    params: {
-      q: searchParams?.q,
-      category: searchParams?.category,
-      tag: searchParams?.tag,
-      lat: searchParams?.lat !== undefined ? String(searchParams.lat) : undefined,
-      lon: searchParams?.lon !== undefined ? String(searchParams.lon) : undefined,
-      radius: searchParams?.radius,
-      sort_by: searchParams?.sort_by,
-      open_only: searchParams?.open_only ? 'true' : undefined,
-    },
+  const raw = await apiClient<unknown>('/api/search/menu', {
+    params: buildSearchQueryParams(searchParams),
     cache: 'no-store',
   });
+  return normalizePaginatedMenuResponse(raw).sections;
+}
+
+/**
+ * Fetch thực đơn có phân trang theo cụm nhà hàng cho Infinite Lazy Load trên /menu.
+ */
+export async function getPaginatedMenuItems(
+  searchParams?: MenuSearchParams,
+  signal?: AbortSignal,
+): Promise<PaginatedMenuResponse> {
+  const page = Math.max(1, searchParams?.page ?? 1);
+  const limit = Math.min(30, Math.max(1, searchParams?.limit ?? 8));
+
+  const raw = await apiClient<unknown>('/api/search/menu/paginated', {
+    params: buildSearchQueryParams({ ...searchParams, page, limit }),
+    cache: 'no-store',
+    signal,
+  });
+
+  return normalizePaginatedMenuResponse(raw, page, limit);
 }
 
 /**
  * Client-side: Gợi ý tìm kiếm tức thời (Autocomplete Suggestions).
- * Hỗ trợ AbortSignal để hủy request khi người dùng gõ phím liên tục (chống race condition).
  */
 export async function getSearchSuggestions(
   query: string,

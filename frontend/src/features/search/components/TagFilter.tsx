@@ -16,21 +16,25 @@ interface TagFilterProps {
 export const TagFilter: React.FC<TagFilterProps> = ({ tags }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeTagId = searchParams.get('tag');
+  const activeTagParam = searchParams.get('tag');
   const hasAnyFilter = Boolean(
-    searchParams.get('tag') || searchParams.get('category') || searchParams.get('q'),
+    searchParams.get('tag') ||
+      searchParams.get('category') ||
+      searchParams.get('q') ||
+      searchParams.get('promo'),
   );
 
   const handleSelect = (tagId: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    if (activeTagId === tagId) {
+    if (activeTagParam === tagId) {
       params.delete('tag');
     } else {
       params.set('tag', tagId);
     }
 
-    router.push(`?${params.toString()}`, { scroll: false });
+    const qs = params.toString();
+    router.push(qs ? `?${qs}` : '/menu', { scroll: false });
   };
 
   const handleResetFilters = () => {
@@ -45,7 +49,10 @@ export const TagFilter: React.FC<TagFilterProps> = ({ tags }) => {
       </span>
 
       {tags.map((tag) => {
-        const isActive = activeTagId === tag.id;
+        const isActive =
+          activeTagParam === tag.id ||
+          (activeTagParam !== null &&
+            activeTagParam.trim().toLowerCase() === tag.name.trim().toLowerCase());
         return (
           <button
             key={tag.id}
