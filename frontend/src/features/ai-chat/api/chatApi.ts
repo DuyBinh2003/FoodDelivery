@@ -45,6 +45,7 @@ export const chatApi = {
     onDone: (data: { sessionId: string; messageId: string; intent?: string; tokensUsed?: number }) => void,
     onError: (errMessage: string) => void,
     signal?: AbortSignal,
+    onStatus?: (status: { step: string; message?: string }) => void,
   ): Promise<void> => {
     // Route through API Gateway when configured; otherwise fail-fast on AI service URL
     const gatewayUrl = process.env.NEXT_PUBLIC_API_GATEWAY_URL?.trim();
@@ -109,6 +110,7 @@ export const chatApi = {
               sessionId?: string;
               messageId?: string;
               content?: string;
+              step?: string;
               intent?: string;
               tokensUsed?: number;
               message?: string;
@@ -116,6 +118,8 @@ export const chatApi = {
 
             if (parsed.type === 'session_init' && parsed.sessionId) {
               onSessionInit(parsed.sessionId);
+            } else if (parsed.type === 'status' && parsed.step) {
+              onStatus?.({ step: parsed.step, message: parsed.message });
             } else if (parsed.type === 'chunk' && parsed.content) {
               onChunk(parsed.content);
             } else if (parsed.type === 'done') {

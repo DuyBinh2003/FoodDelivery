@@ -284,6 +284,23 @@ describe('ChatService - SSE Orchestration Suite', () => {
       );
       expect(mockResponse.end).toHaveBeenCalled();
     });
+
+    it('TC-EC-05: Forwards SSE status events from LangGraph stream to client response', async () => {
+      const events: SseServerEvent[] = [
+        { type: 'status', step: 'starting', message: 'Đang phân tích yêu cầu...' },
+        { type: 'chunk', content: 'Xin chào' },
+        { type: 'done' },
+      ];
+      mockLangGraphClient.streamQuery.mockReturnValue(createMockStream(events));
+
+      const dto: ChatRequestDto = { message: 'Xin chào' };
+      await chatService.handleChatStream(sampleUser, dto, mockResponse as unknown as Response);
+
+      expect(mockResponse.write).toHaveBeenCalledWith(
+        expect.stringContaining('"type":"status","step":"starting"'),
+      );
+      expect(mockResponse.end).toHaveBeenCalled();
+    });
   });
 
   // ==========================================

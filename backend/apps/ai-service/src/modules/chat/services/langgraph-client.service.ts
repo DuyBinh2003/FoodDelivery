@@ -15,6 +15,12 @@ export interface SseChunkEvent {
   content: string;
 }
 
+export interface SseStatusEvent {
+  type: 'status';
+  step: string;
+  message?: string;
+}
+
 export interface SseDoneEvent {
   type: 'done';
   intent?: string;
@@ -31,7 +37,7 @@ export interface SseErrorEvent {
   message: string;
 }
 
-export type SseServerEvent = SseChunkEvent | SseDoneEvent | SseErrorEvent;
+export type SseServerEvent = SseChunkEvent | SseStatusEvent | SseDoneEvent | SseErrorEvent;
 
 @Injectable()
 export class LangGraphClientService {
@@ -50,6 +56,7 @@ export class LangGraphClientService {
 
   async *streamQuery(payload: RagQueryPayload): AsyncGenerator<SseServerEvent, void, unknown> {
     const targetUrl = `${this.baseUrl}/internal/rag/query`;
+    this.logger.debug(`Opening SSE stream to Python LangGraph service at ${targetUrl}`);
 
     let response: Response;
     try {

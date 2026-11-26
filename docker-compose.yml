@@ -353,6 +353,8 @@ services:
     container_name: fd_ai_python
     ports:
       - "5002:5002"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file: ./ai-python/.env
     environment:
       - AI_PYTHON_PORT=5002

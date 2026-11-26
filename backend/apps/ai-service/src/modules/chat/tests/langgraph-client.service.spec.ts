@@ -145,6 +145,29 @@ describe('LangGraphClientService - Python Service SSE Streaming Client Suite', (
         { type: 'error', message: 'Relevance score dưới ngưỡng và Tavily quota hết' },
       ]);
     });
+
+    it('TC-HP-04: Yields status events emitted during CRAG node execution before chunks', async () => {
+      const sseData = [
+        'data: {"type":"status","step":"starting","message":"Đang phân tích yêu cầu..."}\n\n',
+        'data: {"type":"status","step":"retrieving","message":"Đang tìm kiếm thực đơn..."}\n\n',
+        'data: {"type":"chunk","content":"Gợi ý phở bò"}\n\n',
+        'data: {"type":"done","intent":"MENU_RECOMMENDATION"}\n\n',
+      ];
+
+      globalThis.fetch = vi.fn().mockResolvedValue(createMockStreamResponse(sseData));
+
+      const events: SseServerEvent[] = [];
+      for await (const event of clientService.streamQuery(samplePayload)) {
+        events.push(event);
+      }
+
+      expect(events).toEqual([
+        { type: 'status', step: 'starting', message: 'Đang phân tích yêu cầu...' },
+        { type: 'status', step: 'retrieving', message: 'Đang tìm kiếm thực đơn...' },
+        { type: 'chunk', content: 'Gợi ý phở bò' },
+        { type: 'done', intent: 'MENU_RECOMMENDATION' },
+      ]);
+    });
   });
 
   // ==========================================

@@ -24,9 +24,19 @@ class RagQueryRequest(BaseModel):
 # Khởi tạo Graph một lần duy nhất khi service khởi động
 graph = build_crag_graph()
 
+NODE_STATUS_MAP: dict[str, dict[str, str]] = {
+    "classify_intent": {"step": "classifying", "message": "Đang phân loại ý định câu hỏi..."},
+    "retrieve": {"step": "retrieving", "message": "Đang tìm kiếm thực đơn và dữ liệu..."},
+    "grade_documents": {"step": "grading", "message": "Đang đánh giá độ liên quan dữ liệu..."},
+    "rewrite_query": {"step": "rewriting", "message": "Đang tối ưu hóa truy vấn tìm kiếm..."},
+    "web_search": {"step": "searching", "message": "Đang mở rộng tìm kiếm thông tin..."},
+    "generate": {"step": "generating", "message": "Đang tổng hợp câu trả lời..."},
+    "check_hallucination": {"step": "checking", "message": "Đang kiểm tra độ chính xác..."},
+}
+
 async def generate_rag_sse_stream(req: RagQueryRequest) -> AsyncGenerator[str, None]:
     start_time = time.time()
-    initial_state = {
+    initial_state: dict[str, Any] = {
         "user_id": req.user_id,
         "user_role": req.user_role,
         "question": req.message,
@@ -47,10 +57,43 @@ async def generate_rag_sse_stream(req: RagQueryRequest) -> AsyncGenerator[str, N
     }
 
     try:
-        # Chạy pipeline CRAG qua StateGraph
-        final_state = await graph.ainvoke(initial_state)
+        # Phát ngay status đầu tiên để tránh timeout ở proxy/client
+        init_payload = json.dumps(
+            {"type": "status", "step": "starting", "message": "Đang phân tích yêu cầu..."},
+            ensure_ascii=False,
+        )
+        yield f"data: {init_payload}\n\n"
 
-        generation = final_state.get("generation", "")
+        final_state: dict[str, Any] = dict(initial_state)
+
+        # Chạy pipeline CRAG qua StateGraph dạng stream từng node
+        async for event in graph.astream(initial_state, stream_mode="updates"):
+            for node_name, node_output in event.items():
+                if isinstance(node_output, dict):
+                    final_state.update(node_output)
+
+                logger.info(
+                    "crag_node_completed",
+                    node=node_name,
+                    intent=final_state.get("intent"),
+                    docs_count=len(final_state.get("documents", [])),
+                    relevance_score=final_state.get("relevance_score"),
+                    user_id=req.user_id,
+                )
+
+                status_info = NODE_STATUS_MAP.get(node_name)
+                if status_info:
+                    status_payload = json.dumps(
+                        {
+                            "type": "status",
+                            "step": status_info["step"],
+                            "message": status_info["message"],
+                        },
+                        ensure_ascii=False,
+                    )
+                    yield f"data: {status_payload}\n\n"
+
+        generation = str(final_state.get("generation", ""))
         # Yield câu trả lời theo từng đoạn ngắn (chunk streaming giả lập mượt mà cho client)
         chunk_size = 12
         words = generation.split(" ")
@@ -61,6 +104,14 @@ async def generate_rag_sse_stream(req: RagQueryRequest) -> AsyncGenerator[str, N
             await asyncio.sleep(0.04)
 
         latency_ms = int((time.time() - start_time) * 1000)
+        logger.info(
+            "crag_stream_completed",
+            intent=final_state.get("intent"),
+            model_used=final_state.get("model_used"),
+            tokens_used=final_state.get("tokens_used"),
+            latency_ms=latency_ms,
+            user_id=req.user_id,
+        )
         done_payload = json.dumps(
             {
                 "type": "done",

@@ -207,6 +207,46 @@ describe('chatApi - Frontend API Layer & SSE Stream Suite', () => {
       expect(globalThis.fetch).toHaveBeenCalled();
     });
 
+    it('TC-EC-04: Dispatches onStatus when provided and safely ignores status events when omitted', async () => {
+      const sseChunks = [
+        'data: {"type":"status","step":"starting","message":"Đang phân tích..."}\n\n',
+        'data: {"type":"chunk","content":"OK"}\n\n',
+        'data: {"type":"done","sessionId":"s1","messageId":"m1"}\n\n',
+      ];
+
+      globalThis.fetch = vi.fn().mockResolvedValue(createSseStreamResponse(sseChunks));
+
+      const onStatus = vi.fn();
+      const onChunk = vi.fn();
+      await chatApi.streamChat(
+        { message: 'Test status' },
+        vi.fn(),
+        onChunk,
+        vi.fn(),
+        vi.fn(),
+        undefined,
+        onStatus,
+      );
+
+      expect(onStatus).toHaveBeenCalledWith({
+        step: 'starting',
+        message: 'Đang phân tích...',
+      });
+      expect(onChunk).toHaveBeenCalledWith('OK');
+
+      // Edge: omitted onStatus callback should not throw
+      globalThis.fetch = vi.fn().mockResolvedValue(createSseStreamResponse(sseChunks));
+      await expect(
+        chatApi.streamChat(
+          { message: 'Test without onStatus' },
+          vi.fn(),
+          vi.fn(),
+          vi.fn(),
+          vi.fn(),
+        ),
+      ).resolves.toBeUndefined();
+    });
+
     it('TC-EC-03: Relays server SSE error event line by triggering onError callback', async () => {
       const sseChunks = [
         'data: {"type":"error","message":"Hệ thống quá tải, vui lòng thử lại sau"}\n\n',

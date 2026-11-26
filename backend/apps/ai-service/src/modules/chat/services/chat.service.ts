@@ -83,6 +83,12 @@ export class ChatService {
             type: 'chunk',
             content: event.content,
           });
+        } else if (event.type === 'status') {
+          writeSse({
+            type: 'status',
+            step: event.step,
+            message: event.message,
+          });
         } else if (event.type === 'done') {
           doneEventReceived = event;
         } else if (event.type === 'error') {
