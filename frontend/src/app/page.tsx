@@ -88,7 +88,7 @@ export default function HomePage() {
         );
 
         const gridPromise = apiClient<PaginatedRestaurantsResponse>('/restaurants/paginated', {
-          params: { page: '1', limit: '12' },
+          params: { page: '1', limit: '8' },
         }).catch((err: unknown) => {
           console.warn('[HomePage] Failed to fetch paginated restaurants:', err);
           return { items: [], pagination: EMPTY_PAGINATION };
@@ -187,7 +187,7 @@ export default function HomePage() {
     try {
       const [gridRes, dishesRes] = await Promise.all([
         apiClient<PaginatedRestaurantsResponse>('/restaurants/paginated', {
-          params: { page: '1', limit: '12', categoryId: catParam },
+          params: { page: '1', limit: '8', categoryId: catParam },
         }),
         apiClient<PaginatedFeaturedDishesResponse>('/restaurants/featured-dishes', {
           params: { page: '1', limit: '8', categoryId: catParam },
@@ -388,15 +388,14 @@ export default function HomePage() {
               viewAllHref="/menu?sort=rating"
             />
 
-            {/* 6. Tất Cả Quán Ngon (True Server-Backed Infinite Scroll Grid) */}
+            {/* 6. Quán Ngon Đề Xuất (Giới hạn tối đa 8 quán trên Trang Chủ + CTA sang /menu, không tự tải trang khi scroll) */}
             <AllRestaurantsInfinite
               initialRestaurants={enrichedGridPage1}
               initialPagination={gridPagination}
               selectedCategoryId={selectedCategory}
               selectedCategoryName={selectedCategoryName}
-              userLat={currentLocation.lat}
-              userLng={currentLocation.lng}
               initialLoading={categoryLoading}
+              previewLimit={8}
             />
           </>
         )}
